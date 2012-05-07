@@ -74,6 +74,9 @@ public abstract class Context {
 	 * 执行下一个处理
 	 */
 	final void next(){
+		if (this.lines.isEmpty()) {
+			return;
+		}
 		String nextLine = this.lines.get(0);
 		String key = Tool.getKey(nextLine);
 		if (key != null) {
