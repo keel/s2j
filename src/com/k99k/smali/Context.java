@@ -11,9 +11,10 @@ import java.util.ArrayList;
  */
 public abstract class Context {
 
-	public Context(S2J s2j,Context superContext) {
+	public Context(S2J s2j,ArrayList<String> lines,StringBuilder out) {
 		this.s2j = s2j;
-		this.superContext = superContext;
+		this.lines = lines;
+		this.out = out;
 	}
 	
 	ArrayList<String> lines;
@@ -24,7 +25,6 @@ public abstract class Context {
 	
 	S2J s2j;
 	
-	Context superContext;
 	
 	/**
 	 * 处理标识
@@ -55,57 +55,55 @@ public abstract class Context {
 	 * 处理过程
 	 * @return
 	 */
-	public void render(ArrayList<String> lines, StringBuilder out) {
-		if (lines.size() > 0) {
-			this.lines = lines;
-			this.out = out;
+	public void render() {
+//		if (lines.size() > 0) {
 			if (this.parse() && this.out()) {
-				this.next();
-				this.outEnd();
+//				this.next();
+//				this.outEnd();
 			} else {
 				// 输出错误
 				this.out.append(this.getErr()).append(StaticUtil.NEWLINE);
-				this.next();
+//				this.next();
 			}
-		}
+//		}
 	}
 	
-	/**
-	 * 执行下一个处理
-	 */
-	final void next(){
-		if (this.lines.isEmpty()) {
-			return;
-		}
-		String nextLine = this.lines.get(0);
-		String key = Tool.getKey(nextLine);
-		if (key != null) {
-			Context next = this.s2j.createContext(key,this);
-			if (next!=null) {
-				next.render(this.lines,this.out);
-			}else{
-				this.out.append("//FIXME context not found! key: "+key);
-			}
-		}else{
-			this.out.append("//FIXME key is empty! line: "+nextLine);
-		}
-	}
+//	/**
+//	 * 执行下一个处理
+//	 */
+//	final void next(){
+//		if (this.lines.isEmpty()) {
+//			return;
+//		}
+//		String nextLine = this.lines.get(0);
+//		String key = Tool.getKey(nextLine);
+//		if (key != null) {
+//			Context next = this.s2j.createContext(key,this);
+//			if (next!=null) {
+//				next.render(this.lines,this.out);
+//			}else{
+//				this.out.append("//F IXME context not found! key: "+key);
+//			}
+//		}else{
+//			this.out.append("//F IXME key is empty! line: "+nextLine);
+//		}
+//	}
 	
-	/**
-	 * 输出结束字符,有需要的Context重写此方法即可
-	 */
-	public void outEnd(){
-		//this.out.append(StaticUtil.NEWLINE);
-	}
+//	/**
+//	 * 输出结束字符,有需要的Context重写此方法即可
+//	 */
+//	public void outEnd(){
+//		//this.out.append(StaticUtil.NEWLINE);
+//	}
 	
-	public abstract Context newOne(S2J s2j,Context superContext);
+	public abstract Context newOne(S2J s2j,ArrayList<String> lines,StringBuilder out);
 	
 	/**
 	 * 处理一行中的注释
 	 * @param l
 	 * @return
 	 */
-	public String doComm(String l){
+	public final String doComm(String l){
 		int c = l.indexOf(StaticUtil.COMM);
 		if (c == -1) {
 			return l;

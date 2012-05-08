@@ -3,14 +3,18 @@
  */
 package com.k99k.smali;
 
+import java.util.ArrayList;
+
 /**
  * @author keel
  *
  */
 public class Comm extends Context {
-	
-	public Comm(S2J s2j, Context superContext) {
-		super(s2j, superContext);
+
+
+
+	public Comm(S2J s2j, ArrayList<String> lines, StringBuilder out) {
+		super(s2j, lines, out);
 	}
 
 	private String comm;
@@ -43,8 +47,10 @@ public class Comm extends Context {
 	}
 
 	@Override
-	public Context newOne(S2J s2j,Context superContext) {
-		return new Comm(s2j,superContext);
+	public Context newOne(S2J s2j, ArrayList<String> lines, StringBuilder out) {
+		return new Comm(s2j, lines, out);
 	}
+
+
 
 }

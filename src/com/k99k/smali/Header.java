@@ -3,6 +3,8 @@
  */
 package com.k99k.smali;
 
+import java.util.ArrayList;
+
 import com.k99k.tools.StringUtil;
 
 /**
@@ -13,8 +15,10 @@ import com.k99k.tools.StringUtil;
 public class Header extends Context {
 
 	
-	public Header(S2J s2j, Context superContext) {
-		super(s2j, superContext);
+
+
+	public Header(S2J s2j, ArrayList<String> lines, StringBuilder out) {
+		super(s2j, lines, out);
 	}
 
 	private String packageName;
@@ -144,19 +148,13 @@ public class Header extends Context {
 	}
 	
 	@Override
-	public void outEnd(){
-		this.out.append(StaticUtil.NEWLINE).append("}");
-	}
-	
-
-	@Override
 	public String getKey() {
 		return StaticUtil.TYPE_CLASS;
 	}
 
 	@Override
-	public Context newOne(S2J s2j,Context superContext) {
-		return new Header(s2j,superContext);
+	public Context newOne(S2J s2j, ArrayList<String> lines, StringBuilder out) {
+		return new Header(s2j,lines,out);
 	}
 
 }

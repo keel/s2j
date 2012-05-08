@@ -3,6 +3,8 @@
  */
 package com.k99k.smali;
 
+import java.util.ArrayList;
+
 import com.k99k.tools.StringUtil;
 
 /**
@@ -11,8 +13,9 @@ import com.k99k.tools.StringUtil;
  */
 public class Fields extends Context {
 
-	public Fields(S2J s2j, Context superContext) {
-		super(s2j, superContext);
+
+	public Fields(S2J s2j, ArrayList<String> lines, StringBuilder out) {
+		super(s2j, lines, out);
 	}
 
 	/* (non-Javadoc)
@@ -70,9 +73,10 @@ public class Fields extends Context {
 		return true;
 	}
 
+
 	@Override
-	public Context newOne(S2J s2j,Context superContext) {
-		return new Fields(s2j,superContext);
+	public Context newOne(S2J s2j, ArrayList<String> lines, StringBuilder out) {
+		return new Fields(s2j, lines, out);
 	}
 
 }

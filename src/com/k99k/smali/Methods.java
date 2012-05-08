@@ -16,12 +16,8 @@ import com.k99k.tools.StringUtil;
  */
 public class Methods extends Context {
 
-	/**
-	 * @param s2j
-	 * @param superContext
-	 */
-	public Methods(S2J s2j, Context superContext) {
-		super(s2j, superContext);
+	public Methods(S2J s2j, ArrayList<String> lines, StringBuilder out) {
+		super(s2j, lines, out);
 	}
 
 	/* (non-Javadoc)
@@ -37,7 +33,13 @@ public class Methods extends Context {
 	private boolean isStaticConstructor = false;
 	private String scope = "";
 	private String name;
+	/**
+	 * 方法参数
+	 */
 	private ArrayList<String> props = new ArrayList<String>();
+	/**
+	 * 方法返回
+	 */
 	private String returnStr = "";
 	
 	/**
@@ -229,15 +231,12 @@ public class Methods extends Context {
 		// 方法首行第一次完成
 		this.outLines.add(sb.toString());
 	}
-	
 
-	/* (non-Javadoc)
-	 * @see com.k99k.smali.Context#newOne(com.k99k.smali.S2J, com.k99k.smali.Context)
-	 */
 	@Override
-	public Context newOne(S2J s2j, Context superContext) {
-		return new Methods(s2j, superContext);
+	public Context newOne(S2J s2j, ArrayList<String> lines, StringBuilder out) {
+		return new Methods(s2j, lines, out);
 	}
+	
 
 
 }
