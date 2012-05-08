@@ -4,84 +4,126 @@
 package com.k99k.smali;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+
+import com.k99k.tools.StringUtil;
 
 /**
  * 语句单元 
  * @author keel
  *
  */
-public class Sentence {
+public abstract class Sentence {
 
-	/**
-	 * 
-	 */
-	public Sentence() {
+	public Sentence(SentenceMgr mgr,ArrayList<String> srcLines) {
+		this.srcLines = srcLines;
+		this.mgr = mgr;
 	}
 	
+	/**
+	 * 未处理
+	 */
 	public static final int STATE_INIT = 0;
+	/**
+	 * 处理完成
+	 */
 	public static final int STATE_DONE =1;
-	public static final int STATE_DOING =2;
-	
-	public static final int TYPE_UNKOWN = 0;
-	public static final int TYPE_NOT_STRUCT = 1;
-	public static final int TYPE_STRUCT = 2;
+	/**
+	 * 结束
+	 */
+	public static final int STATE_OVER =2;
 	
 	/**
-	 * 标识
+	 * 处理未完成
 	 */
-	private String key;
+	public static final int STATE_DOING =3;
+	
+	/**
+	 * 未知类型
+	 */
+	public static final int TYPE_UNKOWN = 0;
+	/**
+	 * 变量设置,不独立成句
+	 */
+	public static final int TYPE_VAR = 1;
+	/**
+	 * 获取某值,一般不独立成句
+	 */
+	public static final int TYPE_GET = 2;
+	/**
+	 * 执行操作,可能会独立成句
+	 */
+	public static final int TYPE_ACT = 3;
+	/**
+	 * 运算操作,一般不独立成句
+	 */
+	public static final int TYPE_COMPUTE = 4;
+	/**
+	 * 结构
+	 */
+	public static final int TYPE_STRUCT = 5;
+	
+	/**
+	 * 源SentenceMgr
+	 */
+	SentenceMgr mgr;
 	
 	/**
 	 * 状态
 	 */
-	private int state = STATE_INIT;
+	int state = STATE_INIT;
 	
-	/**
-	 * 语句类型
-	 */
-	private int type = TYPE_UNKOWN;
 	
 	/**
 	 * 行号
 	 */
-	private int lineNum;
+	int lineNum;
 	
 	/**
 	 * 原始语句
 	 */
-	private ArrayList<String> srcLines;
+	ArrayList<String> srcLines;
 	
 	/**
 	 * 输出
 	 */
-	private ArrayList<String> outLines = new ArrayList<String>();
+	ArrayList<String> outLines = new ArrayList<String>();
 	
-	/**
-	 * 变量
-	 */
-	private HashMap<String,Object>	vars = new HashMap<String, Object>();
-	
+
 	
 	/**
 	 * 处理语句，返回是否处理成功
 	 * @param srcLines
 	 * @return
 	 */
-	public boolean exec(ArrayList<String> srcLines){
-		
-		
-		return true;
-	}
+	public abstract boolean exec();
 	
 	/**
 	 * 继续处理未完成的部分,返回是否处理成功
 	 * @return
 	 */
 	public boolean execNext(){
-		
-		
 		return true;
+	}
+	
+	
+	/**
+	 * 新实例
+	 * @return
+	 */
+	public abstract Sentence newOne(SentenceMgr mgr,ArrayList<String> srcLines);
+	
+	
+	/**
+	 * 处理行号
+	 * @param line
+	 */
+	public boolean lineNum(String line){
+		String[] words = line.split(" ");
+		if (words[0].equals(StaticUtil.TYPE_LINE) && words.length >= 2 && StringUtil.isDigits(words[1])) {
+			this.lineNum = Integer.parseInt(words[1]);
+			return true;
+		}
+		return false;
 	}
 	
 	/**
@@ -89,38 +131,21 @@ public class Sentence {
 	 * @return String key of other Sentence
 	 */
 	public String maybeSentence(){
-		
-		return null;
+		return "";
 	}
-
 
 
 	/**
 	 * @return the type
 	 */
-	public final int getType() {
-		return type;
-	}
+	public abstract int getType() ;
 
-	/**
-	 * @param type the type to set
-	 */
-	public final void setType(int type) {
-		this.type = type;
-	}
 
 	/**
 	 * @return the lineNum
 	 */
 	public final int getLineNum() {
 		return lineNum;
-	}
-
-	/**
-	 * @param lineNum the lineNum to set
-	 */
-	public final void setLineNum(int lineNum) {
-		this.lineNum = lineNum;
 	}
 
 	/**
@@ -137,26 +162,6 @@ public class Sentence {
 		return outLines;
 	}
 
-	/**
-	 * @return the vars
-	 */
-	public final HashMap<String, Object> getVars() {
-		return vars;
-	}
-
-	/**
-	 * @return the key
-	 */
-	public final String getKey() {
-		return key;
-	}
-
-	/**
-	 * @param key the key to set
-	 */
-	public final void setKey(String key) {
-		this.key = key;
-	}
 
 	/**
 	 * @return the state

@@ -47,7 +47,7 @@ public class Tool {
 			}
 			return sb.toString();
 		}
-		return "ERROR";
+		return "UnknownObj";
 	}
 	
 	/**

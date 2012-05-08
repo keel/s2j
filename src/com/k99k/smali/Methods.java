@@ -4,7 +4,6 @@
 package com.k99k.smali;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 
 import com.k99k.tools.StringUtil;
@@ -29,7 +28,7 @@ public class Methods extends Context {
 	}
 	
 	private ArrayList<String> mLines = new ArrayList<String>();
-	private boolean isConstructor = false;
+//	private boolean isConstructor = false;
 	private boolean isStaticConstructor = false;
 	private String scope = "";
 	private String name;
@@ -43,20 +42,10 @@ public class Methods extends Context {
 	private String returnStr = "";
 	
 	/**
-	 * 当前处理行数
-	 */
-	private int curline = 0;
-	
-	/**
 	 * 准备输出的行
 	 */
 	private ArrayList<String> outLines = new ArrayList<String>();
 	
-	/**
-	 * 局部变量
-	 */
-	private HashMap<String,Object> locals = new HashMap<String, Object>();
-
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Context#out()
 	 */
@@ -113,8 +102,14 @@ public class Methods extends Context {
 	 * 处理方法内的部分
 	 */
 	private void parseInner(){
-		String l = this.mLines.get(curline);
-		
+		if (!this.mLines.isEmpty()) {
+			SentenceMgr sMgr = new SentenceMgr(this.mLines);
+			if (this.scope.indexOf("static")>=0) {
+				sMgr.setStatic(true);
+			}
+			sMgr.execLines();
+			this.outLines.addAll(sMgr.getOutLines());
+		}
 	}
 	
 	/**
@@ -134,7 +129,7 @@ public class Methods extends Context {
 		}
 		// 构造方法
 		else if (l.indexOf(StaticUtil.SCOPE_CONSTRUCTOR) > -1) {
-			this.isConstructor = true;
+//			this.isConstructor = true;
 			this.name = this.s2j.className;
 			this.returnStr = "";
 			l = l.replaceAll(" " + StaticUtil.SCOPE_CONSTRUCTOR, "");
@@ -168,7 +163,7 @@ public class Methods extends Context {
 		if (!isStaticConstructor) {
 			sb.append("(");
 		}
-		
+		//TODO 如果直接是end
 
 		// 读取接下来几行，处理参数
 		String ss = "";
