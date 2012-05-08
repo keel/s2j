@@ -154,30 +154,13 @@ public class Methods extends Context {
 			}
 		}
 		// 处理参数
-		int a = l.indexOf("(") + 1;
-		int b = l.indexOf(")");
-		if (a < b) {
-			// 有props
-			String p = l.substring(l.indexOf("(") + 1, l.indexOf(")"));
-			int plen = p.length(),pp = 0;
-			for (int j = 0; j < plen; j++) {
-				if (p.charAt(j) == 'L') {
-					int e = p.indexOf(";", j);
-					String cp = p.substring(j, e + 1);
-					// 预先将参数类型加入porps,如: int $$1,java.lang.String $$2
-					this.props.add(Tool.parseObject(cp)+" $$"+pp);
-					j = e;
-				} else {
-					this.props
-							.add(Tool.parseObject(String.valueOf(p.charAt(j)))+" $$"+pp);
-				}
-				pp++;
-			}
-		}
+		this.props = getMethodProps(l);
+		// scope
 		StringBuilder sb = new StringBuilder();
 		if (StringUtil.isStringWithLen(this.scope, 1)) {
 			sb.append(this.scope);
 		}
+		// return
 		if (StringUtil.isStringWithLen(this.returnStr, 1)) {
 			sb.append(this.returnStr).append(" ");
 		}
@@ -230,6 +213,48 @@ public class Methods extends Context {
 		sb.append("{");
 		// 方法首行第一次完成
 		this.outLines.add(sb.toString());
+	}
+	
+	/**
+	 * 获取行中的参数集
+	 * @param line
+	 * @return ArrayList props
+	 */
+	public static final ArrayList<String> getMethodProps(String line){
+		ArrayList<String> props = new ArrayList<String>();
+		// 处理参数
+		int a = line.indexOf("(") + 1;
+		int b = line.indexOf(")");
+		if (a < b) {
+			// 有props
+			String p = line.substring(line.indexOf("(") + 1, line.indexOf(")"));
+			int plen = p.length(),pp = 0;
+			for (int j = 0; j < plen; j++) {
+				if (p.charAt(j) == 'L') {
+					int e = p.indexOf(";", j);
+					String cp = p.substring(j, e + 1);
+					// 预先将参数类型加入porps,如: int $$1,java.lang.String $$2
+					props.add(Tool.parseObject(cp)+" $$"+pp);
+					j = e;
+				} else if(p.charAt(j) == '['){
+					int e = j;
+					while(p.charAt(e) == '['){
+						e++;
+					}
+					if (p.charAt(e) == 'L') {
+						e = p.indexOf(";",e);
+					}
+					String cp = p.substring(j, e + 1);
+					props.add(Tool.parseObject(cp)+" $$"+pp);
+					j = e;
+				}else {
+					props.add(Tool.parseObject(String.valueOf(p.charAt(j)))+" $$"+pp);
+				}
+				pp++;
+			}
+			
+		}
+		return props;
 	}
 
 	@Override

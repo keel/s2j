@@ -3,10 +3,8 @@
  */
 package com.k99k.smali;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
-import com.k99k.tools.IO;
 
 /**
  * @author keel
@@ -41,6 +39,13 @@ public class Tool {
 		}
 		else if (smaliObj.equals("F")) {
 			return "float";
+		}else if (smaliObj.startsWith("[")) {
+			int arrLen = smaliObj.lastIndexOf("[")+1;
+			StringBuilder sb = new StringBuilder(parseObject(smaliObj.substring(arrLen)));
+			for (int i = 0; i < arrLen; i++) {
+				sb.append("[]");
+			}
+			return sb.toString();
 		}
 		return "ERROR";
 	}
@@ -118,7 +123,7 @@ public class Tool {
 //		} catch (IOException e) {
 //			e.printStackTrace();
 //		}
-		String s = "Landroid/content/Context;";
+		String s = "[[[Ljava.lang.String;";
 		System.out.println(parseObject(s));
 		s = "I";
 		System.out.println(parseObject(s));
