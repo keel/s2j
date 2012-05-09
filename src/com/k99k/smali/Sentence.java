@@ -5,8 +5,6 @@ package com.k99k.smali;
 
 import java.util.ArrayList;
 
-import com.k99k.tools.StringUtil;
-
 /**
  * 语句单元 
  * @author keel
@@ -14,8 +12,8 @@ import com.k99k.tools.StringUtil;
  */
 public abstract class Sentence {
 
-	public Sentence(SentenceMgr mgr,ArrayList<String> srcLines) {
-		this.srcLines = srcLines;
+	public Sentence(SentenceMgr mgr,String line) {
+		this.line = line;
 		this.mgr = mgr;
 	}
 	
@@ -42,25 +40,19 @@ public abstract class Sentence {
 	 */
 	public static final int TYPE_UNKOWN = 0;
 	/**
-	 * 变量设置,不独立成句
+	 * 不成行
 	 */
-	public static final int TYPE_VAR = 1;
+	public static final int TYPE_NOT_LINE = 1;
 	/**
-	 * 获取某值,一般不独立成句
+	 * 单行
 	 */
-	public static final int TYPE_GET = 2;
+	public static final int TYPE_LINE = 2;
 	/**
-	 * 执行操作,可能会独立成句
+	 * 结构(多行)
 	 */
-	public static final int TYPE_ACT = 3;
-	/**
-	 * 运算操作,一般不独立成句
-	 */
-	public static final int TYPE_COMPUTE = 4;
-	/**
-	 * 结构
-	 */
-	public static final int TYPE_STRUCT = 5;
+	public static final int TYPE_STRUCT = 3;
+	
+	int level;
 	
 	/**
 	 * 源SentenceMgr
@@ -79,21 +71,29 @@ public abstract class Sentence {
 	int lineNum;
 	
 	/**
-	 * 原始语句
+	 * 对应的java文件行号
 	 */
-	ArrayList<String> srcLines;
+	int javaLineNum;
 	
 	/**
-	 * 输出
+	 * 原始语句
 	 */
-	ArrayList<String> outLines = new ArrayList<String>();
+	String line;
 	
-
+	/**
+	 * 相关的Sentence集合
+	 */
+	ArrayList<Sentence> linkedSentenceList;
+	
+	/**
+	 * 单行或局部输出
+	 */
+	StringBuilder out = new StringBuilder();
 	
 	/**
 	 * 处理语句，返回是否处理成功
 	 * @param srcLines
-	 * @return
+	 * @return 
 	 */
 	public abstract boolean exec();
 	
@@ -110,21 +110,8 @@ public abstract class Sentence {
 	 * 新实例
 	 * @return
 	 */
-	public abstract Sentence newOne(SentenceMgr mgr,ArrayList<String> srcLines);
-	
-	
-	/**
-	 * 处理行号
-	 * @param line
-	 */
-	public boolean lineNum(String line){
-		String[] words = line.split(" ");
-		if (words[0].equals(StaticUtil.TYPE_LINE) && words.length >= 2 && StringUtil.isDigits(words[1])) {
-			this.lineNum = Integer.parseInt(words[1]);
-			return true;
-		}
-		return false;
-	}
+	public abstract Sentence newOne(SentenceMgr mgr,String line);
+
 	
 	/**
 	 * 处理失败时返回可能能处理的其他Sentence的key
@@ -132,6 +119,37 @@ public abstract class Sentence {
 	 */
 	public String maybeSentence(){
 		return "";
+	}
+	
+	/**
+	 * 添加相关的Sentence,仅针对结构类型的Sentence
+	 * @param sen Sentence
+	 */
+	public void addLink(Sentence sen){
+		if (this.linkedSentenceList == null) {
+			this.linkedSentenceList = new ArrayList<Sentence>();
+		}
+		this.linkedSentenceList.add(sen);
+	}
+	
+	/**
+	 * 处理一行中的注释,注意这里与Context中的处理不同
+	 * @param l
+	 * @return
+	 */
+	public final String doComm(String l){
+		int c = l.indexOf(StaticUtil.COMM);
+		if (c == -1) {
+			return l;
+		}
+		if (c == 0) {
+			this.out.append(" /* ").append(l).append(" */ ").toString();
+			return "";
+		}
+		if (c>0 && l.length()>c+1) {
+			this.out.append(" /* ").append(l.substring(c+1)).append(" */ ").toString();
+		}
+		return l.substring(0,c);
 	}
 
 
@@ -142,6 +160,11 @@ public abstract class Sentence {
 
 
 	/**
+	 * 名称，用于查找时匹配特定的Sentence
+	 */
+	public abstract String getName() ;
+	
+	/**
 	 * @return the lineNum
 	 */
 	public final int getLineNum() {
@@ -151,17 +174,45 @@ public abstract class Sentence {
 	/**
 	 * @return the srcLines
 	 */
-	public final ArrayList<String> getSrcLines() {
-		return srcLines;
+	public final String getSrcLine() {
+		return this.line;
 	}
 
 	/**
-	 * @return the outLines
+	 * 多行输出
 	 */
-	public final ArrayList<String> getOutLines() {
-		return outLines;
+	public ArrayList<String> getOutLines(){
+		return null;
+	}
+	
+	/**
+	 * 局部或单行输出
+	 */
+	public String getOut(){
+		return this.out.toString();
 	}
 
+
+	/**
+	 * @return the javaLineNum
+	 */
+	public final int getJavaLineNum() {
+		return javaLineNum;
+	}
+
+	/**
+	 * @param javaLineNum the javaLineNum to set
+	 */
+	public final void setJavaLineNum(int javaLineNum) {
+		this.javaLineNum = javaLineNum;
+	}
+
+	/**
+	 * @param lineNum the lineNum to set
+	 */
+	public final void setLineNum(int lineNum) {
+		this.lineNum = lineNum;
+	}
 
 	/**
 	 * @return the state
@@ -176,5 +227,35 @@ public abstract class Sentence {
 	public final void setState(int state) {
 		this.state = state;
 	}
+
+	/**
+	 * @return the level
+	 */
+	public final int getLevel() {
+		return level;
+	}
+
+	/**
+	 * @param level the level to set
+	 */
+	public final void setLevel(int level) {
+		this.level = level;
+	}
+
+	/**
+	 * @return the line
+	 */
+	public final String getLine() {
+		return line;
+	}
+
+	/**
+	 * @param line the line to set
+	 */
+	public final void setLine(String line) {
+		this.line = line;
+	}
+	
+	
 
 }

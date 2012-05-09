@@ -3,7 +3,6 @@
  */
 package com.k99k.smali;
 
-import java.util.ArrayList;
 
 /**
  * 处理get类语句
@@ -16,8 +15,8 @@ public class GetSentence extends Sentence {
 	 * @param mgr
 	 * @param srcLines
 	 */
-	public GetSentence(SentenceMgr mgr, ArrayList<String> srcLines) {
-		super(mgr, srcLines);
+	public GetSentence(SentenceMgr mgr, String line) {
+		super(mgr, line);
 	}
 
 	/* (non-Javadoc)
@@ -25,11 +24,6 @@ public class GetSentence extends Sentence {
 	 */
 	@Override
 	public boolean exec() {
-		String line = this.srcLines.remove(0);
-		if(this.lineNum(line)){
-			line = this.srcLines.remove(0);
-		}
-		
 		
 		
 		
@@ -40,8 +34,8 @@ public class GetSentence extends Sentence {
 	 * @see com.k99k.smali.Sentence#newOne()
 	 */
 	@Override
-	public Sentence newOne(SentenceMgr mgr,ArrayList<String> srcLines) {
-		return new GetSentence(mgr, srcLines);
+	public Sentence newOne(SentenceMgr mgr,String line) {
+		return new GetSentence(mgr, line);
 	}
 
 	/* (non-Javadoc)
@@ -49,7 +43,7 @@ public class GetSentence extends Sentence {
 	 */
 	@Override
 	public int getType() {
-		return Sentence.TYPE_GET;
+		return Sentence.TYPE_NOT_LINE;
 	}
 	
 	
@@ -76,6 +70,12 @@ public class GetSentence extends Sentence {
 		"sget-char",
 		"sget-short"
 	};
+
+
+	@Override
+	public String getName() {
+		return "get";
+	}
 
 
 }

@@ -163,12 +163,11 @@ public class Methods extends Context {
 		if (!isStaticConstructor) {
 			sb.append("(");
 		}
-		//TODO 如果直接是end
-
+		
 		// 读取接下来几行，处理参数
 		String ss = "";
 		int prCount = 0;
-		while ((ss = this.mLines.remove(0)).indexOf(StaticUtil.TYPE_PROLOGUE) < 0) {
+		while ((ss = this.mLines.remove(0)).indexOf(StaticUtil.TYPE_PROLOGUE) < 0 && ss.indexOf(StaticUtil.TYPE_END_METHOD)==-1) {
 			ss = this.doComm(ss);
 			String key = Tool.getKey(ss);
 			if (key.equals(StaticUtil.TYPE_PARAMETER)) {

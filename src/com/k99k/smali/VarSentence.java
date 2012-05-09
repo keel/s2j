@@ -1,0 +1,127 @@
+/**
+ * 
+ */
+package com.k99k.smali;
+
+import java.util.HashMap;
+
+
+/**
+ * 声明语句,注意此类将作为静态类在mgr中使用,不可在内部访问mgr
+ * @author keel
+ *
+ */
+public class VarSentence extends Sentence {
+
+	/**
+	 * @param mgr
+	 * @param srcLines
+	 */
+	public VarSentence(SentenceMgr mgr, String line) {
+		super(mgr, line);
+	}
+	
+	private static HashMap<String,String> varMap  = new HashMap<String, String>();
+	
+	static{
+		varMap.put("const", "int");
+		varMap.put("const/4", "int");
+		varMap.put("const/16", "int");
+		varMap.put("const/high16", "float");
+		varMap.put("const-wide/16", "long");
+		varMap.put("const-wide/32", "long");
+		varMap.put("const-wide", "long");
+		varMap.put("const-wide/high16", "double");
+		varMap.put("const-string", "String");
+		varMap.put("const-string-jumbo", "String");
+		varMap.put("const-class", "Class");
+	}
+
+	/** 
+	 * 处理变量声明
+	 * @see com.k99k.smali.Sentence#exec()
+	 */
+	@Override
+	public boolean exec() {
+		//解析
+		this.doComm(this.line);
+		
+		String[] ws = this.line.split(" ");
+		if (ws.length<3) {
+			this.out.append("//ERR: exec var error. line:").append(this.line);
+			System.err.println(this.out);
+			return false;
+		}
+		
+		//生成Var
+		Var v = new Var();
+		v.setKey(ws[0]);
+		String type = varMap.get(ws[0]);
+		v.setClassName(type);
+		String vName = ws[1].replaceAll(",", "");
+		v.setName(vName);
+		String value = ws[2];
+		if (type.equals("String")) {
+			value = ws[1].replaceAll("\"", "");
+			v.setValue(value);
+		}else if(type.equals("int")){
+			v.setValue(Integer.parseInt(value));
+		}else if(type.equals("long")){
+			v.setValue(Long.parseLong(value));
+		}else if(type.equals("float")){
+			v.setValue(Float.parseFloat(value));
+		}else if(type.equals("double")){
+			v.setValue(Double.parseDouble(value));
+		}else if(type.equals("Class")){
+			//TODO 无法确定Class值 ,暂存String
+			v.setValue(value);
+		}
+		//仅输出value
+		v.setOut(value);
+		
+		//加入到SentenceMgr
+		SentenceMgr.setVar(v.getName(), v);
+		
+		return true;
+	}
+
+	/** 
+	 * 返回SentenceMgr内static的VarSentence,注意本类中this.mgr为null
+	 * @see com.k99k.smali.Sentence#newOne(com.k99k.smali.SentenceMgr, java.util.ArrayList)
+	 */
+	@Override
+	public Sentence newOne(SentenceMgr mgr,String line) {
+		Sentence s = mgr.getVarSen();
+		s.setLine(line);
+		return s;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.k99k.smali.Sentence#getType()
+	 */
+	@Override
+	public int getType() {
+		return Sentence.TYPE_NOT_LINE;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.k99k.smali.Sentence#getName()
+	 */
+	@Override
+	public String getName() {
+		return "var";
+	}
+	static final String[] KEYS = new String[]{
+		"const", 
+		"const/4",
+		"const/16",
+		"const/high16",
+		"const-wide/16",
+		"const-wide/32",
+		"const-wide",
+		"const-wide/high16", 
+		"const-string",
+		"const-string-jumbo",
+		"const-class"
+	};
+}

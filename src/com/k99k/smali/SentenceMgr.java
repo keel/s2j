@@ -6,6 +6,8 @@ package com.k99k.smali;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import com.k99k.tools.StringUtil;
+
 /**
  * 语句管理者
  * @author keel
@@ -15,6 +17,9 @@ public class SentenceMgr {
 
 	public SentenceMgr(ArrayList<String> srcLines) {
 		this.srcLines = srcLines;
+		outLines = new ArrayList<String>();
+		vars = new HashMap<String, Var>();
+		sentenceList = new ArrayList<Sentence>();
 	}
 	
 	/**
@@ -22,17 +27,26 @@ public class SentenceMgr {
 	 */
 	private static final HashMap<String,Sentence> sentenceMap = new HashMap<String, Sentence>();
 	
+	private static VarSentence varSen = new VarSentence(null, null);
+	
 	static{
 		GetSentence g = new GetSentence(null, null);
 		for (int i = 0; i < GetSentence.KEYS.length; i++) {
 			sentenceMap.put(GetSentence.KEYS[i], g);
 		}
 		
+		for (int i = 0; i < VarSentence.KEYS.length; i++) {
+			sentenceMap.put(VarSentence.KEYS[i], varSen);
+		}
+		CommSentence c = new CommSentence(null, null);
+		sentenceMap.put(StaticUtil.COMM, c);
+		
 	}
 	
-	public final Sentence createSentence(String key,ArrayList<String> srcLines){
-		return sentenceMap.get(key).newOne(this, srcLines);
+	public final Sentence createSentence(String key,String line){
+		return sentenceMap.get(key).newOne(this, line);
 	}
+	
 	
 	/**
 	 * 当前处理行数
@@ -57,13 +71,8 @@ public class SentenceMgr {
 	/**
 	 * 准备输出的行
 	 */
-	private ArrayList<String> outLines = new ArrayList<String>();
+	private ArrayList<String> outLines;
 	
-	/**
-	 * 当前处理的几行
-	 */
-	private ArrayList<String> cLines = new ArrayList<String>();
-
 	/**
 	 * 原始行
 	 */
@@ -72,12 +81,12 @@ public class SentenceMgr {
 	/**
 	 * 变量
 	 */
-	private HashMap<String,Var> vars = new HashMap<String, Var>();
+	private static HashMap<String,Var> vars;
 	
 	/**
 	 * 匹配上的Sentence集合,按顺序排
 	 */
-	private ArrayList<Sentence> sentenceList = new ArrayList<Sentence>();
+	private ArrayList<Sentence> sentenceList;
 
 	
 	/**
@@ -85,8 +94,8 @@ public class SentenceMgr {
 	 * @param key
 	 * @return
 	 */
-	public Object getVar(String key){
-		return this.vars.get(key);
+	public static final Object getVar(String key){
+		return vars.get(key);
 	}
 	
 	/**
@@ -94,13 +103,8 @@ public class SentenceMgr {
 	 * @param key
 	 * @param line
 	 */
-	public void setVar(String key,String line){
-		//声明
-		
-		//move
-		
-		
-		this.vars.put(key, var);
+	public static final void setVar(String key,Var var){
+		vars.put(key, var);
 	}
 	
 	
@@ -108,33 +112,11 @@ public class SentenceMgr {
 	 * 处理原始语句集
 	 */
 	public void execLines(){
-		maxNum = this.srcLines.size();
-		while (cNum < maxNum) {
-			String l = this.srcLines.get(cNum);
-			Sentence s = this.createSentence(Tool.getKey(l), srcLines);
-			//最多尝试5次切换Sentence
-			int i = 0;
-			while (i<=5) {
-				if (s.exec()) {
-					break;
-				}else{
-					String key = s.maybeSentence();
-					if (key.equals("")) {
-						this.outLines.add("//ERR: unknown sententce. line"+l);
-						break;
-					}else{
-						s = this.createSentence(key, srcLines);
-					}
-				}
-				i++;
-			}
-			
-			
-			
-			
-			
-			cNum++;
-		}
+		
+		this.parse();
+		
+		this.render();
+		
 		//逐行读取，当读到Sendtence的key时，创建Sentence处理,并将此段内容传入处理
 		//如果处理失败,则创建另一可能处理的Sentence处理
 		//处理成功,则将Sentence加入已处理的lines,注意处理后的状态是完成还是完成中
@@ -145,7 +127,67 @@ public class SentenceMgr {
 		
 	}
 	
-
+	
+	/**
+	 * 从sentenceList生成输出的outLines
+	 */
+	public void render(){
+		//处理sentenceList,将处于非over状态的sentence进行处理,直到全部处理完成
+		
+		//全部完成后按顺序输出到outLines
+	}
+	
+	/**
+	 * 处理每行，并加入到sentenceList
+	 */
+	public void parse(){
+		maxNum = this.srcLines.size();
+		while (cNum < maxNum) {
+			String l = this.srcLines.get(cNum);
+			String key = Tool.getKey(l);
+			int javaLine = this.javaLineNum(l);
+			Sentence s = this.createSentence(key, l);
+			//最多尝试5次切换Sentence
+			int i = 0;
+			while (i<=5) {
+				
+				if (s.exec()) {
+					//成功处理语句后设置行号等，并加入语句列表
+					s.setLineNum(cNum);
+					if (javaLine > -1) {
+						s.setJavaLineNum(javaLine);
+					}
+					//只有能成行输出的操作加入到sentenceList
+					if (s.getType()>Sentence.TYPE_NOT_LINE) {
+						this.sentenceList.add(s);
+					}
+					break;
+				}else{
+					key = s.maybeSentence();
+					if (key.equals("")) {
+						this.sentenceList.add(new CommSentence(this, "//ERR: unknown sententce. line"+l));
+						break;
+					}else{
+						s = this.createSentence(key, l);
+					}
+				}
+				i++;
+			}
+			cNum++;
+		}
+	}
+	
+	/**
+	 * 处理行号
+	 * @param line
+	 */
+	public int javaLineNum(String line){
+		String[] words = line.split(" ");
+		if (words[0].equals(StaticUtil.TYPE_LINE) && words.length >= 2 && StringUtil.isDigits(words[1])) {
+			return Integer.parseInt(words[1]);
+		}
+		return -1;
+	}
 	/**
 	 * 增加或减少缩进
 	 * @param add
@@ -196,6 +238,13 @@ public class SentenceMgr {
 	 */
 	public final void setStatic(boolean isStatic) {
 		this.isStatic = isStatic;
+	}
+
+	/**
+	 * @return the varSen
+	 */
+	public final VarSentence getVarSen() {
+		return varSen;
 	}
 
 	
