@@ -132,6 +132,8 @@ public abstract class Sentence {
 		this.linkedSentenceList.add(sen);
 	}
 	
+
+	
 	/**
 	 * 处理一行中的注释,注意这里与Context中的处理不同
 	 * @param l
@@ -190,6 +192,14 @@ public abstract class Sentence {
 	 */
 	public String getOut(){
 		return this.out.toString();
+	}
+	
+	public void over(){
+		this.state = STATE_OVER;
+	}
+	
+	public void done(){
+		this.state = STATE_DONE;
 	}
 
 

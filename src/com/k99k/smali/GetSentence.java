@@ -24,9 +24,45 @@ public class GetSentence extends Sentence {
 	 */
 	@Override
 	public boolean exec() {
+		//解析
+		this.doComm(this.line);
+		//去除,号
+		this.line = this.line.replaceAll(",", "");
+		String[] ws = this.line.split(" ");
+		if (ws.length<4) {
+			this.out.append("//ERR: exec getSentence error. line:").append(this.line);
+			System.err.println(this.out);
+			return false;
+		}
+		String key = ws[0];
+		//第一个表示其类型:array,instance,static
+		char type = key.charAt(0);
+		Var v = new Var(this);
+		v.setName(ws[1]);
+		v.setKey(key);
+		if (type == 'i') {
+			Var v1 = SentenceMgr.getVar(ws[2]);
+			Sentence s = v1.getSen();
+			if (s != null) {
+				s.over();
+				//TODO 
+				this.mgr.removeSentence(s);
+			}
+			int p = ws[3].indexOf(':');
+			String name = ws[3].substring(ws[3].indexOf("->")+2,p);
+			v.setName(name);
+			String obj = Tool.parseObject(ws[3].substring(p+1));
+			v.setClassName(obj);
+			v.setOut(v1.getOut()+"."+name);
+		}else if(type == 's'){
+			
+		}else if(type == 'a'){
+			
+		}
 		
 		
 		
+		this.done();
 		return false;
 	}
 

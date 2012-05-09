@@ -4,15 +4,17 @@
 package com.k99k.smali;
 
 /**
+ * 表示某方法体中的变量
  * @author keel
  *
  */
 public class Var {
 
 	/**
-	 * 
+	 * @param sen Sentence
 	 */
-	public Var() {
+	public Var(Sentence sen) {
+		this.sen = sen;
 	}
 	
 	/**
@@ -41,7 +43,10 @@ public class Var {
 	private String out = "";
 	
 	
-	
+	/**
+	 * 创建本Var的Sentence
+	 */
+	private Sentence sen;
 
 	/**
 	 * @return the name
@@ -111,6 +116,20 @@ public class Var {
 	 */
 	public final void setOut(String out) {
 		this.out = out;
+	}
+
+	/**
+	 * @return the sen
+	 */
+	public final Sentence getSen() {
+		return sen;
+	}
+
+	/**
+	 * @param sen the sen to set
+	 */
+	public final void setSen(Sentence sen) {
+		this.sen = sen;
 	}
 	
 	

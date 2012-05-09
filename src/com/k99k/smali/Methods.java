@@ -46,6 +46,20 @@ public class Methods extends Context {
 	 */
 	private ArrayList<String> outLines = new ArrayList<String>();
 	
+	
+	public String getPackageName(){
+		return this.s2j.packageName;
+	}
+	
+	public String getClassName(){
+		return this.s2j.className;
+	}
+	
+	
+	public String getMethodProp(int n){
+		return this.props.get(n);
+	}
+	
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Context#out()
 	 */
@@ -103,7 +117,7 @@ public class Methods extends Context {
 	 */
 	private void parseInner(){
 		if (!this.mLines.isEmpty()) {
-			SentenceMgr sMgr = new SentenceMgr(this.mLines);
+			SentenceMgr sMgr = new SentenceMgr(this.mLines,this);
 			if (this.scope.indexOf("static")>=0) {
 				sMgr.setStatic(true);
 			}

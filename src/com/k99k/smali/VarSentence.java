@@ -19,6 +19,8 @@ public class VarSentence extends Sentence {
 	 */
 	public VarSentence(SentenceMgr mgr, String line) {
 		super(mgr, line);
+		//始终是结束状态,不需要再处理 
+		this.over();
 	}
 	
 	private static HashMap<String,String> varMap  = new HashMap<String, String>();
@@ -54,7 +56,7 @@ public class VarSentence extends Sentence {
 		}
 		
 		//生成Var
-		Var v = new Var();
+		Var v = new Var(this);
 		v.setKey(ws[0]);
 		String type = varMap.get(ws[0]);
 		v.setClassName(type);
@@ -62,8 +64,7 @@ public class VarSentence extends Sentence {
 		v.setName(vName);
 		String value = ws[2];
 		if (type.equals("String")) {
-			value = ws[1].replaceAll("\"", "");
-			v.setValue(value);
+			v.setValue(ws[1].replaceAll("\"", ""));
 		}else if(type.equals("int")){
 			v.setValue(Integer.parseInt(value));
 		}else if(type.equals("long")){
@@ -79,7 +80,7 @@ public class VarSentence extends Sentence {
 		//仅输出value
 		v.setOut(value);
 		
-		//加入到SentenceMgr
+		//加入到SentenceMgr的Var集合
 		SentenceMgr.setVar(v.getName(), v);
 		
 		return true;

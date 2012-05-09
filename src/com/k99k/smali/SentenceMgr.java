@@ -15,11 +15,13 @@ import com.k99k.tools.StringUtil;
  */
 public class SentenceMgr {
 
-	public SentenceMgr(ArrayList<String> srcLines) {
+	public SentenceMgr(ArrayList<String> srcLines,Methods meth) {
 		this.srcLines = srcLines;
 		outLines = new ArrayList<String>();
 		vars = new HashMap<String, Var>();
 		sentenceList = new ArrayList<Sentence>();
+		this.meth = meth;
+		this.setP0();
 	}
 	
 	/**
@@ -46,6 +48,11 @@ public class SentenceMgr {
 	public final Sentence createSentence(String key,String line){
 		return sentenceMap.get(key).newOne(this, line);
 	}
+	
+	/**
+	 * 方法参数集
+	 */
+	private Methods meth;
 	
 	
 	/**
@@ -94,8 +101,44 @@ public class SentenceMgr {
 	 * @param key
 	 * @return
 	 */
-	public static final Object getVar(String key){
+	public final static Var getVar(String key){
 		return vars.get(key);
+	}
+	
+	/**
+	 * 移除某个已处理的Sentence
+	 * @param sen
+	 */
+	public final void removeSentence(Sentence sen){
+		this.sentenceList.remove(sen);
+	}
+	/**
+	 * 获取p0的Var，根据是否静态方法有所不同
+	 * @param sen Sentence
+	 * @param key 用于设置Var的key
+	 * @return Var
+	 */
+	public final void setP0(){
+		if (this.isStatic()) {
+			String vs = this.getMeth().getMethodProp(0);
+			String[] ws = vs.split(" ");
+			Var v = new Var(null);
+			v.setClassName(ws[0]);
+			v.setKey("");
+			v.setName(ws[1]);
+			v.setValue(ws[1]);
+			v.setOut(ws[1]);
+			vars.put("p0", v);
+		}else{
+			Var v = new Var(null);
+			String c = this.getMeth().getClassName();
+			v.setClassName(c);
+			v.setKey("");
+			v.setName("this");
+			v.setOut("this");
+			v.setValue("this");
+			vars.put("p0", v);
+		}
 	}
 	
 	/**
@@ -188,6 +231,14 @@ public class SentenceMgr {
 		}
 		return -1;
 	}
+	
+	/**
+	 * @return Methods
+	 */
+	public final Methods getMeth(){
+		return this.meth;
+	}
+	
 	/**
 	 * 增加或减少缩进
 	 * @param add
