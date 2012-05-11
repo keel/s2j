@@ -130,7 +130,7 @@ public class InvokeSentence extends Sentence {
 			Sentence ns = this.mgr.findLastSentence("new");
 			if (ns != null) {
 				ns.getVar().setOut(this.out.toString());
-				//this.type = Sentence.TYPE_NOT_LINE;
+				this.type = Sentence.TYPE_NOT_LINE;
 			}
 		}
 		

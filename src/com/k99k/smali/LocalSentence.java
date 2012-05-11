@@ -44,7 +44,7 @@ public class LocalSentence extends Sentence {
 		
 		String val = "";
 		Sentence s1 = this.mgr.getLastSentence();
-		if (s1 != null) {
+		if (s1 != null && s1.getOut().length()>0) {
 			s1.over();
 			this.mgr.removeSentence(s1);
 			val = s1.getOut();
