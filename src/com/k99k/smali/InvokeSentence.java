@@ -22,6 +22,8 @@ public class InvokeSentence extends Sentence {
 
 	private Var var = new Var(this);
 	
+	private int type = Sentence.TYPE_LINE;
+	
 	
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Sentence#exec()
@@ -66,10 +68,11 @@ public class InvokeSentence extends Sentence {
 		int p3 = opStr.indexOf(")");
 		String propStr = (p3-p2 == 1)?"":opStr.substring(p2,p3+1);
 		String re = Tool.parseObject(opStr.substring(p3+1));
-		
+		boolean isInit = methName.equals("<init>");
+		boolean isConstr = this.mgr.getMeth().isConstructor();
 		//输出构造方法
-		if (methName.equals("<init>")) {
-			if (this.mgr.getMeth().isConstructor()) {
+		if (isInit) {
+			if (isConstr) {
 				//构造方法
 				String str = "super";
 				if(this.mgr.getMeth().getClassName().equals(src.substring(src.lastIndexOf('.')+1))){
@@ -89,7 +92,19 @@ public class InvokeSentence extends Sentence {
 		}
 		//输出一般方法
 		else{
-			this.out.append(SentenceMgr.getVar(rang[0]).getOut()).append(".").append(methName).append("(");
+			String val = "";
+			Sentence s1 = SentenceMgr.getVar(rang[0]).getSen();
+			if (s1 != null && s1.getJavaLineNum() == this.getJavaLineNum()) {
+				s1.over();
+				val = s1.getOut();
+				this.mgr.removeSentence(s1);
+			}else{
+				val = SentenceMgr.getVar(rang[0]).getOut();
+				if (val.equals("this") && key.indexOf("super")>0) {
+					val = "super";
+				}
+			}
+			this.out.append(val).append(".").append(methName).append("(");
 		}
 		//输出参数并结束
 		if (!propStr.equals("")) {
@@ -108,7 +123,17 @@ public class InvokeSentence extends Sentence {
 		this.var.setKey(key);
 		this.var.setOut(this.out.toString());
 		//this.var.setValue(re);
+		
+		
 		//处理引用的相关Sentence
+		if (isInit && (!isConstr)) {
+			Sentence ns = this.mgr.findLastSentence("new");
+			if (ns != null) {
+				ns.getVar().setOut(this.out.toString());
+				//this.type = Sentence.TYPE_NOT_LINE;
+			}
+		}
+		
 		if (!propStr.equals("")) {
 			for (int i = 1; i < rang.length; i++) {
 				Sentence s = SentenceMgr.getVar(rang[i]).getSen();
@@ -149,7 +174,7 @@ public class InvokeSentence extends Sentence {
 	 */
 	@Override
 	public int getType() {
-		return Sentence.TYPE_LINE;
+		return this.type;
 	}
 
 	/* (non-Javadoc)

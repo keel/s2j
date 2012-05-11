@@ -76,7 +76,7 @@ public class Methods extends Context {
 				String s = it.next();
 				this.out.append(s).append(StaticUtil.NEWLINE);
 			}
-			this.out.append(StaticUtil.NEWLINE).append("}").append(StaticUtil.NEWLINE);
+			this.out.append("}").append(StaticUtil.NEWLINE);
 			return true;
 		}else{
 			this.err = "//ERR: Method,some prop missed. props:"+this.returnStr+","+this.name;

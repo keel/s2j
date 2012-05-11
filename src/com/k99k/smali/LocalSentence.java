@@ -41,9 +41,17 @@ public class LocalSentence extends Sentence {
 		v.setKey(KEY);
 		v.setName(ws[1]);
 		v.setOut(name);
-		Var v1 = SentenceMgr.getVar(ws[1]);
-		//String val = (v1.getValue() == null) ? v1.getOut() : v1.getValue().toString();
-		this.out.append(obj).append(" ").append(name).append(" = ").append(v1.getOut());
+		
+		String val = "";
+		Sentence s1 = this.mgr.getLastSentence();
+		if (s1 != null) {
+			s1.over();
+			this.mgr.removeSentence(s1);
+			val = s1.getOut();
+		}else{
+			val = SentenceMgr.getVar(ws[1]).getOut();
+		}
+		this.out.append(obj).append(" ").append(name).append(" = ").append(val);
 		
 		SentenceMgr.setVar(v);
 		

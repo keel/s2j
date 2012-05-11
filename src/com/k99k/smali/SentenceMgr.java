@@ -271,7 +271,29 @@ public class SentenceMgr {
 	 */
 	public final Sentence getLastSentence(){
 		int len = this.sentenceList.size();
+		if (len<1) {
+			return null;
+		}
 		return this.sentenceList.get(len -1);
+	}
+	
+	/**
+	 * 查找上一个匹配 name的Sentence
+	 * @param senName
+	 * @return
+	 */
+	public final Sentence findLastSentence(String senName){
+		int len = this.sentenceList.size();
+		if (len<1) {
+			return null;
+		}
+		for (int i = len-1; i >= 0; i--) {
+			Sentence s = this.sentenceList.get(i);
+			if (s.getName().equals(senName)) {
+				return s;
+			}
+		}
+		return null;
 	}
 
 	/**

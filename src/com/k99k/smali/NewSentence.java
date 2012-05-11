@@ -16,6 +16,8 @@ public class NewSentence extends Sentence {
 	public NewSentence(SentenceMgr mgr, String line) {
 		super(mgr, line);
 	}
+	
+	private Var v = new Var(this);
 
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Sentence#exec()
@@ -38,7 +40,6 @@ public class NewSentence extends Sentence {
 			return false;
 		}
 		
-		Var v = new Var(this);
 		if (ws[0].equals("new-instance")) {
 			String obj = Tool.parseObject(ws[2]);
 			v.setClassName(obj);
@@ -57,6 +58,18 @@ public class NewSentence extends Sentence {
 		this.over();
 		return true;
 	}
+	
+	
+
+	/* (non-Javadoc)
+	 * @see com.k99k.smali.Sentence#getVar()
+	 */
+	@Override
+	public Var getVar() {
+		return this.v;
+	}
+
+
 
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Sentence#newOne(com.k99k.smali.SentenceMgr, java.lang.String)
@@ -71,7 +84,7 @@ public class NewSentence extends Sentence {
 	 */
 	@Override
 	public int getType() {
-		return Sentence.TYPE_NOT_LINE;
+		return Sentence.TYPE_LINE;
 	}
 
 	/* (non-Javadoc)
