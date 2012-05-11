@@ -50,7 +50,8 @@ public class VarSentence extends Sentence {
 		
 		String[] ws = this.line.split(" ");
 		if (ws.length<3) {
-			this.out.append("//ERR: exec var error. line:").append(this.line);
+			this.out.append("exec var error. line:").append(this.line);
+			this.mgr.err(this);
 			System.err.println(this.out);
 			return false;
 		}
@@ -64,15 +65,15 @@ public class VarSentence extends Sentence {
 		v.setName(vName);
 		String value = ws[2];
 		if (type.equals("String")) {
-			v.setValue(ws[1].replaceAll("\"", ""));
+			v.setValue(value.replaceAll("\"", ""));
 		}else if(type.equals("int")){
-			v.setValue(Integer.parseInt(value));
+			v.setValue(Integer.decode(value));
 		}else if(type.equals("long")){
-			v.setValue(Long.parseLong(value));
+			v.setValue(Long.decode(value));
 		}else if(type.equals("float")){
-			v.setValue(Float.parseFloat(value));
+			v.setValue(Float.valueOf(value));
 		}else if(type.equals("double")){
-			v.setValue(Double.parseDouble(value));
+			v.setValue(Double.valueOf(value));
 		}else if(type.equals("Class")){
 			//TODO 无法确定Class值 ,暂存String
 			v.setValue(value);
@@ -81,8 +82,8 @@ public class VarSentence extends Sentence {
 		v.setOut(value);
 		
 		//加入到SentenceMgr的Var集合
-		SentenceMgr.setVar(v.getName(), v);
-		
+		SentenceMgr.setVar(v);
+		this.over();
 		return true;
 	}
 
@@ -92,7 +93,7 @@ public class VarSentence extends Sentence {
 	 */
 	@Override
 	public Sentence newOne(SentenceMgr mgr,String line) {
-		Sentence s = mgr.getVarSen();
+		Sentence s = SentenceMgr.getVarSen();
 		s.setLine(line);
 		return s;
 	}

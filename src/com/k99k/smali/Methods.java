@@ -28,7 +28,7 @@ public class Methods extends Context {
 	}
 	
 	private ArrayList<String> mLines = new ArrayList<String>();
-//	private boolean isConstructor = false;
+	private boolean isConstructor = false;
 	private boolean isStaticConstructor = false;
 	private String scope = "";
 	private String name;
@@ -56,8 +56,12 @@ public class Methods extends Context {
 	}
 	
 	
-	public String getMethodProp(int n){
-		return this.props.get(n);
+	/**
+	 * 获取方法参数集
+	 * @return
+	 */
+	public ArrayList<String> getMethProps(){
+		return this.props;
 	}
 	
 	/* (non-Javadoc)
@@ -143,7 +147,7 @@ public class Methods extends Context {
 		}
 		// 构造方法
 		else if (l.indexOf(StaticUtil.SCOPE_CONSTRUCTOR) > -1) {
-//			this.isConstructor = true;
+			this.isConstructor = true;
 			this.name = this.s2j.className;
 			this.returnStr = "";
 			l = l.replaceAll(" " + StaticUtil.SCOPE_CONSTRUCTOR, "");
@@ -163,7 +167,7 @@ public class Methods extends Context {
 			}
 		}
 		// 处理参数
-		this.props = getMethodProps(l);
+		this.props = parseMethodProps(l);
 		// scope
 		StringBuilder sb = new StringBuilder();
 		if (StringUtil.isStringWithLen(this.scope, 1)) {
@@ -224,11 +228,11 @@ public class Methods extends Context {
 	}
 	
 	/**
-	 * 获取行中的参数集
-	 * @param line
+	 * 获取行中的参数集，注意line包括小括号在内
+	 * @param line 包括小括号在内
 	 * @return ArrayList props
 	 */
-	public static final ArrayList<String> getMethodProps(String line){
+	public static final ArrayList<String> parseMethodProps(String line){
 		ArrayList<String> props = new ArrayList<String>();
 		// 处理参数
 		int a = line.indexOf("(") + 1;
@@ -263,6 +267,13 @@ public class Methods extends Context {
 			
 		}
 		return props;
+	}
+
+	/**
+	 * @return the isConstructor
+	 */
+	public final boolean isConstructor() {
+		return isConstructor;
 	}
 
 	@Override

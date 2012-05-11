@@ -3,6 +3,8 @@
  */
 package com.k99k.smali;
 
+import java.util.HashMap;
+
 /**
  * 静态辅助类
  * @author keel
@@ -10,15 +12,23 @@ package com.k99k.smali;
  */
 public class StaticUtil {
 
-	/**
-	 * 
-	 */
-	public StaticUtil() {
-	}
 	
 	public static final String NEWLINE = "\r\n";
 	public static final String COMM = "#";
 	public static final String TAB = "	";
+	
+	public static final HashMap<String,String> basicType = new HashMap<String, String>();
+	
+	static{
+		basicType.put("int", "Integer");
+		basicType.put("boolean", "Boolean");
+		basicType.put("long", "Long");
+		basicType.put("byte", "Byte");
+		basicType.put("float", "Float");
+		basicType.put("double", "Double");
+		basicType.put("void", "void");
+		//basicType.put("java.lang.String", "java.lang.String");
+	}
 	
 	/**
 	 * 缩进,最大10个,如:TABS[2]表示2个缩进

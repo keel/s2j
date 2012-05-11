@@ -28,7 +28,7 @@ public class Var {
 	private String className;
 	
 	/**
-	 * 真实值
+	 * 真实值,一般在VarSentence中使用
 	 */
 	private Object value;
 	
@@ -47,6 +47,22 @@ public class Var {
 	 * 创建本Var的Sentence
 	 */
 	private Sentence sen;
+	
+	
+
+	/**
+	 * 复制一个Var
+	 * @return Var
+	 */
+	public Var cloneVar(){
+		Var v = new Var(this.sen);
+		v.setClassName(this.className);
+		v.setKey(this.key);
+		v.setName(this.name);
+		v.setOut(this.out);
+		v.setValue(this.value);
+		return v;
+	}
 
 	/**
 	 * @return the name

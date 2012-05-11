@@ -4,17 +4,17 @@
 package com.k99k.smali;
 
 /**
- * 注释行
+ * 错误处理Sentence
  * @author keel
  *
  */
-public class CommSentence extends Sentence {
+public class ErrSentence extends Sentence {
 
 	/**
 	 * @param mgr
 	 * @param line
 	 */
-	public CommSentence(SentenceMgr mgr, String line) {
+	public ErrSentence(SentenceMgr mgr, String line) {
 		super(mgr, line);
 	}
 
@@ -23,7 +23,7 @@ public class CommSentence extends Sentence {
 	 */
 	@Override
 	public boolean exec() {
-		this.out.append("// ").append(this.line.substring(1));
+		this.out.append("//ERR: ").append(this.line);
 		this.over();
 		return true;
 	}
@@ -33,7 +33,7 @@ public class CommSentence extends Sentence {
 	 */
 	@Override
 	public Sentence newOne(SentenceMgr mgr, String line) {
-		return new CommSentence(mgr, line);
+		return new ErrSentence(mgr, line);
 	}
 
 	/* (non-Javadoc)
@@ -49,7 +49,9 @@ public class CommSentence extends Sentence {
 	 */
 	@Override
 	public String getName() {
-		return "#";
+		return "error";
 	}
+	
+	public static final String KEY = "ERR";
 
 }

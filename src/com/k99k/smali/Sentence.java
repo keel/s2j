@@ -21,19 +21,19 @@ public abstract class Sentence {
 	 * 未处理
 	 */
 	public static final int STATE_INIT = 0;
-	/**
-	 * 处理完成
-	 */
-	public static final int STATE_DONE =1;
-	/**
-	 * 结束
-	 */
-	public static final int STATE_OVER =2;
 	
 	/**
 	 * 处理未完成
 	 */
-	public static final int STATE_DOING =3;
+	public static final int STATE_DOING =1;
+	/**
+	 * 处理完成
+	 */
+	public static final int STATE_DONE =2;
+	/**
+	 * 结束
+	 */
+	public static final int STATE_OVER =3;
 	
 	/**
 	 * 未知类型
@@ -132,26 +132,32 @@ public abstract class Sentence {
 		this.linkedSentenceList.add(sen);
 	}
 	
-
+	/**
+	 * 对于invoke等类型的Sentence，会生成一个结果Var,由此方法返回
+	 * @return Var
+	 */
+	public Var getVar(){
+		return null;
+	}
 	
 	/**
 	 * 处理一行中的注释,注意这里与Context中的处理不同
 	 * @param l
 	 * @return
 	 */
-	public final String doComm(String l){
+	public final void doComm(String l){
 		int c = l.indexOf(StaticUtil.COMM);
 		if (c == -1) {
-			return l;
+			return;
 		}
 		if (c == 0) {
-			this.out.append(" /* ").append(l).append(" */ ").toString();
-			return "";
+			this.out.append(" /* ").append(l).append(" */ ").append(StaticUtil.NEWLINE);
+			return;
 		}
 		if (c>0 && l.length()>c+1) {
-			this.out.append(" /* ").append(l.substring(c+1)).append(" */ ").toString();
+			this.out.append(" /* ").append(l.substring(c+1)).append(" */ ");
+			this.line = l.substring(0,c).trim();
 		}
-		return l.substring(0,c);
 	}
 
 

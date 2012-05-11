@@ -30,7 +30,8 @@ public class GetSentence extends Sentence {
 		this.line = this.line.replaceAll(",", "");
 		String[] ws = this.line.split(" ");
 		if (ws.length<4) {
-			this.out.append("//ERR: exec getSentence error. line:").append(this.line);
+			this.out.append("exec getSentence error. line:").append(this.line);
+			this.mgr.err(this);
 			System.err.println(this.out);
 			return false;
 		}
@@ -38,32 +39,51 @@ public class GetSentence extends Sentence {
 		//第一个表示其类型:array,instance,static
 		char type = key.charAt(0);
 		Var v = new Var(this);
-		v.setName(ws[1]);
 		v.setKey(key);
 		if (type == 'i') {
 			Var v1 = SentenceMgr.getVar(ws[2]);
-			Sentence s = v1.getSen();
-			if (s != null) {
-				s.over();
-				//TODO 
-				this.mgr.removeSentence(s);
-			}
 			int p = ws[3].indexOf(':');
 			String name = ws[3].substring(ws[3].indexOf("->")+2,p);
-			v.setName(name);
+			v.setName(ws[1]);
 			String obj = Tool.parseObject(ws[3].substring(p+1));
 			v.setClassName(obj);
 			v.setOut(v1.getOut()+"."+name);
+			
+			//对于v1引用的语句，如果不成行则可去除
+			Sentence s = v1.getSen();
+			if (s != null && s.getState()>=Sentence.STATE_DONE && s.getType() == Sentence.TYPE_NOT_LINE) {
+				s.over();
+				//TODO 暂时先使用removeSentence
+				this.mgr.removeSentence(s);
+			}
 		}else if(type == 's'){
-			
+			int p = ws[2].indexOf(':');
+			int p2 = ws[2].indexOf('>');
+			String name = ws[2].substring(p2+1,p);
+			v.setName(ws[1]);
+			String obj = Tool.parseObject(ws[2].substring(p+1));
+			v.setClassName(obj);
+			String v1 = Tool.parseObject(ws[2].substring(0,p2-1));
+			v.setOut(v1+"."+name);
 		}else if(type == 'a'){
-			
+			Var v1 = SentenceMgr.getVar(ws[2]);
+			Var v2 = SentenceMgr.getVar(ws[3]);
+			String name = ws[1];
+			v.setName(name);
+			v.setClassName(v1.getClassName());
+			v.setOut(v1.getOut()+"["+v2.getOut()+"]");
+			//TODO 对于数组中的索引对象,如果是VarSentence,暂时先不removeSentence,仅标为over,可能会有其他地方用到
+			//其他情况不进行处理
+			Sentence s = v2.getSen();
+			if (s != null && s.getName().equals("var")) {
+				s.over();
+			}
 		}
-		
-		
-		
+		//不处理value
+		//v.setValue(value);
+		SentenceMgr.setVar(v);
 		this.done();
-		return false;
+		return true;
 	}
 
 	/* (non-Javadoc)
