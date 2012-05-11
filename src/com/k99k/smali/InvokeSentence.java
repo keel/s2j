@@ -94,22 +94,29 @@ public class InvokeSentence extends Sentence {
 		else{
 			String val = "";
 			Sentence s1 = SentenceMgr.getVar(rang[0]).getSen();
-			if (s1 != null && s1.getJavaLineNum() == this.getJavaLineNum()) {
+			
+			
+//FIXME 对于前一个语句的处理依据，应该结合状态考虑
+			
+			if (s1 != null && s1.getJavaLineNum() == this.getJavaLineNum() && s1.getOut().length()>0) {
 				s1.over();
 				val = s1.getOut();
-				this.mgr.removeSentence(s1);
 			}else{
 				val = SentenceMgr.getVar(rang[0]).getOut();
 				if (val.equals("this") && key.indexOf("super")>0) {
 					val = "super";
 				}
 			}
+			if (s1 != null && !s1.getName().equals("local")) {
+				this.mgr.removeSentence(s1);
+			}
 			this.out.append(val).append(".").append(methName).append("(");
 		}
 		//输出参数并结束
 		if (!propStr.equals("")) {
 			StringBuilder sb2 = new StringBuilder();
-			for (int i = 1; i < rang.length; i++) {
+			int start = (key.indexOf("static") >= 0) ? 0 : 1;
+			for (int i = start; i < rang.length; i++) {
 				sb2.append(",");
 				Var v2 = SentenceMgr.getVar(rang[i]);
 				sb2.append(v2.getOut());

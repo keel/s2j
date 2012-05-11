@@ -70,7 +70,7 @@ public class Methods extends Context {
 	@Override
 	public boolean out() {
 		if (StringUtil.isStringWithLen(this.name, 1) ) {
-			
+			this.out.append(StaticUtil.NEWLINE);
 			//最后全部输出
 			for (Iterator<String> it = this.outLines.iterator(); it.hasNext();) {
 				String s = it.next();

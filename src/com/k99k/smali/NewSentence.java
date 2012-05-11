@@ -24,10 +24,7 @@ public class NewSentence extends Sentence {
 	 */
 	@Override
 	public boolean exec() {
-		//String obj = this.line.substring(beginIndex)
-		//FIXME new sentence
-		//只需要注册好Var就行，out由Invoke实现
-		
+		//FIXME filled-new-array 等 未完成
 		
 		this.doComm(this.line);
 		this.line = this.line.replaceAll(",", "");
@@ -39,21 +36,20 @@ public class NewSentence extends Sentence {
 			System.err.println(this.out);
 			return false;
 		}
-		
+		String obj = "";
 		if (ws[0].equals("new-instance")) {
-			String obj = Tool.parseObject(ws[2]);
+			obj = Tool.parseObject(ws[2]);
 			v.setClassName(obj);
 			v.setName(ws[1]);
 			v.setKey("new-instance");
 			v.setOut(obj);
 		}else if(ws[0].equals("new-array")){
-			String obj = Tool.parseObject(ws[3]);
+			obj = Tool.parseObject(ws[3]);
 			v.setClassName(obj);
 			v.setName(ws[1]);
 			v.setKey("new-array");
 			v.setOut(obj);
 		}
-		
 		SentenceMgr.setVar(v);
 		this.over();
 		return true;

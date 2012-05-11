@@ -47,8 +47,9 @@ public class VarSentence extends Sentence {
 	public boolean exec() {
 		//解析
 		this.doComm(this.line);
-		
-		String[] ws = this.line.split(" ");
+		//this.line = this.line.replaceAll(",", ""); //String 可能包含空格
+		this.line = this.line.replaceFirst(" ", ",");
+		String[] ws = this.line.split(",");
 		if (ws.length<3) {
 			this.out.append("exec var error. line:").append(this.line);
 			this.mgr.err(this);
@@ -61,9 +62,9 @@ public class VarSentence extends Sentence {
 		v.setKey(ws[0]);
 		String type = varMap.get(ws[0]);
 		v.setClassName(type);
-		String vName = ws[1].replaceAll(",", "");
+		String vName = ws[1];
 		v.setName(vName);
-		String value = ws[2];
+		String value = ws[2].trim();
 		if (type.equals("String")) {
 			v.setValue(value.replaceAll("\"", ""));
 		}else if(type.equals("int")){
