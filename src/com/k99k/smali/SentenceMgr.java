@@ -25,7 +25,7 @@ public class SentenceMgr {
 	}
 	
 	/**
-	 * sentenceMap
+	 * sentenceMap,用于定位不同的Sentence
 	 */
 	private static final HashMap<String,Sentence> sentenceMap = new HashMap<String, Sentence>();
 	
@@ -130,7 +130,7 @@ public class SentenceMgr {
 	/**
 	 * 变量
 	 */
-	private static HashMap<String,Var> vars;
+	private HashMap<String,Var> vars;
 	
 	/**
 	 * 匹配上的Sentence集合,按顺序排
@@ -140,7 +140,7 @@ public class SentenceMgr {
 	/**
 	 * 结构语句中的标记集合,用于快递定位指定的tag
 	 */
-	private static HashMap<String,Sentence> tags;
+	private HashMap<String,Sentence> tags;
 	
 	
 	/**
@@ -284,11 +284,11 @@ public class SentenceMgr {
 //		return this.sentenceList.get(index);
 //	}
 	
-	public static final void addTag(TagSentence tsen){
+	public final void addTag(TagSentence tsen){
 		tags.put(tsen.getTag(), tsen);
 	}
 	
-	public static final TagSentence getTag(String tag){
+	public final TagSentence getTag(String tag){
 		return (TagSentence) tags.get(tag);
 	}
 	
@@ -348,7 +348,7 @@ public class SentenceMgr {
 	 * @param key
 	 * @return
 	 */
-	public final static Var getVar(String key){
+	public final Var getVar(String key){
 		return vars.get(key);
 	}
 	
@@ -402,7 +402,7 @@ public class SentenceMgr {
 	 * @param key
 	 * @param line
 	 */
-	public static final void setVar(Var var){
+	public final void setVar(Var var){
 		vars.put(var.getName(), var);
 	}
 	

@@ -52,7 +52,7 @@ public class NewSentence extends Sentence {
 			v.setKey("new-array");
 			v.setOut(obj);
 		}
-		SentenceMgr.setVar(v);
+		this.mgr.setVar(v);
 		this.over();
 		return true;
 	}

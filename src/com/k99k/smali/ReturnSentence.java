@@ -27,7 +27,7 @@ public class ReturnSentence extends Sentence {
 		if (ws[0].equals("return-void")) {
 			this.out.append("return");
 		}else if(ws.length == 2){
-			Var v = SentenceMgr.getVar(ws[1]);
+			Var v = this.mgr.getVar(ws[1]);
 			if (v.getSen() != null) {
 				v.getSen().over();
 			}

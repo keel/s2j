@@ -3,9 +3,6 @@
  */
 package com.k99k.smali;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-
 /**
  * @author keel
  *
@@ -67,7 +64,7 @@ public class InvokeSentence extends Sentence {
 		String methName = opStr.substring(p1+2,p2);
 		int p3 = opStr.indexOf(")");
 		String propStr = (p3-p2 == 1)?"":opStr.substring(p2,p3+1);
-		String re = Tool.parseObject(opStr.substring(p3+1));
+		//String re = Tool.parseObject(opStr.substring(p3+1));
 		boolean isInit = methName.equals("<init>");
 		boolean isConstr = this.mgr.getMeth().isConstructor();
 		//输出构造方法
@@ -79,7 +76,7 @@ public class InvokeSentence extends Sentence {
 					str = "this";
 				}
 				this.out.append(str).append("(");
-				//this.out.append(SentenceMgr.getVar(rang[0]).getOut()).append(".");
+				//this.out.append(this.mgr.getVar(rang[0]).getOut()).append(".");
 			}else{
 				//new 方法的构造方法
 				this.out.append("new ").append(src).append("(");
@@ -93,7 +90,7 @@ public class InvokeSentence extends Sentence {
 		//输出一般方法
 		else{
 			String val = "";
-			Sentence s1 = SentenceMgr.getVar(rang[0]).getSen();
+			Sentence s1 = this.mgr.getVar(rang[0]).getSen();
 			
 			
 //FIXME 对于前一个语句的处理依据，应该结合状态考虑
@@ -102,7 +99,7 @@ public class InvokeSentence extends Sentence {
 				s1.over();
 				val = s1.getOut();
 			}else{
-				val = SentenceMgr.getVar(rang[0]).getOut();
+				val = this.mgr.getVar(rang[0]).getOut();
 				if (val.equals("this") && key.indexOf("super")>0) {
 					val = "super";
 				}
@@ -118,7 +115,7 @@ public class InvokeSentence extends Sentence {
 			int start = (key.indexOf("static") >= 0) ? 0 : 1;
 			for (int i = start; i < rang.length; i++) {
 				sb2.append(",");
-				Var v2 = SentenceMgr.getVar(rang[i]);
+				Var v2 = this.mgr.getVar(rang[i]);
 				sb2.append(v2.getOut());
 			}
 			sb2.deleteCharAt(0);
@@ -143,7 +140,7 @@ public class InvokeSentence extends Sentence {
 		
 		if (!propStr.equals("")) {
 			for (int i = 1; i < rang.length; i++) {
-				Sentence s = SentenceMgr.getVar(rang[i]).getSen();
+				Sentence s = this.mgr.getVar(rang[i]).getSen();
 				if (s != null) {
 					if (s.getType() == Sentence.TYPE_NOT_LINE) {
 						s.over();

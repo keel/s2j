@@ -49,11 +49,11 @@ public class LocalSentence extends Sentence {
 			this.mgr.removeSentence(s1);
 			val = s1.getOut();
 		}else{
-			val = SentenceMgr.getVar(ws[1]).getOut();
+			val = this.mgr.getVar(ws[1]).getOut();
 		}
 		this.out.append(obj).append(" ").append(name).append(" = ").append(val);
 		
-		SentenceMgr.setVar(v);
+		this.mgr.setVar(v);
 		
 		this.over();
 		return true;

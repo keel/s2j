@@ -46,7 +46,7 @@ public class MoveSentence extends Sentence {
 			Var v = last.getVar();
 			String name = ws[1];
 			v.setName(name);
-			SentenceMgr.setVar(v);
+			this.mgr.setVar(v);
 		}else if(key.equals("move-exception")){
 			//FIXME 需要配合exception操作,可考虑将此key加入到处理exceiption的Sentence
 			
@@ -54,9 +54,9 @@ public class MoveSentence extends Sentence {
 			
 		}else{
 			//TODO move变量,判断是否需要clone
-			Var v1 =  SentenceMgr.getVar(ws[2]).cloneVar();
+			Var v1 =  this.mgr.getVar(ws[2]).cloneVar();
 			v1.setName(ws[1]);
-			SentenceMgr.setVar(v1);
+			this.mgr.setVar(v1);
 		}
 		this.over();
 		return true;

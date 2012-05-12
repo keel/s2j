@@ -33,6 +33,7 @@ public class IfSentence extends Sentence {
 		this.line= this.line.replaceAll(",", "");
 		String[] ws = this.line.split(" ");
 		String key = ws[0];
+		//先生成条件行
 		if (key.indexOf('z') >= 0) {
 			//与0比较
 			
@@ -44,6 +45,8 @@ public class IfSentence extends Sentence {
 			
 			
 		}
+		
+		
 		//缩进和cNum增加
 		this.mgr.addLevel(1);
 		this.mgr.addCNum(0);

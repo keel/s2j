@@ -147,6 +147,15 @@ public class Header extends Context {
 		}
 	}
 	
+	
+	
+	/**
+	 * @return the source
+	 */
+	public final String getSource() {
+		return source;
+	}
+
 	@Override
 	public String getKey() {
 		return StaticUtil.TYPE_CLASS;

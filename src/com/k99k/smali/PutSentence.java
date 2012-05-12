@@ -39,8 +39,8 @@ public class PutSentence extends Sentence {
 		Var v = new Var(this);
 		v.setKey(key);
 		if (type == 'i') {
-			Var v1 = SentenceMgr.getVar(ws[2]);
-			Var v2 = SentenceMgr.getVar(ws[1]);
+			Var v1 = this.mgr.getVar(ws[2]);
+			Var v2 = this.mgr.getVar(ws[1]);
 			int p = ws[3].indexOf(':');
 			String name = ws[3].substring(ws[3].indexOf("->")+2,p);
 			v.setName(ws[1]);
@@ -57,7 +57,7 @@ public class PutSentence extends Sentence {
 				this.mgr.removeSentence(s);
 			}
 		}else if(type == 's'){
-			Var v2 = SentenceMgr.getVar(ws[1]);
+			Var v2 = this.mgr.getVar(ws[1]);
 			int p = ws[2].indexOf(':');
 			int p2 = ws[2].indexOf('>');
 			String name = ws[2].substring(p2+1,p);
@@ -70,9 +70,9 @@ public class PutSentence extends Sentence {
 			this.out.append(v.getOut()).append(" = ").append(v2.getOut());
 			
 		}else if(type == 'a'){
-			Var v1 = SentenceMgr.getVar(ws[2]);
-			Var v2 = SentenceMgr.getVar(ws[3]);
-			Var v3 = SentenceMgr.getVar(ws[1]);
+			Var v1 = this.mgr.getVar(ws[2]);
+			Var v2 = this.mgr.getVar(ws[3]);
+			Var v3 = this.mgr.getVar(ws[1]);
 			String name = ws[1];
 			v.setName(name);
 			v.setClassName(v1.getClassName());
@@ -90,7 +90,7 @@ public class PutSentence extends Sentence {
 		
 		//不处理value
 		//v.setValue(value);
-		SentenceMgr.setVar(v);
+		this.mgr.setVar(v);
 		this.over();
 		
 		return true;

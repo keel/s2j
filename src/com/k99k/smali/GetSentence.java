@@ -41,7 +41,7 @@ public class GetSentence extends Sentence {
 		Var v = new Var(this);
 		v.setKey(key);
 		if (type == 'i') {
-			Var v1 = SentenceMgr.getVar(ws[2]);
+			Var v1 = this.mgr.getVar(ws[2]);
 			int p = ws[3].indexOf(':');
 			String name = ws[3].substring(ws[3].indexOf("->")+2,p);
 			v.setName(ws[1]);
@@ -66,8 +66,8 @@ public class GetSentence extends Sentence {
 			String v1 = Tool.parseObject(ws[2].substring(0,p2-1));
 			v.setOut(v1+"."+name);
 		}else if(type == 'a'){
-			Var v1 = SentenceMgr.getVar(ws[2]);
-			Var v2 = SentenceMgr.getVar(ws[3]);
+			Var v1 = this.mgr.getVar(ws[2]);
+			Var v2 = this.mgr.getVar(ws[3]);
 			String name = ws[1];
 			v.setName(name);
 			v.setClassName(v1.getClassName());
@@ -81,7 +81,7 @@ public class GetSentence extends Sentence {
 		}
 		//不处理value
 		//v.setValue(value);
-		SentenceMgr.setVar(v);
+		this.mgr.setVar(v);
 		this.done();
 		return true;
 	}

@@ -91,7 +91,7 @@ public class VarSentence extends Sentence {
 		v.setOut(value);
 		
 		//加入到SentenceMgr的Var集合
-		SentenceMgr.setVar(v);
+		this.mgr.setVar(v);
 		this.over();
 		return true;
 	}
