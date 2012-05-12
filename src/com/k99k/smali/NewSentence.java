@@ -24,6 +24,8 @@ public class NewSentence extends Sentence {
 	 */
 	@Override
 	public boolean exec() {
+		//自身不设置输出，仅生成一个Var 
+		
 		//FIXME filled-new-array 等 未完成
 		
 		this.doComm(this.line);

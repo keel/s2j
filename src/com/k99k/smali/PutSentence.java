@@ -22,8 +22,78 @@ public class PutSentence extends Sentence {
 	 */
 	@Override
 	public boolean exec() {
-		// TODO Auto-generated method stub
-		return false;
+		//解析
+		this.doComm(this.line);
+		//去除,号
+		this.line = this.line.replaceAll(",", "");
+		String[] ws = this.line.split(" ");
+		if (ws.length<4) {
+			this.out.append("exec putSentence error. line:").append(this.line);
+			this.mgr.err(this);
+			System.err.println(this.out);
+			return false;
+		}
+		String key = ws[0];
+		//第一个表示其类型:array,instance,static
+		char type = key.charAt(0);
+		Var v = new Var(this);
+		v.setKey(key);
+		if (type == 'i') {
+			Var v1 = SentenceMgr.getVar(ws[2]);
+			Var v2 = SentenceMgr.getVar(ws[1]);
+			int p = ws[3].indexOf(':');
+			String name = ws[3].substring(ws[3].indexOf("->")+2,p);
+			v.setName(ws[1]);
+			String obj = Tool.parseObject(ws[3].substring(p+1));
+			v.setClassName(obj);
+			v.setOut(v1.getOut()+"."+name);
+			
+			this.out.append(v.getOut()).append(" = ").append(v2.getOut());
+			
+			//对于v1引用的语句，如果不成行则可去除
+			Sentence s = v1.getSen();
+			if (s != null && s.getState()>=Sentence.STATE_DONE && s.getType() == Sentence.TYPE_NOT_LINE) {
+				s.over();
+				this.mgr.removeSentence(s);
+			}
+		}else if(type == 's'){
+			Var v2 = SentenceMgr.getVar(ws[1]);
+			int p = ws[2].indexOf(':');
+			int p2 = ws[2].indexOf('>');
+			String name = ws[2].substring(p2+1,p);
+			v.setName(ws[1]);
+			String obj = Tool.parseObject(ws[2].substring(p+1));
+			v.setClassName(obj);
+			String v1 = Tool.parseObject(ws[2].substring(0,p2-1));
+			v.setOut(v1+"."+name);
+			
+			this.out.append(v.getOut()).append(" = ").append(v2.getOut());
+			
+		}else if(type == 'a'){
+			Var v1 = SentenceMgr.getVar(ws[2]);
+			Var v2 = SentenceMgr.getVar(ws[3]);
+			Var v3 = SentenceMgr.getVar(ws[1]);
+			String name = ws[1];
+			v.setName(name);
+			v.setClassName(v1.getClassName());
+			v.setOut(v1.getOut()+"["+v2.getOut()+"]");
+			//TODO 对于数组中的索引对象,如果是VarSentence,暂时先不removeSentence,仅标为over,可能会有其他地方用到
+			//其他情况不进行处理
+			Sentence s = v2.getSen();
+			if (s != null && s.getName().equals("var")) {
+				s.over();
+			}
+			
+			this.out.append(v.getOut()).append(" = ").append(v3.getOut());
+		}
+		
+		
+		//不处理value
+		//v.setValue(value);
+		SentenceMgr.setVar(v);
+		this.over();
+		
+		return true;
 	}
 
 	/* (non-Javadoc)
@@ -50,6 +120,26 @@ public class PutSentence extends Sentence {
 		return "put";
 	}
 	static final String[] KEYS = new String[]{
-		"ppp"
+		"aput",
+		"aput-wide",
+		"aput-object",
+		"aput-boolean",
+		"aput-byte",
+		"aput-char",
+		"aput-short",
+		"iput",
+		"iput-wide",
+		"iput-object",
+		"iput-boolean",
+		"iput-byte",
+		"iput-char",
+		"iput-short",
+		"sput",
+		"sput-wide",
+		"sput-object",
+		"sput-boolean",
+		"sput-byte",
+		"sput-char",
+		"sput-short"
 	};
 }

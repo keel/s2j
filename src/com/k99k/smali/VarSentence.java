@@ -48,14 +48,18 @@ public class VarSentence extends Sentence {
 		//解析
 		this.doComm(this.line);
 		//this.line = this.line.replaceAll(",", ""); //String 可能包含空格
-		this.line = this.line.replaceFirst(" ", ",");
-		String[] ws = this.line.split(",");
-		if (ws.length<3) {
+		int p1 = this.line.indexOf(" ");
+		int p2 = this.line.indexOf(",");
+		if (p1 == -1 || p2 == -1 || p2>=this.line.length()) {
 			this.out.append("exec var error. line:").append(this.line);
 			this.mgr.err(this);
 			System.err.println(this.out);
 			return false;
 		}
+		String[] ws = new String[3];
+		ws[0] = this.line.substring(0,p1);
+		ws[1] = this.line.substring(p1+1,p2);
+		ws[2] = this.line.substring(p2+2).trim();
 		
 		//生成Var
 		Var v = new Var(this);
@@ -69,12 +73,16 @@ public class VarSentence extends Sentence {
 			v.setValue(value.replaceAll("\"", ""));
 		}else if(type.equals("int")){
 			v.setValue(Integer.decode(value));
+			value = String.valueOf(v.getValue());
 		}else if(type.equals("long")){
 			v.setValue(Long.decode(value));
+			value = String.valueOf(v.getValue());
 		}else if(type.equals("float")){
-			v.setValue(Float.valueOf(value));
+			v.setValue(new Float(value));
+			value = String.valueOf(v.getValue());
 		}else if(type.equals("double")){
-			v.setValue(Double.valueOf(value));
+			v.setValue(new Double(value));
+			value = String.valueOf(v.getValue());
 		}else if(type.equals("Class")){
 			//TODO 无法确定Class值 ,暂存String
 			v.setValue(value);

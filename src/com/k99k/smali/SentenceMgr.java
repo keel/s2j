@@ -22,7 +22,6 @@ public class SentenceMgr {
 		vars = new HashMap<String, Var>();
 		sentenceList = new ArrayList<Sentence>();
 		this.meth = meth;
-		this.setProps();
 	}
 	
 	/**
@@ -133,6 +132,8 @@ public class SentenceMgr {
 	 * 处理原始语句集
 	 */
 	public void execLines(){
+		
+		this.setProps();
 		
 		this.parse();
 		
