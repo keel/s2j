@@ -38,7 +38,8 @@ public class SentenceMgr {
 		sentenceMap.put(ErrSentence.KEY, e);
 		LocalSentence l = new LocalSentence(null,null);
 		sentenceMap.put(LocalSentence.KEY, l);
-		
+		GotoSentence gt = new GotoSentence(null, null);
+		sentenceMap.put(GotoSentence.KEY, gt);
 		
 		GetSentence g = new GetSentence(null, null);
 		for (int i = 0; i < GetSentence.KEYS.length; i++) {
@@ -68,6 +69,15 @@ public class SentenceMgr {
 		for (int i = 0; i < MoveSentence.KEYS.length; i++) {
 			sentenceMap.put(MoveSentence.KEYS[i], m);
 		}
+		IfSentence ifs = new IfSentence(null,null);
+		for (int i = 0; i < IfSentence.KEYS.length; i++) {
+			sentenceMap.put(IfSentence.KEYS[i], ifs);
+		}
+		TagSentence t = new TagSentence(null,null);
+		for (int i = 0; i < TagSentence.KEYS.length; i++) {
+			sentenceMap.put(TagSentence.KEYS[i], t);
+		}
+		
 		
 		for (int i = 0; i < VarSentence.KEYS.length; i++) {
 			sentenceMap.put(VarSentence.KEYS[i], varSen);
@@ -127,6 +137,11 @@ public class SentenceMgr {
 	 */
 	private ArrayList<Sentence> sentenceList;
 
+	/**
+	 * 结构语句中的标记集合,用于快递定位指定的tag
+	 */
+	private static HashMap<String,Sentence> tags;
+	
 	
 	/**
 	 * 处理原始语句集
@@ -146,9 +161,12 @@ public class SentenceMgr {
 		//如果是处理中则将此Sentence加入待完成的
 		
 		
-		
 	}
 
+	
+	
+	
+	
 	/**
 	 * 从sentenceList生成输出的outLines
 	 */
@@ -265,6 +283,34 @@ public class SentenceMgr {
 //	public final Sentence getSentence(int index){
 //		return this.sentenceList.get(index);
 //	}
+	
+	public static final void addTag(TagSentence tsen){
+		tags.put(tsen.getTag(), tsen);
+	}
+	
+	public static final TagSentence getTag(String tag){
+		return (TagSentence) tags.get(tag);
+	}
+	
+	public final int indexOfSentence(Sentence sen){
+		return this.sentenceList.indexOf(sen);
+	}
+	
+	public final String getSrcline(int index){
+		return this.srcLines.get(index);
+	}
+	
+	/**
+	 * 返回指定tag在sentenceList中的位置
+	 * @param tag String
+	 * @return 未找到则返回-1
+	 */
+	public final int findTagIndex(String tag){
+		if (!tags.containsKey(tag)) {
+			return -1;
+		}
+		return this.sentenceList.indexOf(tags.get(tag));
+	}
 	
 	/**
 	 * 获取SentenceList中的最后一个Sentence
