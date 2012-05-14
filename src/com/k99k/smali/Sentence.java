@@ -186,12 +186,12 @@ public abstract class Sentence {
 		return this.line;
 	}
 
-	/**
-	 * 多行输出
-	 */
-	public ArrayList<String> getOutLines(){
-		return null;
-	}
+//	/**
+//	 * 多行输出
+//	 */
+//	public ArrayList<String> getOutLines(){
+//		return null;
+//	}
 	
 	/**
 	 * 局部或单行输出

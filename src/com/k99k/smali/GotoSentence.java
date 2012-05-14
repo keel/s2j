@@ -17,19 +17,35 @@ public class GotoSentence extends Sentence {
 		super(mgr, line);
 	}
 
+	
+	private int type = TYPE_LINE;
+	
+	/**
+	 * goto的目标
+	 */
+	private String target = "";
+	
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Sentence#exec()
 	 */
 	@Override
 	public boolean exec() {
 		this.doComm(this.line);
+		String[] ws = this.line.split(" ");
+		if (ws.length<2) {
+			this.out.append("exec GotoSentence error. line:").append(this.line);
+			this.mgr.err(this);
+			System.err.println(this.out);
+			return false;
+		}
+		this.target = ws[1];
 		this.out.append("// ").append(this.line);
 		
 		//找到
 		
-		if (this.mgr.getLevel()>0) {
-			this.mgr.addLevel(-1);
-		}
+//		if (this.mgr.getLevel()>0) {
+//			this.mgr.addLevel(-1);
+//		}
 		this.over();
 		return true;
 	}
@@ -47,7 +63,7 @@ public class GotoSentence extends Sentence {
 	 */
 	@Override
 	public int getType() {
-		return Sentence.TYPE_LINE;
+		return this.type;
 	}
 
 	/* (non-Javadoc)
@@ -58,6 +74,16 @@ public class GotoSentence extends Sentence {
 		return "goto";
 	}
 	
+	
+	
+	/**
+	 * @return the target
+	 */
+	public final String getTarget() {
+		return target;
+	}
+
+
 	static final String KEY = "goto";
 
 }

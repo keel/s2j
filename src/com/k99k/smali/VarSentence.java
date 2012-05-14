@@ -102,9 +102,7 @@ public class VarSentence extends Sentence {
 	 */
 	@Override
 	public Sentence newOne(SentenceMgr mgr,String line) {
-		Sentence s = SentenceMgr.getVarSen();
-		s.setLine(line);
-		return s;
+		return new VarSentence(mgr, line);
 	}
 
 	/* (non-Javadoc)

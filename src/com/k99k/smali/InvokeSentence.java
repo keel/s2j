@@ -64,7 +64,7 @@ public class InvokeSentence extends Sentence {
 		String methName = opStr.substring(p1+2,p2);
 		int p3 = opStr.indexOf(")");
 		String propStr = (p3-p2 == 1)?"":opStr.substring(p2,p3+1);
-		//String re = Tool.parseObject(opStr.substring(p3+1));
+		String re = Tool.parseObject(opStr.substring(p3+1));
 		boolean isInit = methName.equals("<init>");
 		boolean isConstr = this.mgr.getMeth().isConstructor();
 		//输出构造方法
@@ -123,7 +123,7 @@ public class InvokeSentence extends Sentence {
 		}
 		this.out.append(")");
 		//设置Var
-		this.var.setClassName(src);
+		this.var.setClassName(re);
 		this.var.setKey(key);
 		this.var.setOut(this.out.toString());
 		//this.var.setValue(re);

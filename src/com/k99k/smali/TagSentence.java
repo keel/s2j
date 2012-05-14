@@ -19,6 +19,10 @@ public class TagSentence extends Sentence {
 	}
 	
 	private String tag = "";
+	
+	private int type = TYPE_LINE;
+	
+	private Sentence ifSen;
 
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Sentence#exec()
@@ -27,11 +31,13 @@ public class TagSentence extends Sentence {
 	public boolean exec() {
 		//用于占用一个Sentence行的位置,便于结构语句插入，本行将输出一个注释
 		this.doComm(this.line);
-		this.tag = this.line;
+		this.tag = this.line.split(" ")[0];
 		this.out.append("// ").append(this.line);
-		if (this.mgr.getLevel()>0) {
-			this.mgr.addLevel(-1);
-		}
+		
+		
+//		if (this.mgr.getLevel()>0) {
+//			this.mgr.addLevel(-1);
+//		}
 		
 		this.over();
 		return true;
@@ -54,7 +60,7 @@ public class TagSentence extends Sentence {
 	 */
 	@Override
 	public int getType() {
-		return Sentence.TYPE_LINE;
+		return this.type;
 	}
 
 	/* (non-Javadoc)
@@ -72,6 +78,22 @@ public class TagSentence extends Sentence {
 		return this.tag;
 	}
 	
+	
+	
+	/**
+	 * @return the ifSen
+	 */
+	public final Sentence getIfSen() {
+		return ifSen;
+	}
+
+	/**
+	 * @param ifSen the ifSen to set
+	 */
+	public final void setIfSen(Sentence ifSen) {
+		this.ifSen = ifSen;
+	}
+
 	static final String[] KEYS = new String[]{
 		":cond_0",
 		":cond_1",

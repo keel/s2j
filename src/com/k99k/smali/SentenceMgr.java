@@ -29,7 +29,12 @@ public class SentenceMgr {
 	 */
 	private static final HashMap<String,Sentence> sentenceMap = new HashMap<String, Sentence>();
 	
-	private static VarSentence varSen = new VarSentence(null, null);
+	
+	/**
+	 * if结构相关语句name
+	 */
+	private static final HashMap<String,String> ifMap = new HashMap<String, String>();
+
 	
 	static{
 		CommSentence c = new CommSentence(null, null);
@@ -78,10 +83,18 @@ public class SentenceMgr {
 			sentenceMap.put(TagSentence.KEYS[i], t);
 		}
 		
-		
+		VarSentence v = new VarSentence(null, null);
 		for (int i = 0; i < VarSentence.KEYS.length; i++) {
-			sentenceMap.put(VarSentence.KEYS[i], varSen);
+			sentenceMap.put(VarSentence.KEYS[i], v);
 		}
+		
+		//-------------------
+		//if结构语句name
+		ifMap.put("if", "if");
+		ifMap.put("tag", "tag");
+		ifMap.put("goto", "goto");
+		ifMap.put("return", "return");
+		
 	}
 	
 	public final Sentence createSentence(String key,String line){
@@ -142,6 +155,10 @@ public class SentenceMgr {
 	 */
 	private HashMap<String,Sentence> tags;
 	
+	/**
+	 * 是否包含if结构
+	 */
+	private boolean hasIF = false;;
 	
 	/**
 	 * 处理原始语句集
@@ -180,31 +197,37 @@ public class SentenceMgr {
 			if (s.state == Sentence.STATE_OVER) {
 				if (s.getType() == Sentence.TYPE_LINE) {
 					this.outLines.add(StaticUtil.TABS[s.getLevel()]+s.getOut()+";");
-				}else if(s.getType() == Sentence.TYPE_STRUCT){
-					ArrayList<String> l = s.getOutLines();
-					for (Iterator<String> itt = l.iterator(); itt.hasNext();) {
-						String o = itt.next();
-						this.outLines.add(StaticUtil.TABS[s.getLevel()]+o+";");
-					}
 				}
-			}else if(s.state == Sentence.STATE_DOING){
-				//对于STATE_DOING状态的Sentence，执行一次execNext
-				if (s.execNext()) {
-					if (s.getType() == Sentence.TYPE_LINE) {
-						this.outLines.add(StaticUtil.TABS[s.getLevel()]+s.getOut());
-					}else if(s.getType() == Sentence.TYPE_STRUCT){
-						ArrayList<String> l = s.getOutLines();
-						for (Iterator<String> itt = l.iterator(); itt.hasNext();) {
-							String o = itt.next();
-							this.outLines.add(StaticUtil.TABS[s.getLevel()]+o+";");
-						}
-					}
-				}else{
-					this.outLines.add("//ERR: execNext() failed. line:"+s.line);
+				else if(s.getType() == Sentence.TYPE_STRUCT){
+					this.outLines.add(StaticUtil.TABS[s.getLevel()]+s.getOut());
+	
+//					ArrayList<String> l = s.getOutLines();
+//					for (Iterator<String> itt = l.iterator(); itt.hasNext();) {
+//						String o = itt.next();
+//						this.outLines.add(StaticUtil.TABS[s.getLevel()]+o+";");
+//					}
 				}
-			}else{
-				this.outLines.add("//ERR: sentence not over. line:"+s.line);
 			}
+			
+//			else if(s.state == Sentence.STATE_DOING){
+//				//对于STATE_DOING状态的Sentence，执行一次execNext
+//				if (s.execNext()) {
+//					if (s.getType() == Sentence.TYPE_LINE) {
+//						this.outLines.add(StaticUtil.TABS[s.getLevel()]+s.getOut());
+//					}
+////					else if(s.getType() == Sentence.TYPE_STRUCT){
+////						ArrayList<String> l = s.getOutLines();
+////						for (Iterator<String> itt = l.iterator(); itt.hasNext();) {
+////							String o = itt.next();
+////							this.outLines.add(StaticUtil.TABS[s.getLevel()]+o+";");
+////						}
+////					}
+//				}else{
+//					this.outLines.add("//ERR: execNext() failed. line:"+s.line);
+//				}
+//			}else{
+//				this.outLines.add("//ERR: sentence not over. line:"+s.line);
+//			}
 		}
 	}
 
@@ -235,30 +258,35 @@ public class SentenceMgr {
 			if (javaLine > -1) {
 				s.setJavaLineNum(javaLine);
 			}
-			//最多尝试5次切换Sentence
-			int i = 0;
-			while (i<=5) {
-				if (s.exec()) {
-					//成功处理语句后加入语句列表
-					//只有能成行输出的操作加入到sentenceList
-					if (s.getType()>Sentence.TYPE_NOT_LINE) {
-						this.sentenceList.add(s);
-					}
+//			//最多尝试5次切换Sentence
+//			int i = 0;
+//			while (i<=5) {
+			if (s.exec()) {
+				//成功处理语句后加入语句列表
+				//只有能成行输出的操作加入到sentenceList
+				if (s.getType()>Sentence.TYPE_NOT_LINE) {
+					this.sentenceList.add(s);
+				}
+//				break;
+			}else{
+				key = s.maybeSentence();
+				if (key.equals("")) {
+					Sentence e = new CommSentence(this, "#ERR: unknown sententce. line:"+l);
+					e.exec();
+					this.sentenceList.add(e);
 					break;
 				}else{
-					key = s.maybeSentence();
-					if (key.equals("")) {
-						Sentence e = new CommSentence(this, "#ERR: unknown sententce. line:"+l);
-						e.exec();
-						this.sentenceList.add(e);
-						break;
-					}else{
-						s = this.createSentence(key, l);
-					}
+					s = this.createSentence(key, l);
 				}
-				i++;
 			}
+//				i++;
+//			}
 			cNum++;
+		}
+		//处理IFScan
+		if (hasIF) {
+			IFStructScan ifs = new IFStructScan(this);
+			ifs.scan(this.sentenceList);
 		}
 	}
 	
@@ -342,6 +370,87 @@ public class SentenceMgr {
 		}
 		return null;
 	}
+	
+	/**
+	 * 向前查找标签
+	 * @param tagName
+	 * @param lineNum
+	 * @return
+	 */
+	public final Sentence findLastTag(String tagName,int lineNum){
+		int len = this.sentenceList.size();
+		if (len<1|| lineNum<=0 || lineNum>=len) {
+			return null;
+		}
+		for (int i = lineNum-1; i >= 0; i--) {
+			Sentence s = this.sentenceList.get(i);
+			if (s.getName().equals("tag")) {
+				TagSentence tag = (TagSentence)s;
+				if (tag.getTag().equals(tagName)) {
+					return s;
+				}
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * 查找上一个匹配 name的Sentence
+	 * @param senName
+	 * @param lineNum
+	 * @return
+	 */
+	public final Sentence findLastSentence(String senName,int lineNum){
+		int len = this.sentenceList.size();
+		if (len<1 || lineNum<=0 || lineNum>=len) {
+			return null;
+		}
+		for (int i = lineNum-1; i >= 0; i--) {
+			Sentence s = this.sentenceList.get(i);
+			if (s.getName().equals(senName)) {
+				return s;
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * 从某一位置查找IF结构语句
+	 * @param isBack 查找方向是否是反向
+	 * @param lineNum 从哪个行号开始
+	 * @return Sentence
+	 */
+	public final Sentence findIFSentence(boolean isBack,int lineNum){
+		int len = this.sentenceList.size();
+		if (len<1 || lineNum<=0 || lineNum>=len) {
+			return null;
+		}
+		if (isBack) {
+			for (int i = lineNum-1; i >= 0; i--) {
+				Sentence s = this.sentenceList.get(i);
+				if (s.getLineNum() < lineNum && ifMap.containsKey(s.getName())) {
+					return s;
+				}
+			}
+		}else{
+			for (int i = lineNum+1; i < len-1; i++) {
+				Sentence s = this.sentenceList.get(i);
+				if (s.getLineNum() > lineNum && ifMap.containsKey(s.getName())) {
+					return s;
+				}
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * 是否为if结构语句
+	 * @param senName
+	 * @return
+	 */
+	public static final boolean isIFS(String senName){
+		return ifMap.containsKey(senName);
+	}
 
 	/**
 	 * 获取变量 
@@ -407,6 +516,28 @@ public class SentenceMgr {
 	}
 	
 	
+	/**
+	 * @return the hasIF
+	 */
+	public final boolean isHasIF() {
+		return hasIF;
+	}
+
+
+
+
+
+	/**
+	 * @param hasIF the hasIF to set
+	 */
+	public final void setHasIF(boolean hasIF) {
+		this.hasIF = hasIF;
+	}
+
+
+
+
+
 	/**
 	 * 处理行号
 	 * @param line
@@ -478,13 +609,6 @@ public class SentenceMgr {
 		this.isStatic = isStatic;
 	}
 
-	/**
-	 * @return the varSen
-	 */
-	public static final VarSentence getVarSen() {
-		return varSen;
-	}
-	
 	
 	/**
 	 * @return the level
