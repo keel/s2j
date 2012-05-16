@@ -18,12 +18,17 @@ public class GotoSentence extends Sentence {
 	}
 
 	
-	private int type = TYPE_LINE;
+	private int type = TYPE_STRUCT;
 	
 	/**
 	 * goto的目标
 	 */
 	private String target = "";
+	
+	/**
+	 * TagSentence
+	 */
+	private TagSentence targetSen;
 	
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Sentence#exec()
@@ -81,6 +86,21 @@ public class GotoSentence extends Sentence {
 	 */
 	public final String getTarget() {
 		return target;
+	}
+
+
+	/**
+	 * @return the targetSen
+	 */
+	public final TagSentence getTargetSen() {
+		return targetSen;
+	}
+
+	/**
+	 * @param targetSen the targetSen to set
+	 */
+	public final void setTargetSen(TagSentence targetSen) {
+		this.targetSen = targetSen;
 	}
 
 

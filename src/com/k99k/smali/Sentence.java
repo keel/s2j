@@ -194,10 +194,19 @@ public abstract class Sentence {
 //	}
 	
 	/**
-	 * 局部或单行输出
+	 * 单行输出
 	 */
 	public String getOut(){
 		return this.out.toString();
+	}
+	
+	/**
+	 * 设置输出
+	 * @param outStr
+	 */
+	public void setOut(String outStr){
+		this.out = new StringBuilder();
+		this.out.append(outStr);
 	}
 	
 	public void over(){

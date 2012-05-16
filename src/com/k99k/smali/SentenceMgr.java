@@ -39,6 +39,7 @@ public class SentenceMgr {
 	static{
 		CommSentence c = new CommSentence(null, null);
 		sentenceMap.put(StaticUtil.COMM, c);
+		sentenceMap.put("nop", c);
 		ErrSentence e = new ErrSentence(null, null);
 		sentenceMap.put(ErrSentence.KEY, e);
 		LocalSentence l = new LocalSentence(null,null);
@@ -285,8 +286,8 @@ public class SentenceMgr {
 		}
 		//处理IFScan
 		if (hasIF) {
-			IFStructScan ifs = new IFStructScan(this);
-			ifs.scan(this.sentenceList);
+			IFStructScan ifs = new IFStructScan(this,this.sentenceList);
+			ifs.scan();
 		}
 	}
 	

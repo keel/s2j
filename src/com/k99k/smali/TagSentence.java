@@ -20,9 +20,11 @@ public class TagSentence extends Sentence {
 	
 	private String tag = "";
 	
-	private int type = TYPE_LINE;
+	private int type = TYPE_STRUCT;
 	
 	private Sentence ifSen;
+	
+	private boolean isGoto = false;
 
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Sentence#exec()
@@ -32,6 +34,9 @@ public class TagSentence extends Sentence {
 		//用于占用一个Sentence行的位置,便于结构语句插入，本行将输出一个注释
 		this.doComm(this.line);
 		this.tag = this.line.split(" ")[0];
+		if (this.tag.indexOf(":goto")>=0) {
+			this.isGoto = true;
+		}
 		this.out.append("// ").append(this.line);
 		
 		
@@ -61,6 +66,15 @@ public class TagSentence extends Sentence {
 	@Override
 	public int getType() {
 		return this.type;
+	}
+	
+	
+
+	/**
+	 * @param type the type to set
+	 */
+	public final void setType(int type) {
+		this.type = type;
 	}
 
 	/* (non-Javadoc)
@@ -92,6 +106,15 @@ public class TagSentence extends Sentence {
 	 */
 	public final void setIfSen(Sentence ifSen) {
 		this.ifSen = ifSen;
+	}
+	
+	
+
+	/**
+	 * @return the isGoto
+	 */
+	public final boolean isGoto() {
+		return isGoto;
 	}
 
 	static final String[] KEYS = new String[]{

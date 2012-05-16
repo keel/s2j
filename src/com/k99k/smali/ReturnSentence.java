@@ -55,7 +55,7 @@ public class ReturnSentence extends Sentence {
 	 */
 	@Override
 	public int getType() {
-		return Sentence.TYPE_LINE;
+		return Sentence.TYPE_STRUCT;
 	}
 
 	/* (non-Javadoc)
