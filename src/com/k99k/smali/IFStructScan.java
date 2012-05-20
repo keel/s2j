@@ -42,17 +42,39 @@ public class IFStructScan {
 //	 */
 //	private boolean contentIn = false;
 	
+	/**
+	 * 内容块反向开始的lineNum,注意是反向开始,数值>contStart
+	 */
 	private int contStart = -1;
+	/**
+	 * 内容块反向结束的lineNum,注意是反向结束,数值<contStart
+	 */
 	private int contEnd = -1;
+	/**
+	 * return开始行所在的senList中的index,保存此位置以在return后置后识别后置前if的真正endSen
+	 */
+	private int returnLine = -1;
+	
+	/**
+	 * contStart 所在Sen在senList中的index
+	 */
+	private int contStartIndex = -1;
+	/**
+	 * 每个if内容块内结束标记map,用于判断是否为else
+	 */
+	private HashMap<Integer,IfSentence> ifEndMap = new HashMap<Integer, IfSentence>();
 	
 	/**
 	 * 扫描并处理if结构
 	 * @param senList
 	 */
 	public void scan(){
-		this.init();
+		if(!this.init()){
+			return;
+		}
 		//-------------------------------------------------------------------------
 		//从后向前扫描
+		int oldLine = -1;
 		for (int i = len-1; i >= 0; i--) {
 			Sentence s = senList.get(i);
 			
@@ -78,6 +100,8 @@ public class IFStructScan {
 						continue;
 					}else if (s.getType() == Sentence.TYPE_LINE) {
 						this.contStart = s.getLineNum();
+						this.contStartIndex = this.senList.indexOf(s);
+						oldLine = i;
 //						ifls.add(s);
 						continue;
 					}
@@ -101,6 +125,9 @@ public class IFStructScan {
 							look = false;
 							this.contEnd  = -1;
 							this.contStart = -1;
+							this.contStartIndex = -1;
+							//回退到上一个内容块的前一行作为开始
+							i = oldLine-1;
 						}
 					}
 				}
@@ -132,6 +159,8 @@ public class IFStructScan {
 			
 			
 		}
+		//----------------------------------
+		//进行else修改
 		
 		//设置level
 		
@@ -148,42 +177,62 @@ public class IFStructScan {
 			return true;
 		}
 		int le = this.ifls.size();
+		IfSentence ifs = null;
+		int ifEnd = -1;
+		
 		//仍然是从后向前的顺序,
 		for (int i = 0; i < le; i++) {
 			Sentence s = ifls.get(i);
-			/*
-			//先处理goto
-			if (s.getName().equals("goto")) {
-				GotoSentence g = (GotoSentence)s;
-				TagSentence t = g.getTargetSen();
-				if (t.getLineNum() < g.getLineNum()) {
-				}
-				continue;
-			}*/
-			
-			//先查找内容块之上的第一个if
+			//查找内容块之上的if
 			if (s.getLineNum() < this.contEnd && s.getName().equals("if")) {
-				IfSentence ifs = (IfSentence)s;
+				ifs = (IfSentence)s;
 				TagSentence ifCond = (TagSentence)ifs.getCondTag();
+				//设置ifEndLineNum
+				ifEnd = this.findIfEndLineNum(this.contStartIndex+1);
+				ifs.setEndSenLineNum(ifEnd);
 				if (ifCond.getLineNum() > this.contStart) {
 					ifs.reverseCompare();
 					ifs.over();
 					ifCond.setOut("}");
 					ifCond.over();
-				}else{
-					
+					ifs.setEndSenLineNum(ifEnd);
 				}
+				//处理else
+				if (this.ifEndMap.containsKey(ifEnd)) {
+					this.ifEndMap.get(ifEnd).setElse(true);
+				}
+				this.ifEndMap.put(ifEnd, ifs);
 			}
 		}
 		
 		return true;
 	}
 	
+	/**
+	 * 向下查找第一个非标记的语句 
+	 * @param start senList-index
+	 * @return
+	 */
+	private int findIfEndLineNum(int start){
+		for (int i = start; i < this.len; i++) {
+			if (i == this.returnLine) {
+				//直接返回最后一行，即return行
+				return this.senList.get(this.len-1).getLineNum();
+			}
+			Sentence s = this.senList.get(i);
+			if (s.getType() == Sentence.TYPE_LINE || s.getName().equals("if")|| s.getName().equals("return")) {
+				return s.getLineNum();
+			}else if(s.getName().equals("goto")){
+				i = this.senList.indexOf(((GotoSentence)s).getTargetSen());
+			}
+		}
+		return -1;
+	}
 
 	/**
 	 * 初始化cond和ifsen以及goto的对应关系，return语句后置
 	 */
-	private void init(){
+	private boolean init(){
 		//是否需要将return后置,0表示未处理或不处理,1:不需要,2:需要,3处理中
 		int returnToEnd = 0;
 		//先扫描两次将cond和if对应上
@@ -202,9 +251,8 @@ public class IFStructScan {
 		}
 		if (condMap.isEmpty()) {
 			//无tag结构，直接返回
-			return;
+			return false;
 		}
-		int returnLine = -1;
 		for (int i = len-1; i >= 0; i--) {
 			Sentence s = senList.get(i);
 			if (s.getName().equals("if")) {
@@ -263,6 +311,7 @@ public class IFStructScan {
 			this.senList.addAll(this.senList.size(), temp);
 		}
 		
+		return true;
 	}
 	
 }

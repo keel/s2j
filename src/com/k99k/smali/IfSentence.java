@@ -68,6 +68,11 @@ public class IfSentence extends Sentence {
 	private Sentence condTag;
 	
 	/**
+	 * if内部结束位置指到的Sen所在的lineNum
+	 */
+	private int endSenLineNum;
+	
+	/**
 	 * if 指向的cond_x
 	 */
 	private String cond;
@@ -190,6 +195,10 @@ public class IfSentence extends Sentence {
 	 */
 	public final void setElse(boolean isElse) {
 		this.isElse = isElse;
+		if (isElse) {
+			this.out = new StringBuilder();
+			this.render();
+		}
 	}
 
 	public void addIF(IfSentence sen){
@@ -262,7 +271,20 @@ public class IfSentence extends Sentence {
 		return "if";
 	}
 	
-	
+
+	/**
+	 * @return the endSenLineNum
+	 */
+	public final int getEndSenLineNum() {
+		return endSenLineNum;
+	}
+
+	/**
+	 * @param endSenLineNum the endSenLineNum to set
+	 */
+	public final void setEndSenLineNum(int endSenLineNum) {
+		this.endSenLineNum = endSenLineNum;
+	}
 
 	/**
 	 * @return the condTag
@@ -277,7 +299,6 @@ public class IfSentence extends Sentence {
 	public final void setCondTag(Sentence condTag) {
 		this.condTag = condTag;
 	}
-	
 	
 
 	/**
