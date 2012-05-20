@@ -200,8 +200,11 @@ public class SentenceMgr {
 					this.outLines.add(StaticUtil.TABS[s.getLevel()]+s.getOut()+";");
 				}
 				else if(s.getType() == Sentence.TYPE_STRUCT){
-					this.outLines.add(StaticUtil.TABS[s.getLevel()]+s.getOut());
-	
+					String ostr = StaticUtil.TABS[s.getLevel()]+s.getOut();
+					if (s.getName().equals("return")) {
+						ostr += ";";
+					}
+					this.outLines.add(ostr);
 //					ArrayList<String> l = s.getOutLines();
 //					for (Iterator<String> itt = l.iterator(); itt.hasNext();) {
 //						String o = itt.next();

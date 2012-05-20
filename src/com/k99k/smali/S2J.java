@@ -50,7 +50,7 @@ public class S2J {
 	public String exec(String fileName,String encode){
 		StringBuilder sb = new StringBuilder();
 		try {
-			String t = IO.readTxt("h:/SMSTest.smali", "utf-8");
+			String t = IO.readTxt(fileName, encode);
 			ArrayList<String> lines = Tool.strToLine(t);
 			
 			while (!lines.isEmpty()) {
@@ -81,8 +81,8 @@ public class S2J {
 	 */
 	public static void main(String[] args) {
 		S2J s = new S2J();
-		String re = s.exec("h:/SMSTest.smali", "utf-8");
-		//String re = s.exec("f:/android/apk_manager/projects/SmaliTest.apk/smali/com/smlon/tools/Structs.smali", "utf-8");
+		//String re = s.exec("h:/SMSTest.smali", "utf-8");
+		String re = s.exec("f:/android/apk_manager/projects/SmaliTest.apk/smali/com/smlon/tools/Structs.smali", "utf-8");
 		System.out.println(re);
 	}
 

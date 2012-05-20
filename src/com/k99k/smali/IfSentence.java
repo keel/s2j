@@ -29,7 +29,7 @@ public class IfSentence extends Sentence {
 //	
 	static HashMap<String,String> compareMap = new HashMap<String, String>();
 	static{
-		compareMap.put("if-eq"," = ");
+		compareMap.put("if-eq"," == ");
 		compareMap.put("if-ne"," != ");
 		compareMap.put("if-lt"," < ");
 		compareMap.put("if-ge"," >= ");

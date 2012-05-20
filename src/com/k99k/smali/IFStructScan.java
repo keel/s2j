@@ -154,7 +154,8 @@ public class IFStructScan {
 			}else if(s.getType() == Sentence.TYPE_LINE){
 				//有内容输出
 				this.doStruct(s.getLineNum());
-			}*/
+			}
+			*/
 			
 			
 			
