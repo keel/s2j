@@ -83,6 +83,10 @@ public class SentenceMgr {
 		for (int i = 0; i < TagSentence.KEYS.length; i++) {
 			sentenceMap.put(TagSentence.KEYS[i], t);
 		}
+		GotoTagSentence gotag = new GotoTagSentence(null,null);
+		for (int i = 0; i < GotoTagSentence.KEYS.length; i++) {
+			sentenceMap.put(GotoTagSentence.KEYS[i], gotag);
+		}
 		
 		VarSentence v = new VarSentence(null, null);
 		for (int i = 0; i < VarSentence.KEYS.length; i++) {

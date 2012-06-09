@@ -24,7 +24,9 @@ public class TagSentence extends Sentence {
 	
 	private Sentence ifSen;
 	
-	private boolean isGoto = false;
+//	private boolean isGoto = false;
+	
+	private boolean isReturn = false;
 
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Sentence#exec()
@@ -34,9 +36,9 @@ public class TagSentence extends Sentence {
 		//用于占用一个Sentence行的位置,便于结构语句插入，本行将输出一个注释
 		this.doComm(this.line);
 		this.tag = this.line.split(" ")[0];
-		if (this.tag.indexOf(":goto")>=0) {
-			this.isGoto = true;
-		}
+//		if (this.tag.indexOf(":goto")>=0) {
+//			this.isGoto = true;
+//		}
 		this.out.append("// ").append(this.line);
 		
 		
@@ -44,7 +46,8 @@ public class TagSentence extends Sentence {
 //			this.mgr.addLevel(-1);
 //		}
 		
-		this.over();
+		this.state = STATE_DOING;
+		//this.over();
 		return true;
 	}
 	
@@ -75,6 +78,15 @@ public class TagSentence extends Sentence {
 	 */
 	public final void setType(int type) {
 		this.type = type;
+	}
+	
+	/**
+	 * 设置结构的结束符,可多次设置，每次增加一个}号
+	 */
+	public final void setEndStruct(){
+		this.type = TYPE_LINE;
+		this.out.append(StaticUtil.NEWLINE).append(StaticUtil.TABS[this.level]);
+		this.out.append("}");
 	}
 
 	/* (non-Javadoc)
@@ -111,11 +123,25 @@ public class TagSentence extends Sentence {
 	
 
 	/**
-	 * @return the isGoto
+	 * @return the isReturn
 	 */
-	public final boolean isGoto() {
-		return isGoto;
+	public final boolean isReturn() {
+		return isReturn;
 	}
+
+	/**
+	 * @param isReturn the isReturn to set
+	 */
+	public final void setReturn(boolean isReturn) {
+		this.isReturn = isReturn;
+	}
+
+//	/**
+//	 * @return the isGoto
+//	 */
+//	public final boolean isGoto() {
+//		return isGoto;
+//	}
 
 	static final String[] KEYS = new String[]{
 		":cond_0",
@@ -168,57 +194,6 @@ public class TagSentence extends Sentence {
 		":cond_47",
 		":cond_48",
 		":cond_49",
-		":cond_50",
-		":goto_0",
-		":goto_1",
-		":goto_2",
-		":goto_3",
-		":goto_4",
-		":goto_5",
-		":goto_6",
-		":goto_7",
-		":goto_8",
-		":goto_9",
-		":goto_10",
-		":goto_11",
-		":goto_12",
-		":goto_13",
-		":goto_14",
-		":goto_15",
-		":goto_16",
-		":goto_17",
-		":goto_18",
-		":goto_19",
-		":goto_20",
-		":goto_21",
-		":goto_22",
-		":goto_23",
-		":goto_24",
-		":goto_25",
-		":goto_26",
-		":goto_27",
-		":goto_28",
-		":goto_29",
-		":goto_30",
-		":goto_31",
-		":goto_32",
-		":goto_33",
-		":goto_34",
-		":goto_35",
-		":goto_36",
-		":goto_37",
-		":goto_38",
-		":goto_39",
-		":goto_40",
-		":goto_41",
-		":goto_42",
-		":goto_43",
-		":goto_44",
-		":goto_45",
-		":goto_46",
-		":goto_47",
-		":goto_48",
-		":goto_49",
-		":goto_50"
+		":cond_50"
 	};
 }

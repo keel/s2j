@@ -58,14 +58,20 @@ public class IfSentence extends Sentence {
 	
 	private String right;
 	
+	private int type = TYPE_STRUCT;
+	
 	private boolean isBoolean = false;
 	
+	private String ifCond = "if";
+	
 	private String boolVal = "";
+	
+	private boolean isReversed = false;
 	
 	/**
 	 * if 指向的cond_x的Sentence
 	 */
-	private Sentence condTag;
+	private TagSentence condTag;
 	
 	/**
 	 * if内部结束位置指到的Sen所在的lineNum
@@ -76,6 +82,7 @@ public class IfSentence extends Sentence {
 	 * if 指向的cond_x
 	 */
 	private String cond;
+	
 	
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Sentence#exec()
@@ -129,46 +136,111 @@ public class IfSentence extends Sentence {
 			}
 		}
 		
-		this.render();
 		
-		//缩进增加
-		//this.mgr.addLevel(1);
-		//
-		
-		
-		//注意else if的情况
-		
-		//注意判断是否是for或while结构
-		
-		
-		//FIXME this.setState(STATE_DOING);
-		this.over();
+		this.setState(STATE_DOING);
+		//this.over();
 		return true;
 	}
 	
+	/**
+	 * 输出
+	 */
 	private void render(){
 		if (isElse) {
 			this.out.append("else ");
 		}
-		this.out.append("if (");
-		if (isBoolean) {
-			this.out.append(this.boolVal);
+		this.out.append(this.ifCond);
+		this.out.append(" (");
+		this.out.append(getCondOut());
+		this.out.append(") {");
+	}
+	
+	/**
+	 * 条件输出,不包含最外部的()
+	 * @return
+	 */
+	String getCondOut(){
+		StringBuilder sb = new StringBuilder();
+		if (condProtect) {
+			sb.append("(");
 		}
-		this.out.append(this.left);
+		if (isBoolean) {
+			sb.append(this.boolVal);
+		}
+		sb.append(this.left);
 		if (!isBoolean) {
-			this.out.append(comp).append(this.right);
+			sb.append(comp).append(this.right);
 		}
 		if (!this.addIfs.isEmpty()) {
 			for (Iterator<IfSentence> it = this.addIfs.iterator(); it.hasNext();) {
 				IfSentence ifs = it.next();
-				String ao = ifs.getOut();
-				this.out.append(" ").append(ifs.getAddIfLogic());
-				this.out.append(ao.substring(2,ao.length()-2));
+				sb.append(" ").append(ifs.getAddIfLogic()).append(" ");
+				sb.append(ifs.getCondOut());
 			}
 		}
-		this.out.append(") {");
+		if (condProtect) {
+			sb.append(")");
+		}
+		return sb.toString();
 	}
 	
+	
+	
+	/* (non-Javadoc)
+	 * @see com.k99k.smali.Sentence#getOut()
+	 */
+	@Override
+	public String getOut() {
+		this.out = new StringBuilder();
+		this.render();
+		return super.getOut();
+	}
+
+	private boolean condProtect = false;
+	
+	/**
+	 * 在条件中加上括号保护
+	 */
+	void addCondProtect(){
+		condProtect = true;
+	}
+	
+	/**
+	 * 合并if条件
+	 * @param logicAnd true为&&,false为||
+	 * @param ifs 后面的IfSentence
+	 */
+	public void mergeIf(boolean logicAnd,IfSentence ifs){
+		if (this.getLineNum() == ifs.getLineNum()) {
+			System.err.println("mergeIf error! lineNum is same:"+ifs.getLineNum());
+			return;
+		}
+		if (logicAnd) {
+			ifs.setAddIfLogic("&&");
+		}else{
+			ifs.setAddIfLogic("||");
+		}
+		ifs.setType(TYPE_NOT_LINE);
+		ifs.over();
+		this.addIfs.add(ifs);
+	}
+	
+	
+	public void setWhile(){
+		this.ifCond = "while";
+		
+	}
+	
+	public boolean isWhile(){
+		if (this.ifCond.equals("while")) {
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * 多条件时附加上的if条件语句
+	 */
 	private ArrayList<IfSentence> addIfs = new ArrayList<IfSentence>();
 	
 	/**
@@ -197,12 +269,8 @@ public class IfSentence extends Sentence {
 		this.isElse = isElse;
 		if (isElse) {
 			this.out = new StringBuilder();
-			this.render();
+			//this.render();
 		}
-	}
-
-	public void addIF(IfSentence sen){
-		this.addIfs.add(sen);
 	}
 	
 	/**
@@ -220,9 +288,13 @@ public class IfSentence extends Sentence {
 	}
 
 	/**
-	 * 比较条件反向
+	 * 比较条件反向,只能有效反一次
 	 */
 	public void reverseCompare(){
+		if (isReversed) {
+			return;
+		}
+		isReversed = true;
 		if (isBoolean) {
 			if (this.boolVal.equals("!")) {
 				this.boolVal = "";
@@ -242,8 +314,8 @@ public class IfSentence extends Sentence {
 		}else if(this.comp.equals(" != ")){
 			this.comp = " == ";
 		}
-		this.out = new StringBuilder();
-		this.render();
+		//this.out = new StringBuilder();
+		//this.render();
 	}
 
 
@@ -260,7 +332,11 @@ public class IfSentence extends Sentence {
 	 */
 	@Override
 	public int getType() {
-		return Sentence.TYPE_STRUCT;
+		return this.type;
+	}
+	
+	public void setType(int type){
+		this.type = type;
 	}
 
 	/* (non-Javadoc)
@@ -268,7 +344,7 @@ public class IfSentence extends Sentence {
 	 */
 	@Override
 	public String getName() {
-		return "if";
+		return this.ifCond;
 	}
 	
 
@@ -289,23 +365,51 @@ public class IfSentence extends Sentence {
 	/**
 	 * @return the condTag
 	 */
-	public final Sentence getCondTag() {
+	public final TagSentence getCondTag() {
 		return condTag;
 	}
 
 	/**
 	 * @param condTag the condTag to set
 	 */
-	public final void setCondTag(Sentence condTag) {
+	public final void setCondTag(TagSentence condTag) {
 		this.condTag = condTag;
 	}
 	
+
+	/**
+	 * @param isReversed the isReversed to set
+	 */
+	public final void setReversed(boolean isReversed) {
+		this.isReversed = isReversed;
+	}
+
+	/**
+	 * @return the addIfs
+	 */
+	public final ArrayList<IfSentence> getAddIfs() {
+		return addIfs;
+	}
 
 	/**
 	 * @return the cond
 	 */
 	public final String getCond() {
 		return cond;
+	}
+
+	/**
+	 * @param cond the cond to set
+	 */
+	public final void setCond(String cond) {
+		this.cond = cond;
+	}
+
+	/**
+	 * @return the isReversed
+	 */
+	public final boolean isReversed() {
+		return isReversed;
 	}
 
 	static final String[] KEYS = new String[]{

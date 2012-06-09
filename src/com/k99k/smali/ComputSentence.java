@@ -22,7 +22,8 @@ public class ComputSentence extends Sentence {
 	 */
 	@Override
 	public boolean exec() {
-		// TODO Auto-generated method stub
+		this.doComm(this.line);
+		
 		return false;
 	}
 

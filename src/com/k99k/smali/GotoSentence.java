@@ -3,6 +3,8 @@
  */
 package com.k99k.smali;
 
+import com.k99k.tools.StringUtil;
+
 /**
  * @author keel
  *
@@ -53,6 +55,33 @@ public class GotoSentence extends Sentence {
 //		}
 		this.over();
 		return true;
+	}
+	
+	
+	/**
+	 * 设置为break语句
+	 * @param label break的目标label，可为null
+	 */
+	public final void setBreak(String label){
+		this.out.append("break ");
+		if (StringUtil.isStringWithLen(label, 1)) {
+			this.out.append(label);
+		}
+		this.out.append(";");
+		this.type = TYPE_STRUCT;
+	}
+	
+	/**
+	 * 设置为continue语句
+	 * @param label continue的目标label，可为null
+	 */
+	public final void setContinue(String label){
+		this.out.append("continue ");
+		if (StringUtil.isStringWithLen(label, 1)) {
+			this.out.append(label);
+		}
+		this.out.append(";");
+		this.type = TYPE_STRUCT;
 	}
 
 	/* (non-Javadoc)
