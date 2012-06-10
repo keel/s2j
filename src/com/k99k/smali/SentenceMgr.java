@@ -205,37 +205,9 @@ public class SentenceMgr {
 				}
 				else if(s.getType() == Sentence.TYPE_STRUCT){
 					String ostr = StaticUtil.TABS[s.getLevel()]+s.getOut();
-					if (s.getName().equals("return")) {
-						ostr += ";";
-					}
 					this.outLines.add(ostr);
-//					ArrayList<String> l = s.getOutLines();
-//					for (Iterator<String> itt = l.iterator(); itt.hasNext();) {
-//						String o = itt.next();
-//						this.outLines.add(StaticUtil.TABS[s.getLevel()]+o+";");
-//					}
 				}
 			}
-			
-//			else if(s.state == Sentence.STATE_DOING){
-//				//对于STATE_DOING状态的Sentence，执行一次execNext
-//				if (s.execNext()) {
-//					if (s.getType() == Sentence.TYPE_LINE) {
-//						this.outLines.add(StaticUtil.TABS[s.getLevel()]+s.getOut());
-//					}
-////					else if(s.getType() == Sentence.TYPE_STRUCT){
-////						ArrayList<String> l = s.getOutLines();
-////						for (Iterator<String> itt = l.iterator(); itt.hasNext();) {
-////							String o = itt.next();
-////							this.outLines.add(StaticUtil.TABS[s.getLevel()]+o+";");
-////						}
-////					}
-//				}else{
-//					this.outLines.add("//ERR: execNext() failed. line:"+s.line);
-//				}
-//			}else{
-//				this.outLines.add("//ERR: sentence not over. line:"+s.line);
-//			}
 		}
 	}
 

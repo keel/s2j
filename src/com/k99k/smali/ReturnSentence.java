@@ -25,13 +25,13 @@ public class ReturnSentence extends Sentence {
 		this.doComm(this.line);
 		String[] ws = this.line.split(" ");
 		if (ws[0].equals("return-void")) {
-			this.out.append("return");
+			this.out.append("return;");
 		}else if(ws.length == 2){
 			Var v = this.mgr.getVar(ws[1]);
 			if (v.getSen() != null) {
 				v.getSen().over();
 			}
-			this.out.append("return ").append(v.getOut());
+			this.out.append("return ").append(v.getOut()).append(";");
 		}else{
 			this.out.append("exec return error. line:").append(this.line);
 			this.mgr.err(this);

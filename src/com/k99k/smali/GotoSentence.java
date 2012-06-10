@@ -32,6 +32,8 @@ public class GotoSentence extends Sentence {
 	 */
 	private TagSentence targetSen;
 	
+	private boolean isReturn = false;
+	
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Sentence#exec()
 	 */
@@ -82,6 +84,18 @@ public class GotoSentence extends Sentence {
 		}
 		this.out.append(";");
 		this.type = TYPE_STRUCT;
+	}
+	
+	public final boolean isReturn() {
+		return isReturn;
+	}
+	
+	public final void setReturn(boolean isReturn) {
+		this.isReturn = isReturn;
+		if (isReturn) {
+			this.out.append(StaticUtil.NEWLINE).append(StaticUtil.TABS[this.level]);
+			this.out.append("return;");
+		}
 	}
 
 	/* (non-Javadoc)

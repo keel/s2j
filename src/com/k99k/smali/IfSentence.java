@@ -222,6 +222,7 @@ public class IfSentence extends Sentence {
 		}
 		ifs.setType(TYPE_NOT_LINE);
 		ifs.over();
+		this.isReversed = true;
 		this.addIfs.add(ifs);
 	}
 	
