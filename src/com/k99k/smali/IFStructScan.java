@@ -75,7 +75,7 @@ public class IFStructScan {
 			return;
 		}
 		//处理while结构
-		//this.scanWhileStruct(0);
+		this.scanWhileStruct();
 		
 		//-------------------------------------------------------------------------
 		//if结构中包含return时只处理一次
@@ -83,7 +83,7 @@ public class IFStructScan {
 		//从后向前扫描
 		for (int i = len-1; i >= 0; i--) {
 			Sentence s = senList.get(i);
-			if (s.getName().equals("if")) {
+			if (s.getName().equals("if") && s.getState() == Sentence.STATE_DOING) {
 				IfSentence ifs = (IfSentence)s;
 				TagSentence ifTag = ifs.getCondTag();
 				int endIfTagIndex = this.senList.indexOf(ifTag);
@@ -136,6 +136,9 @@ public class IFStructScan {
 //			return true;
 //		}
 //		int le = this.ifls.size();
+		if (contStartIndex == -1 || contEndIndex == -1) {
+			return false;
+		}
 		IfSentence ifs = null;
 		int ifEnd = -1;
 		//正向最开始的第一个if
@@ -313,148 +316,114 @@ public class IFStructScan {
 			ifs.getCondTag().over();
 		}
 		return ifs;
-		/*
-		//确定contEndIndex后面紧跟的tag: endtag，这是if结束的标记
-		//定位endtag所指向的最上面的if(可能有多个): startIf,暂定为内容块if开始的标记
-		//向后扫描startIf后的tag，如tag所对应的if位置在startIf之上，则将此if更新为startIf
-		//扫描到line为止,最终确定if开始位置为startIf
-		
-		//确定内容块前后tag的index
-		int beforeConLineNum = -1;
-		int afterConLineNum = -1;
-		Sentence sen = this.senList.get(contEndIndex-1);
-		if (sen != null && sen.getName().equals("tag")) {
-			beforeConLineNum = sen.getLineNum();
-		}
-		sen = this.senList.get(contStartIndex+1);
-		if (sen != null && sen.getName().equals("tag")) {
-			afterConLineNum = sen.getLineNum();
-		}
-		//此内容块对应的if最开始的位置
-		int ifStartIndex = 0;
-		if (afterConLineNum != -1) {
-			//最上面一个对应afterConTag的if位置可能为此内容块最外围的开始位置,注意不一定是
-			//有可能其包含的一个tag对应的if
-			TagSentence t = (TagSentence) this.senList.get(afterConLineNum);
-			ifStartIndex = this.senList.indexOf(t.getIfSen());
-		}
-		//进一步确认if最上方的位置ifStartIndex
-		for (int i = this.contEndIndex+1; i >= ifStartIndex; i--) {
-			Sentence s = this.senList.get(i);
-			if (s.getName().equals("tag")) {
-				TagSentence tag = (TagSentence)s;
-				int ti = this.senList.indexOf(tag.getIfSen());
-				if (ti < ifStartIndex) {
-					ifStartIndex = ti;
-				}
-			}
-		}
-		
-		//反向扫描：
-		ArrayList<IfSentence> conds = new ArrayList<IfSentence>();
-		boolean scanAgain = true;
-		while(scanAgain){
-			//扫描处理可合并的if
-			for (int i = contEndIndex-1; i >= ifStartIndex; i--) {
-				sen = this.senList.get(i);
-				if (sen.getName().equals("if") && sen.getState()== Sentence.STATE_DOING) {
-					IfSentence ifs = (IfSentence)sen;
-					TagSentence tag = ifs.getCondTag();
-					if (tag.getLineNum()>= afterConLineNum) {
-						ifs.setAddIfLogic("&&");
-					}else if(tag.getLineNum() == beforeConLineNum){
-						ifs.setAddIfLogic("||");
-					}else {
-						//if与其tag中间包含if的情况
-						int tIndex = this.senList.indexOf(tag);
-						for (int j = i+1; j < tIndex; j++) {
-							Sentence innerSen = this.senList.get(j);
-							if (innerSen.getName().equals("if")) {
-								//包含处理
-								
-								
-							}
-						}
-					}
-				}
-			}
-			//是否所有的if都处理完
-			boolean moreScan = false;
-			for (int i = contEndIndex-1; i >= ifStartIndex; i--) {
-				sen = this.senList.get(i);
-				if (sen.getName().equals("if") && sen.getState() != Sentence.STATE_OVER) {
-					moreScan = true;
-				}
-			}
-			scanAgain = moreScan;
-		}
-		
-		
-		for (int i = contEndIndex-1; i >= ifStartIndex; i--) {
-			sen = this.senList.get(i);
-			if (sen.getName().equals("if") && sen.getState()== Sentence.STATE_DOING) {
-				IfSentence ifs = (IfSentence)sen;
-				
-				conds.add(ifs);
-				TagSentence tag = ifs.getCondTag();
-				if (tag.getLineNum() == afterConLineNum) {
-					ifs.reverseCompare();
-				}
-				
-				
-				if (!conds.isEmpty()) {
-					//尝试合并
-					//紧跟的if进行合并
-					IfSentence last = conds.get(conds.size()-1);
-					//
-					if (tag.getLineNum() == last.getLineNum()) {
-						//紧跟的if
-						conds.remove(last);
-						if (tag.getLineNum() > this.contEndIndex) {
-							last.mergeIf(true, ifs);
-						}else if(tag.getLineNum() < contStartIndex){
-							last.mergeIf(false, ifs);
-						}
-						//更新contStartIndex,contEndIndex
-					}
-					if (tag.getLineNum() == afterConLineNum) {
-						
-					}else if(tag.getLineNum() == beforeConLineNum){
-						
-					}
-				}
-			}
-		}
-		*/
-		
-		//从contStartIndext向上找，如果上面一条是tag,则此tag为起始tag,一定有两个||条件存在,先跳过直到if出现
-		
-		//将连续的if(无任何非if语句，无tag),先条件合并
-		
-		//再向上碰到tag,注意此tag对应的if是否
-		
-		//如if上面为tag，则将tag对应的最近的if与上一步连续的if合并后的条件再次合并(||关系)
-		
-		//ifs.over();
 	}
 
 
 	/**
 	 * 扫描并处理while结构(不包含do while)
 	 */
-	private void scanWhileStruct(int index){
+	private void scanWhileStruct(){
 		
-		while (index<this.len && this.findSenIndex(index,"gotoTag",null) > index ) {
-			String gotoTag = ((TagSentence)this.senList.get(index)).getTag();
+		for (int i = 0; i < this.len; i++) {
+			Sentence s = this.senList.get(i);
+			if (s.getName().equals("gotoTag") && s.getState() == Sentence.STATE_DOING) {
+				GotoTagSentence gtTagSen = (GotoTagSentence)s;
+				if (gtTagSen.isReturn()) {
+					continue;
+				}
+				if (i+1 == this.len) {
+					return;
+				}
+				//goto tag后紧跟if,有可能为while
+				Sentence sen = this.senList.get(i+1);
+				if (sen.getName().equals("if") && sen.getState() == Sentence.STATE_DOING) {
+					String gotoTag = gtTagSen.getTag();
+					//第一个if
+					IfSentence ifs = (IfSentence)sen;
+					//找到紧跟的if,碰到非tag和if时终止, lastCond为最下方一个if
+					IfSentence lastCond = ifs;
+					for (int j = i+2; j < this.len; j++) {
+						Sentence s1 = this.senList.get(j);
+						if (s1.getName().equals("tag")) {
+							continue;
+						}else if(s1.getName().equals("if") && sen.getState() == Sentence.STATE_DOING){
+							lastCond = (IfSentence)s1;
+						}else {
+							break;
+						}
+					}
+					//确认if目标后有goto指向goto tag
+					TagSentence lastIfTag = lastCond.getCondTag();
+					int start = this.senList.indexOf(lastIfTag);
+					int gotoS = this.findSenIndex(start+1, "goto");
+					boolean isWhile = false;
+					GotoSentence gs = null;
+					while (gotoS > start) {
+						gs = (GotoSentence)this.senList.get(gotoS);
+						if (gs.getTarget().equals(gotoTag)) {
+							//确认为while结构
+							ifs.setWhile();
+							isWhile = true;
+							break;
+							
+						}
+					}
+					if (isWhile) {
+						//确定内容块位置
+						this.contEndIndex = start+1;
+						this.contStartIndex = gotoS-1;
+						this.contStart = this.senList.get(contStartIndex).getLineNum();
+						this.contEnd = this.senList.get(contEndIndex).getLineNum();
+						                          
+						//合并条件
+						int lastIfIndex = this.senList.indexOf(lastCond);
+						this.mergeConds(i+1,lastIfIndex+1);
+						//将while的内容块移动
+						ArrayList<Sentence> temp = new ArrayList<Sentence>();
+						for (int j = this.contEndIndex; j <= this.contStartIndex; j++) {
+							Sentence s1 = this.senList.remove(j);
+							temp.add(s1);
+						}
+						ifs.over();
+						gs.over();
+						lastIfTag.setEndStruct();
+						lastIfTag.over();
+						this.senList.remove(lastIfTag);
+						//最后将lastIfTag作为结束加入temp
+						temp.add(lastIfTag);
+						this.senList.addAll(lastIfIndex+1, temp);
+					}
+					
+				}else{
+					continue;
+				}
+			}
+		}
+		
+		/*
+		int index = 0;
+		
+		while (index<this.len ) {
+			int findGT = this.findSenIndex(index,"gotoTag");
+			if (findGT<0) {
+				index++;
+				continue;
+			}
+			GotoTagSentence gtTagSen = (GotoTagSentence)this.senList.get(findGT);
+			String gotoTag = gtTagSen.getTag();
+			if (gtTagSen.state != Sentence.STATE_DOING || gtTagSen.isReturn()) {
+				index++;
+				continue;
+			}
 			//goto tag后紧跟if,有可能为while
 			Sentence sen = this.senList.get(index+1);
-			if (sen.getName().equals("if")) {
+			if (sen.getName().equals("if") && sen.getState() == Sentence.STATE_DOING) {
 				//确认if目标后有goto指向goto tag
 				index++;
 				IfSentence ifs = (IfSentence)sen;
 				TagSentence tag = ifs.getCondTag();
 				int start = this.senList.indexOf(tag);
-				int gotoS = this.findSenIndex(start, "goto",null);
+				int gotoS = this.findSenIndex(start, "goto");
 				while (gotoS > start) {
 					GotoSentence gs = (GotoSentence)this.senList.get(gotoS);
 					if (gs.getTarget().equals(gotoTag)) {
@@ -465,72 +434,70 @@ public class IFStructScan {
 						IfSentence lastCond = ifs;
 						for (int i = index; i < this.len; i++) {
 							Sentence s = this.senList.get(i);
-							if (s.getName().equals("gotoTag")) {
-									break;
+							if (s.getName().equals("tag")) {
+								continue;
 							}else if(s.getName().equals("if")){
 								lastCond = (IfSentence)s;
-								//ifs.addIF(lastCond);
 							}else {
 								break;
 							}
 						}
+						//最后一个if指向真正的while内部位置
 						tag = lastCond.getCondTag();
 						start = this.senList.indexOf(tag);
-						gotoS = this.findSenIndex(start, "goto",null);
-						this.contStart = start;
-						this.contEnd = gotoS;
-						                                              
-						//this.mergeConds(ifs);
+						//确定内容块位置
+						this.contEndIndex = start+1;
+						this.contStartIndex = gotoS-1;
+						this.contStart = this.senList.get(contStartIndex).getLineNum();
+						this.contEnd = this.senList.get(contEndIndex).getLineNum();
+						                          
+						//合并条件
+						this.mergeConds(index-1,this.senList.indexOf(lastCond)+1);
 						//将while的内容块移动
-						for (int i = this.contStart; i < this.contEnd; i++) {
+						for (int i = this.contStartIndex; i >= this.contEndIndex; i--) {
 							Sentence s1 = this.senList.remove(i);
 							this.senList.add(index, s1);
 							//移动index
 							index++;
 						}
 						ifs.over();
+						tag.setEndStruct();
+						tag.over();
 					}
-					gotoS++;
-					gotoS = this.findSenIndex(gotoS, "goto",null);
+					gotoS = this.findSenIndex(gotoS+1, "goto");
 				}
 			}
-			
-		}
+			findGT = index;
+		}*/
 	}
 	
 	
-//	private int findGotoTag(int start){
-//		int tagIndex = start;
-//		while (tagIndex < this.len) {
-//			tagIndex = this.findSenIndex(tagIndex, "tag",null);
-//			if (tagIndex == -1) {
-//				return start;
-//			}
-//			TagSentence sen = (TagSentence)this.senList.get(tagIndex);
-//			if (sen.isGoto()) {
-//				return tagIndex;
-//			}
-//			tagIndex++;
-//		}
-//		return -1;
-//	}
-	
-	private int findSenIndex(int start,String typeName,String[] exceptNames){
+	private int findSenIndex(int start,String typeName){
 		for (int i = start; i < this.len; i++) {
 			Sentence sen = this.senList.get(i);
-			if (exceptNames != null) {
-				for (int j = 0; j < exceptNames.length; j++) {
-					if (sen.getName().equals(exceptNames[j])) {
-						return -1;
-					}
-				}
-			}
 			if (sen.getName().equals(typeName)) {
 				return i;
 			}
 		}
 		return -1;
 	}
+	
+//	private int findSenIndex(int start,String typeName,String[] exceptNames){
+//		for (int i = start; i < this.len; i++) {
+//			Sentence sen = this.senList.get(i);
+//			if (exceptNames != null) {
+//				for (int j = 0; j < exceptNames.length; j++) {
+//					if (sen.getName().equals(exceptNames[j])) {
+//						return -1;
+//					}
+//				}
+//			}
+//			if (sen.getName().equals(typeName)) {
+//				return i;
+//			}
+//		}
+//		return -1;
+//	}
 	
 	/**
 	 * 向下查找if内容块中最后一条语句的lineNum
@@ -598,16 +565,24 @@ public class IFStructScan {
 				}else{
 					System.err.println("goto cond not found:"+gs.getTarget());
 				}
-			}else if(returnToEnd >= 2){
+			}
+			if(returnToEnd == 2){
 				if (returnLine == -1 && s.getName().equals("return")) {
 					returnLine = this.senList.indexOf(s);
 					returnToEnd = 3;
-				}else if(returnToEnd == 3){
-					if (s.getName().equals("tag") || s.getName().equals("gotoTag")) {
-						returnLine = this.senList.indexOf(s);
-					}else{
-						returnToEnd = 0;//不再处理
-					}
+				}
+//				else if(returnToEnd == 3){
+//					if (s.getName().equals("tag") || s.getName().equals("gotoTag")) {
+//						returnLine = this.senList.indexOf(s);
+//					}else{
+//						returnToEnd = 0;//不再处理
+//					}
+//				}
+			}else if(returnToEnd == 3){
+				if (s.getName().equals("tag") || s.getName().equals("gotoTag")) {
+					returnLine = this.senList.indexOf(s);
+				}else{
+					returnToEnd = 0;//不再处理
 				}
 			}
 		}

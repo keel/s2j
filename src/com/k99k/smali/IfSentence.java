@@ -345,7 +345,7 @@ public class IfSentence extends Sentence {
 	 */
 	@Override
 	public String getName() {
-		return this.ifCond;
+		return "if";
 	}
 	
 
