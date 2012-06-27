@@ -146,13 +146,20 @@ public class IfSentence extends Sentence {
 	 * 输出
 	 */
 	private void render(){
-		if (isElse) {
+		if(isDoWhile){
+			this.out.append("} ");
+		}else if (isElse) {
 			this.out.append("else ");
 		}
 		this.out.append(this.ifCond);
 		this.out.append(" (");
 		this.out.append(getCondOut());
-		this.out.append(") {");
+		this.out.append(")");
+		if (this.isDoWhile) {
+			this.out.append(";");
+		}else{
+			this.out.append(" {");
+		}
 	}
 	
 	/**
@@ -254,7 +261,10 @@ public class IfSentence extends Sentence {
 	 */
 	private boolean isElse = false;
 	
-	
+	/**
+	 * 是否为do while的条件
+	 */
+	private boolean isDoWhile = false;
 	
 	/**
 	 * @return the isElse
@@ -319,6 +329,31 @@ public class IfSentence extends Sentence {
 		//this.render();
 	}
 
+
+	/**
+	 * @return the isDoWhile
+	 */
+	public final boolean isDoWhile() {
+		return isDoWhile;
+	}
+
+	/**
+	 * @param isDoWhile the isDoWhile to set
+	 */
+	public final void setDoWhile(boolean isDoWhile) {
+		if (isDoWhile) {
+			this.isDoWhile = isDoWhile;
+			this.ifCond = "while";
+			this.isReversed = true;
+		}else{
+			this.isDoWhile = false;
+			if (this.isWhile()) {
+				this.ifCond = "while";
+			}else{
+				this.ifCond = "if";
+			}
+		}
+	}
 
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Sentence#newOne(com.k99k.smali.SentenceMgr, java.lang.String)

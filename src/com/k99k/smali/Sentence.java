@@ -209,6 +209,10 @@ public abstract class Sentence {
 		this.out.append(outStr);
 	}
 	
+	public void appendOut(String outStr){
+		this.out.append(outStr);
+	}
+	
 	public void over(){
 		this.state = STATE_OVER;
 	}

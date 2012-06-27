@@ -23,8 +23,9 @@ public class ComputSentence extends Sentence {
 	@Override
 	public boolean exec() {
 		this.doComm(this.line);
-		
-		return false;
+		this.out.append(this.line);
+		this.over();
+		return true;
 	}
 
 	/* (non-Javadoc)
