@@ -746,10 +746,15 @@ public class IFStructScan {
 			beforeContentTagLn = beforeContentTag.getLineNum();
 		}
 		//虚拟内容行
-		float contentLineNum = Float.parseFloat(((afterLastIfTag == null)?this.senList.get(endIndex).getLineNum():afterLastIfTagSenLn)+".5");
+		float contentLineNum = Float.parseFloat(((afterLastIfTag == null)?(this.contEnd-1):afterLastIfTagSenLn)+".5");
 		//将最后一个if的tag换成虚拟的在内容行后的tag
 		TagSentence vLastTag = new TagSentence(this.mgr, "");
-		vLastTag.setLineNum((afterLastIfTagSenLn != -1)?afterLastIfTagSenLn+1:(this.contStart+1));
+//		if (afterLastIfTagSenLn == -1) {
+//			//没有afterLastIfTag时,vLastTag仍在内容块前
+//			vLastTag.setLineNum(this.contEnd-1);
+//		}else{
+			vLastTag.setLineNum((afterLastIfTagSenLn != -1)?afterLastIfTagSenLn+1:(this.contStart+1));
+//		}
 		TagSentence lastIfTag = null;
 		for (int i = endIndex; i >= startIndex; i--) {
 			Sentence s = this.senList.get(i);
@@ -768,9 +773,11 @@ public class IFStructScan {
 					lastIfTag = tagAIfs;
 					aIfs.setCondTag(vLastTag);
 					aIfs.setReversed(true);
+					break;
 				}else if(tagAIfs.getLineNum() == lastIfTag.getLineNum()){
 					aIfs.setCondTag(vLastTag);
 					aIfs.setReversed(true);
+					break;
 				}
 			}
 		}
@@ -814,7 +821,7 @@ public class IFStructScan {
 					}else 
 						if(afterLastIfTagSenIndex>-1 && tag1LineNum == afterLastIfTagSenLn){
 						//外部if的tag正是最下方if后的tag,置于内容块后
-						tag1LineNum = contentLineNum + 1F;
+						tag1LineNum = contentLineNum + 0.5F;
 						
 					}
 					//####################
@@ -855,7 +862,7 @@ public class IFStructScan {
 //							}else 
 								if(afterLastIfTagSenIndex>-1 && tag2LineNum == afterLastIfTagSenLn){
 								//内部if的tag正是最下方if后的tag,置于内容块后
-								tag2LineNum = contentLineNum + 1F;
+								tag2LineNum = contentLineNum + 0.5F;
 								
 							}
 							//####################
@@ -920,7 +927,7 @@ public class IFStructScan {
 						}
 						ifs.mergeIf(isAnd, ifs2);
 						//是否要加括号保护
-						if (Math.abs(tag1LineNum - tag2LineNum) < 1) {
+						if (tag1LineNum != tag2LineNum) {
 							ifs.addCondProtect();
 						}
 						else {
