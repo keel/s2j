@@ -68,7 +68,7 @@ public abstract class Sentence {
 	/**
 	 * 行号
 	 */
-	int lineNum;
+	int lineNum = -1;
 	
 	/**
 	 * 对应的java文件行号

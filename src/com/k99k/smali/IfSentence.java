@@ -168,25 +168,35 @@ public class IfSentence extends Sentence {
 	 */
 	String getCondOut(){
 		StringBuilder sb = new StringBuilder();
-		if (condProtect) {
-			sb.append("(");
-		}
-		if (isBoolean) {
-			sb.append(this.boolVal);
-		}
-		sb.append(this.left);
-		if (!isBoolean) {
-			sb.append(comp).append(this.right);
-		}
+		boolean isSelf = true;
 		if (!this.addIfs.isEmpty()) {
 			for (Iterator<IfSentence> it = this.addIfs.iterator(); it.hasNext();) {
 				IfSentence ifs = it.next();
+				if (ifs.getLineNum() < 0) {
+					sb.append(ifs.getLine());
+					continue;
+				}
+				if (isSelf) {
+					if (isBoolean) {
+						sb.append(this.boolVal);
+					}
+					sb.append(this.left);
+					if (!isBoolean) {
+						sb.append(comp).append(this.right);
+					}
+					isSelf = false;
+				}
 				sb.append(" ").append(ifs.getAddIfLogic()).append(" ");
 				sb.append(ifs.getCondOut());
 			}
-		}
-		if (condProtect) {
-			sb.append(")");
+		}else{
+			if (isBoolean) {
+				sb.append(this.boolVal);
+			}
+			sb.append(this.left);
+			if (!isBoolean) {
+				sb.append(comp).append(this.right);
+			}
 		}
 		return sb.toString();
 	}
@@ -203,13 +213,17 @@ public class IfSentence extends Sentence {
 		return super.getOut();
 	}
 
-	private boolean condProtect = false;
+//	private boolean condProtect = false;
 	
 	/**
 	 * 在条件中加上括号保护
 	 */
 	void addCondProtect(){
-		condProtect = true;
+//		condProtect = true;
+		IfSentence prePro = new IfSentence(this.mgr, "(");
+		IfSentence afterPro = new IfSentence(this.mgr, ")");
+		this.addIfs.add(0, prePro);
+		this.addIfs.add(afterPro);
 	}
 	
 	/**
