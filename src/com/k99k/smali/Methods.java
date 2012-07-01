@@ -276,6 +276,13 @@ public class Methods extends Context {
 		return isConstructor;
 	}
 
+	/**
+	 * @return the name
+	 */
+	public final String getName() {
+		return name;
+	}
+
 	@Override
 	public Context newOne(S2J s2j, ArrayList<String> lines, StringBuilder out) {
 		return new Methods(s2j, lines, out);
