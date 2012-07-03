@@ -344,83 +344,6 @@ public class IFStructScan {
 		return ifs;
 	}
 	/**
-	 * 处理do while结构
-	 */
-	private void scanDoWhile(IfSentence ifs,int i){
-		TagSentence tag = ifs.getCondTag();
-		if (tag.getLineNum()< ifs.getLineNum()) {
-			//do while结构
-			//确定最后一个指向此tag的if
-			for (int j = i+1; j < this.len; j++) {
-				Sentence s2 = this.senList.get(j);
-				if (s2.getName().equals("if") && s2.getState() == Sentence.STATE_DOING) {
-					IfSentence ifs2 = (IfSentence)s2;
-					if (ifs2.getCondTag().getLineNum() == tag.getLineNum()) {
-						ifs = ifs2;
-						i = j;
-					}
-				}
-			}
-			
-			tag.appendOut(StaticUtil.NEWLINE+StaticUtil.TABS[tag.getLevel()]+"do {");
-			//向前定位最上面的if
-			IfSentence firstCond = ifs;
-			for (int j = i-1; j >= 0; j--) {
-				Sentence s1 = this.senList.get(j);
-				if (s1.getName().equals("tag")) {
-					continue;
-				}else if(s1.getName().equals("if") && s1.getState() == Sentence.STATE_DOING){
-					firstCond = (IfSentence)s1;
-				}else {
-					break;
-				}
-			}
-			//多个条件
-			if (firstCond.getLineNum() != ifs.getLineNum()) {
-				int tagLineNum = tag.getLineNum();
-				int tagIndex = this.senList.indexOf(tag);
-				this.senList.remove(tagIndex);
-				this.senList.add(i,tag);
-				//倒置的tag插入最后一个if后面,lineNum+1
-				int ifsLN = ifs.getLineNum();
-				tag.setLineNum(ifsLN+1);
-				//虚拟一个Sentence 加入其后
-				TagSentence vv = new TagSentence(ifs.mgr, "");
-				vv.setLineNum(ifsLN+2);
-				vv.setType(Sentence.TYPE_LINE);
-				this.senList.add(i+1,vv);
-				//后面的所有lineNum+1
-				for (int j = i+2; j < this.len+1; j++) {
-					Sentence s3 = this.senList.get(j);
-					s3.setLineNum(s3.getLineNum()+1);
-				}
-				maxLineNum++;
-				
-				//确定内容块位置,将最后一个if作为内容块行
-				this.contEndIndex = this.senList.indexOf(vv);
-				this.contStartIndex = contEndIndex;
-				this.contStart = this.senList.get(contStartIndex).getLineNum();
-				this.contEnd = this.senList.get(contEndIndex).getLineNum();
-				int ifStart = this.senList.indexOf(firstCond);
-				//合并条件
-				this.mergeCondsForWhile(ifStart, i+1,ifs);
-				//回复以前状态
-				tag.setLineNum(tagLineNum);
-				this.senList.remove(tag);
-				this.senList.add(tagIndex,tag);
-				this.senList.remove(vv);
-			}
-			
-			tag.over();
-			//设置处理完
-			firstCond.setDoWhile(true);
-			firstCond.appendOut(";");
-			firstCond.over();
-			firstCond.getCondTag().over();
-		}
-	}
-	
-	/**
 	 * 扫描tag前置的while结构,有可能为do-while
 	 */
 	private void scanReversedIf(){
@@ -503,7 +426,7 @@ public class IFStructScan {
 						this.contStart = this.senList.get(this.contStartIndex).getLineNum();
 						
 						//合并条件
-						ifs = this.mergeCondsForWhile(firstIfIndex, lastCondIndex+1,lastCond);
+						ifs = this.mergeCondsForWhile(firstIfIndex, lastCondIndex+1,lastCond,true);
 						if (ifs == null) {
 							System.err.println("scanReversedWhile mergeCondsForWhile failed.");
 							continue;
@@ -585,6 +508,7 @@ public class IFStructScan {
 					int lastCondIndex = i+1;
 					ArrayList<IfSentence> conds = new ArrayList<IfSentence>();
 					conds.add(ifs);
+					boolean hasReverse = false;
 					for (int j = i+2; j < this.len; j++) {
 						Sentence s1 = this.senList.get(j);
 						if (s1.getName().equals("tag")) {
@@ -592,9 +516,14 @@ public class IFStructScan {
 						}else if(s1.getName().equals("if") && s1.getState() == Sentence.STATE_DOING){
 							IfSentence iff = (IfSentence)s1;
 							TagSentence tiff = iff.getCondTag();
-							if (tiff.getLineNum()> EndTag.getLineNum()) {
+							if (tiff.getLineNum() < iff.getLineNum()) {
+								//倒置的一定是EndTag
+								EndTag = tiff;
+								hasReverse = true;
+							}else if (!hasReverse && tiff.getLineNum()> EndTag.getLineNum()) {
 								EndTag = tiff;
 							}
+							lastCondIndex = j;
 							conds.add(iff);
 						}else {
 							break;
@@ -672,7 +601,7 @@ public class IFStructScan {
 						                          
 						//合并条件
 						int lastIfIndex = this.senList.indexOf(lastCond);
-						this.mergeCondsForWhile(i+1,lastIfIndex+1,lastCond);
+						this.mergeCondsForWhile(i+1,lastIfIndex+1,lastCond,false);
 						//将while的内容块移动
 						ArrayList<Sentence> temp = new ArrayList<Sentence>();
 						for (int j = this.contEndIndex; j <= this.contStartIndex; j++) {
@@ -716,8 +645,33 @@ public class IFStructScan {
 	 * @param startIndex 条件正向开始语句(包含)
 	 * @param endIndex 条件正向结束语句(不包含)
 	 * @param lastIf 最后一个条件if
+	 * @param isReversedIf 是否是reversedIf
 	 */
-	private IfSentence mergeCondsForWhile(int startIndex,int endIndex,IfSentence lastIf){
+	private IfSentence mergeCondsForWhile(int startIndex,int endIndex,IfSentence lastIf,boolean isReversedIf){
+		//处理仅有一个if的情况
+		Sentence one = null;
+		int ifCC = 0;
+		for (int i = startIndex; i < endIndex; i++) {
+			Sentence s = this.senList.get(i);
+			if (s.getName().equals("if") && s.getState() == Sentence.STATE_DOING) {
+				one = s;
+				ifCC++;
+			}
+			if (ifCC>1) {
+				ifCC = 2;
+				break;
+			}
+		}
+		if (ifCC == 1) {
+			IfSentence ifOne = (IfSentence)one;
+			if (ifOne.getCondTag().getLineNum() < ifOne.getLineNum()) {
+				ifOne.reverseCompare();
+			}
+			ifOne.over();
+			ifOne.getCondTag().over();
+			return ifOne;
+		}
+		//--------------------------------------------------
 		int lastIfLineNum = lastIf.getLineNum();
 		//确定多个if条件之后的tag
 		TagSentence afterLastIfTag = null;
@@ -740,16 +694,22 @@ public class IFStructScan {
 		afterLastIfTagSenLn = afterLastIfTag.getLineNum();
 		
 		//确定内容块前的tag，即真正的while开始位置
-		Sentence beforeContentTag = null;;
+		TagSentence beforeContentTag = null;;
 		int beforeContentTagLn = -1;
 		//倒置情况下beforeContentTag需要虚拟一个,lineNum为contentLineNum+1，即afterLastIfTagSenLn+2
+		boolean isReverse = false;
+		TagSentence reversedTag = null;
+		int reversedTagLn = -1;
 		if (lastIf.getCondTag().getLineNum() < lastIf.getLineNum()) {
 			beforeContentTag = new TagSentence(this.mgr, "");
 			beforeContentTag.setLineNum(afterLastIfTagSenLn + 2);
+			isReverse = true;
+			reversedTag = lastIf.getCondTag();
+			reversedTagLn = reversedTag.getLineNum();
 		}else
 		//其他情况下内容块上方必然是beforeContentTag
 		if (this.senList.get(this.contEndIndex-1).getName().equals("tag")) {
-			beforeContentTag = this.senList.get(this.contEndIndex-1);
+			beforeContentTag = (TagSentence) this.senList.get(this.contEndIndex-1);
 		}else{
 			System.err.println("contEndIndex-1 is not tag. Method: "+this.mgr.getMeth().getName());
 			return null;
@@ -759,31 +719,39 @@ public class IFStructScan {
 		int contentLineNum = afterLastIfTagSenLn + 1;
 		
 		TagSentence lastIfTag = null;
-		//将最后一个if的tag换成afterLastIfTag
-		for (int i = endIndex; i >= startIndex; i--) {
-			Sentence s = this.senList.get(i);
-			if (s.getName().equals("if")) {
-				IfSentence aIfs = (IfSentence) s;
-				TagSentence tagAIfs = aIfs.getCondTag();
-				if (tagAIfs.getLineNum() < aIfs.getLineNum()) {
-					//倒置if的情况下,肯定为最后tag
-					lastIfTag = tagAIfs;
-					aIfs.setCondTag(afterLastIfTag);
-					aIfs.reverseCompare();
-					//无break,因为可能有多个if指向倒置的tag
-				}else if(lastIfTag == null){
-					//确定最后一个if的tag
-					lastIfTag = tagAIfs;
-					aIfs.setCondTag(afterLastIfTag);
-					aIfs.setReversed(true);
-					break;
+		//将最后一个if的tag换成afterLastIfTag,除非在scanWhile中条件有倒置的情况
+		if (!isReversedIf && isReverse) {
+//			System.out.println("ddd:"+this.mgr.getMeth().getName());
+			if (reversedTag != null) {
+				reversedTag.setLineNum(beforeContentTagLn);
+			}
+			
+		}else{
+			for (int i = endIndex; i >= startIndex; i--) {
+				Sentence s = this.senList.get(i);
+				if (s.getName().equals("if")) {
+					IfSentence aIfs = (IfSentence) s;
+					TagSentence tagAIfs = aIfs.getCondTag();
+					if (tagAIfs.getLineNum() < aIfs.getLineNum()) {
+						//倒置if的情况下,肯定为最后tag
+						lastIfTag = tagAIfs;
+						aIfs.setCondTag(afterLastIfTag);
+						aIfs.reverseCompare();
+						//无break,因为可能有多个if指向倒置的tag
+					}else if(lastIfTag == null){
+						//确定最后一个if的tag
+						lastIfTag = tagAIfs;
+						aIfs.setCondTag(afterLastIfTag);
+						aIfs.setReversed(true);
+						break;
+					}
 				}
 			}
+			
+			//交换afterLastIfTag和beforeContentTag的lineNum
+			afterLastIfTag.setLineNum(beforeContentTagLn);
+			beforeContentTag.setLineNum(afterLastIfTagSenLn);
 		}
-		
-		//交换afterLastIfTag和beforeContentTag的lineNum
-		afterLastIfTag.setLineNum(beforeContentTagLn);
-		beforeContentTag.setLineNum(afterLastIfTagSenLn);
 		//--------------------------------------------------------
 		int ifCount = 2;
 		IfSentence ifs = null;
@@ -802,6 +770,9 @@ public class IFStructScan {
 					if (tagIndex < 0) {
 						//倒置情况
 						tagIndex = this.contStartIndex+1;
+					}else if(tagIndex < startIndex){
+						//倒置情况2
+						tagIndex = endIndex;
 					}
 					float tag1LineNum = tag.getLineNum();
 					IfSentence ifs2 = null;
@@ -921,6 +892,7 @@ public class IFStructScan {
 //		}
 		afterLastIfTag.setLineNum(afterLastIfTagSenLn);
 		beforeContentTag.setLineNum(beforeContentTagLn);
+//		reversedTag.setLineNum(reversedTagLn);
 		return ifs;
 	}
 
@@ -977,8 +949,6 @@ public class IFStructScan {
 	 * 初始化cond和ifsen以及goto的对应关系，return语句后置
 	 */
 	private boolean init(){
-		//是否需要将return后置,0表示未处理或不处理,1:不需要,2:需要,3处理中
-		int returnToEnd = 0;
 		this.maxLineNum = this.senList.get(len-1).getLineNum();
 		//先扫描两次将cond和if对应上
 		for (int i = len-1; i >= 0; i--) {
@@ -986,12 +956,6 @@ public class IFStructScan {
 			if (s.getName().equals("tag") || s.getName().equals("gotoTag")) {
 				TagSentence ts = (TagSentence)s;
 				condMap.put(ts.getTag(), ts);
-			}else if(returnToEnd==0){
-				if (s.getType() == Sentence.TYPE_LINE) {
-					returnToEnd = 2;
-				}else if(s.getName().equals("return")){
-					returnToEnd = 1;
-				}
 			}
 		}
 		if (condMap.isEmpty()) {
@@ -1019,7 +983,28 @@ public class IFStructScan {
 				}else{
 					System.err.println("goto cond not found:"+gs.getTarget());
 				}
-			}else if(s.getName().equals("return")){
+			}
+		}
+		lastSenLineNum = this.senList.get(this.len-1).getLineNum();
+		return true;
+	}
+	private int lastSenLineNum = -1;
+	private void backReturnSens(){
+		//是否需要将return后置,0表示未处理或不处理,1:不需要,2:需要,3处理中
+		int returnToEnd = 0;
+		for (int i = len-1; i >= 0; i--) {
+			Sentence s = senList.get(i);
+			if(returnToEnd==0){
+				if (s.getType() == Sentence.TYPE_LINE) {
+					returnToEnd = 2;
+				}else if(s.getName().equals("return")){
+					returnToEnd = 1;
+				}
+			}
+		}
+		for (int i = len-1; i >= 0; i--) {
+			Sentence s = senList.get(i);
+			if(s.getName().equals("return")){
 				this.returnIndex = i;
 			}
 			if(returnToEnd == 2){
@@ -1027,13 +1012,6 @@ public class IFStructScan {
 					returnLine = this.senList.indexOf(s);
 					returnToEnd = 3;
 				}
-//				else if(returnToEnd == 3){
-//					if (s.getName().equals("tag") || s.getName().equals("gotoTag")) {
-//						returnLine = this.senList.indexOf(s);
-//					}else{
-//						returnToEnd = 0;//不再处理
-//					}
-//				}
 			}else if(returnToEnd == 3){
 				if (s.getName().equals("tag") || s.getName().equals("gotoTag")) {
 					returnLine = this.senList.indexOf(s);
@@ -1042,11 +1020,6 @@ public class IFStructScan {
 				}
 			}
 		}
-		lastSenLineNum = this.senList.get(this.len-1).getLineNum();
-		return true;
-	}
-	private int lastSenLineNum = -1;
-	private void backReturnSens(){
 		//return 后置
 		if (returnLine > -1) {
 			ArrayList<Sentence> temp = new ArrayList<Sentence>();
@@ -1054,9 +1027,6 @@ public class IFStructScan {
 				Sentence s1 = this.senList.get(returnLine);
 				if (s1.getName().equals("return")) {
 					//return 语句本身不后置
-//					s1.setLineNum(last+1);
-//					temp.add(s1);
-//					this.senList.remove(s1);
 					break;
 				}else if (s1.getName().equals("if") || s1.getName().equals("goto")) {
 					break;
