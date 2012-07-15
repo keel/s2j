@@ -209,8 +209,9 @@ public abstract class Sentence {
 		this.out.append(outStr);
 	}
 	
-	public void appendOut(String outStr){
+	public Sentence appendOut(String outStr){
 		this.out.append(outStr);
+		return this;
 	}
 	
 	public void over(){
