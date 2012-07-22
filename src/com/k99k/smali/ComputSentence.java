@@ -139,6 +139,7 @@ public class ComputSentence extends Sentence {
 			sb.append(" ").append(coms.get(com)).append(" ");
 			String sec = null;
 			if (arr[3].startsWith("v")) {
+				//FIXME 需要处理16进制转换
 				sec = this.mgr.getVar(arr[3]).getOut();
 			}else{
 				sec = arr[3];
@@ -317,7 +318,7 @@ public class ComputSentence extends Sentence {
 		fs = Integer.toHexString(bits);
 		System.out.println(fs); 
 		
-		int i = Integer.valueOf(fs, 16);
+		//int i = Integer.valueOf(fs, 16);
         float value = Float.intBitsToFloat(Integer.valueOf(fs, 16));
         System.out.println(value);    
         
