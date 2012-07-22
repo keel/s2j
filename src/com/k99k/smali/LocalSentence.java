@@ -43,7 +43,20 @@ public class LocalSentence extends Sentence {
 		v.setOut(name);
 		
 //		String val = "";
-		String val = this.mgr.getVar(ws[1]).getOut();
+		Var ov = this.mgr.getVar(ws[1]);
+		
+		String val = ov.getOut();
+		if (obj.equals("float")) {
+			if (val.matches("(0x)?\\d+[F]?")) {
+				val = String.valueOf(Float.intBitsToFloat(Integer.valueOf(val)))+"F";
+			}
+		}else if(obj.equals("double")){
+			if (val.matches("(0x)?\\d+[D]?")) {
+				val = String.valueOf(Double.longBitsToDouble(Long.valueOf(val)))+"D";
+			}
+		}
+		
+		
 //		Sentence s1 = this.mgr.getLastSentence();
 //		if (s1 != null && s1.getOut().length()>0) {
 //			s1.over();
@@ -52,6 +65,8 @@ public class LocalSentence extends Sentence {
 //		}else{
 //			val = this.mgr.getVar(ws[1]).getOut();
 //		}
+		
+		
 		this.out.append(obj).append(" ").append(name).append(" = ").append(val);
 		
 		this.mgr.setVar(v);

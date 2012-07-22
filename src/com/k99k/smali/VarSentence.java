@@ -75,13 +75,20 @@ public class VarSentence extends Sentence {
 			v.setValue(Integer.decode(value));
 			value = String.valueOf(v.getValue());
 		}else if(type.equals("long")){
-			v.setValue(Long.decode(value));
+			v.setValue(Long.decode(value.replace("L", "")));
 			value = String.valueOf(v.getValue());
 		}else if(type.equals("float")){
-			v.setValue(new Float(value));
-			value = String.valueOf(v.getValue());
+			StringBuilder sb = new StringBuilder(value);
+			//去掉0x,不足8位补到8位
+			sb.delete(0, 2);
+			for (int i = sb.length(); i < 8; i++) {
+				sb.append("0");
+			}
+			float fv = Float.intBitsToFloat(Integer.parseInt(sb.toString(),16));
+			v.setValue(fv);
+			value = String.valueOf(v.getValue())+"F";
 		}else if(type.equals("double")){
-			v.setValue(new Double(value));
+			v.setValue(Double.valueOf(value.replace("D", "")));
 			value = String.valueOf(v.getValue());
 		}else if(type.equals("Class")){
 			//TODO 无法确定Class值 ,暂存String
@@ -95,6 +102,8 @@ public class VarSentence extends Sentence {
 		this.over();
 		return true;
 	}
+	
+	
 
 	/** 
 	 * 返回SentenceMgr内static的VarSentence,注意本类中this.mgr为null

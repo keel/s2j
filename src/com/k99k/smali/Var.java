@@ -48,7 +48,40 @@ public class Var {
 	 */
 	private Sentence sen;
 	
-	
+	/**
+	 * 取反
+	 */
+	public void negVal(){
+		if (this.value == null) {
+			return;
+		}
+		String type = this.getClassName();
+		boolean isNum = false;
+		if(type.equals("int")){
+			int v = (Integer)this.value;
+			this.value = -v;
+			isNum = true;
+		}else if(type.equals("long")){
+			long v = (Long)this.value;
+			this.value = -v;
+			isNum = true;
+		}else if(type.equals("float")){
+			float v = (Float)this.value;
+			this.value = -v;
+			isNum = true;
+		}else if(type.equals("double")){
+			double v = (Double)this.value;
+			this.value = -v;
+			isNum = true;
+		}
+		if (isNum) {
+			if (this.out.startsWith("-")) {
+				this.out = this.out.substring(1);
+			}else{
+				this.out = "-"+this.out;
+			}
+		}
+	}
 
 	/**
 	 * 复制一个Var

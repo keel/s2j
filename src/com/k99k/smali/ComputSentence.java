@@ -3,6 +3,8 @@
  */
 package com.k99k.smali;
 
+import java.util.HashMap;
+
 /**
  * @author keel
  *
@@ -16,6 +18,51 @@ public class ComputSentence extends Sentence {
 	public ComputSentence(SentenceMgr mgr, String line) {
 		super(mgr, line);
 	}
+	
+	private String comTag = null;
+	
+	/**
+	 * 计算符
+	 */
+	private static HashMap<String,String> coms = new HashMap<String, String>();
+	
+	private static String[] coma = new String[]{
+		"add-",
+		"sub-",
+		"mul-",
+		"div-",
+		"rem-",
+		"and-",
+		"or-",
+		"xor-",
+		"shr-",
+		"shl-",
+		"ushr-"
+	};
+	static{
+		coms.put("add-", "+");
+		coms.put("sub-", "-");
+		coms.put("mul-", "*");
+		coms.put("div-", "/");
+		coms.put("rem-", "%");
+		coms.put("and-", "&");
+		coms.put("or-", "|");
+		coms.put("xor-", "^");
+		coms.put("shl-", "<<");
+		coms.put("shr-", ">>");
+		coms.put("ushr-", ">>>");
+	}
+	
+	private int type = Sentence.TYPE_LINE;
+	
+	private static String checkCom(String tag){
+		for (int i = 0; i < coma.length; i++) {
+			if (tag.indexOf(coma[i]) > -1) {
+				return coma[i];
+			}
+		}
+		return null;
+	}
 
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Sentence#exec()
@@ -23,7 +70,82 @@ public class ComputSentence extends Sentence {
 	@Override
 	public boolean exec() {
 		this.doComm(this.line);
-		this.out.append(this.line);
+		//去除,号
+		this.line = this.line.replaceAll(",", "");
+		String[] arr = this.line.split(" ");
+		if (arr.length<3) {
+			this.out.append("exec invoke error. line:").append(this.line);
+			this.mgr.err(this);
+			System.err.println(this.out);
+			return false;
+		}
+//		int alen = arr.length;
+		this.comTag = arr[0];
+		String target = arr[1];
+		String com = null;;
+		if (this.comTag.indexOf("-to-") > -1) {
+			//转换
+			String[] toa = this.comTag.split("-to-");
+			Var org = this.mgr.getVar(arr[2]);
+			Var tar = this.mgr.getVar(arr[1]);
+			tar.setOut("("+toa[1]+")"+org.getOut());
+			this.mgr.setVar(tar);
+			this.type = Sentence.TYPE_NOT_LINE;
+		}else if(this.comTag.indexOf("/2addr") > -1){
+			//存值 
+			com=checkCom(this.comTag);
+			if (com == null) {
+				System.err.println("/2addr error:"+this.line);
+				return false;
+			}
+			Var org = this.mgr.getVar(target);
+			String tar = org.getOut();
+			this.out.append(tar).append(" = ");
+			StringBuilder sb = new StringBuilder();
+			sb.append(tar);
+			sb.append(" ").append(coms.get(com)).append(" ");
+			sb.append(this.mgr.getVar(arr[2]).getOut());
+			//org.setOut("("+sb.toString()+")");
+			this.out.append(sb);
+			//this.mgr.setVar(org);
+		}else if(this.comTag.indexOf("neg-") > -1){
+			//取反
+			Var tov = this.mgr.getVar(arr[1]);
+			String org = tov.getOut();
+			String to = this.mgr.getVar(arr[2]).getOut();
+			this.out.append(org).append(" = ").append("-").append(to);
+			tov.negVal();
+			this.mgr.setVar(tov);
+		}else if((com=checkCom(this.comTag)) != null){
+			//赋值计算
+			Var org = this.mgr.getVar(target);
+			boolean orgSave = false;
+			if (org == null) {
+				//还未声明
+				org = new Var(this);
+				org.setName(target);
+				org.setKey(this.comTag);
+				orgSave = true;
+				this.type = Sentence.TYPE_NOT_LINE;
+			}else{
+				this.out.append(org.getOut()).append(" = ");
+			}
+			StringBuilder sb = new StringBuilder();
+			sb.append(this.mgr.getVar(arr[2]).getOut());
+			sb.append(" ").append(coms.get(com)).append(" ");
+			String sec = null;
+			if (arr[3].startsWith("v")) {
+				sec = this.mgr.getVar(arr[3]).getOut();
+			}else{
+				sec = arr[3];
+			}
+			sb.append(sec);
+			if (orgSave) {
+				org.setOut(sb.toString());
+				this.mgr.setVar(org);
+			}
+			this.out.append(sb);
+		}
 		this.over();
 		return true;
 	}
@@ -41,7 +163,7 @@ public class ComputSentence extends Sentence {
 	 */
 	@Override
 	public int getType() {
-		return Sentence.TYPE_NOT_LINE;
+		return this.type;
 	}
 
 	/* (non-Javadoc)
@@ -139,7 +261,7 @@ public class ComputSentence extends Sentence {
 		"div-double/2addr",
 		"rem-double/2addr",
 		"add-int/lit16",
-		"rsub-int",
+//		"rsub-int",
 		"mul-int/lit16",
 		"div-int/lit16",
 		"rem-int/lit16",
@@ -147,7 +269,7 @@ public class ComputSentence extends Sentence {
 		"or-int/lit16",
 		"xor-int/lit16",
 		"add-int/lit8",
-		"rsub-int/lit8",
+//		"rsub-int/lit8",
 		"mul-int/lit8",
 		"div-int/lit8",
 		"rem-int/lit8",
@@ -158,4 +280,21 @@ public class ComputSentence extends Sentence {
 		"shr-int/lit8",
 		"ushr-int/lit8"
 	};
+	
+	
+	public static void main(String[] args) {
+		String fs = "0x3f00";
+		
+		//fs = "3";
+//		int   intBits   =   Integer.parseInt(fs,   16);     
+//        float   f   =   Float.intBitsToFloat(intBits);
+		float f = 0.5F;
+		int bits = Float.floatToIntBits(f); 
+		fs = Integer.toHexString(bits);
+		System.out.println(fs); 
+		
+		int i = Integer.valueOf(fs, 16);
+        float  value=Float.intBitsToFloat(Integer.valueOf(fs, 16));
+        System.out.println(value);     
+	}
 }

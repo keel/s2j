@@ -39,6 +39,8 @@ public class Tool {
 		}
 		else if (smaliObj.equals("F")) {
 			return "float";
+		}else if (smaliObj.equals("D")) {
+			return "double";
 		}else if (smaliObj.startsWith("[")) {
 			int arrLen = smaliObj.lastIndexOf("[")+1;
 			StringBuilder sb = new StringBuilder(parseObject(smaliObj.substring(arrLen)));
