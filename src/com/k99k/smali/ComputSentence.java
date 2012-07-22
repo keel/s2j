@@ -100,14 +100,18 @@ public class ComputSentence extends Sentence {
 			}
 			Var org = this.mgr.getVar(target);
 			String tar = org.getOut();
-			this.out.append(tar).append(" = ");
 			StringBuilder sb = new StringBuilder();
 			sb.append(tar);
 			sb.append(" ").append(coms.get(com)).append(" ");
 			sb.append(this.mgr.getVar(arr[2]).getOut());
-			//org.setOut("("+sb.toString()+")");
-			this.out.append(sb);
-			//this.mgr.setVar(org);
+			if (org.getSen().getName().equals("var")) {
+				org.setOut("("+sb.toString()+")");
+				this.out.append(tar).append(" = ");
+				this.out.append(sb);
+				this.mgr.setVar(org);
+				this.type = TYPE_NOT_LINE;
+			}
+			
 		}else if(this.comTag.indexOf("neg-") > -1){
 			//取反
 			Var tov = this.mgr.getVar(arr[1]);
@@ -145,6 +149,20 @@ public class ComputSentence extends Sentence {
 				this.mgr.setVar(org);
 			}
 			this.out.append(sb);
+		}else if(this.comTag.indexOf("cmp") == 0){
+			//比较语句
+			this.type = Sentence.TYPE_NOT_LINE;
+			Var a1 = this.mgr.getVar(arr[2]);
+			Var a2 = this.mgr.getVar(arr[3]);
+			Var tar = this.mgr.getVar(arr[1]);
+//			if (this.comTag.charAt(3) == 'g') {
+//				tar.setOut(a1.getOut()+" - "+a2.getOut());
+//			}else if (this.comTag.charAt(3) == 'l') {
+//				tar.setOut(a1.getOut()+" - "+a2.getOut());
+//			}else if(this.comTag.equals("cmp-long")){
+//				tar.setOut(a1.getOut()+" - "+a2.getOut());
+//			}
+			tar.setOut(a1.getOut()+" - "+a2.getOut());
 		}
 		this.over();
 		return true;
@@ -176,9 +194,9 @@ public class ComputSentence extends Sentence {
 
 	static final String[] KEYS = new String[]{
 		"neg-int",
-		"not-int",
+//		"not-int",
 		"neg-long",
-		"not-long",
+//		"not-long",
 		"neg-float",
 		"neg-double",
 		"int-to-long",
@@ -278,7 +296,13 @@ public class ComputSentence extends Sentence {
 		"xor-int/lit8",
 		"shl-int/lit8",
 		"shr-int/lit8",
-		"ushr-int/lit8"
+		"ushr-int/lit8",
+		"cmpl-float",
+		"cmpg-float",
+		"cmpl-double",
+		"cmpg-double",
+		"cmp-long"
+		
 	};
 	
 	
@@ -294,7 +318,17 @@ public class ComputSentence extends Sentence {
 		System.out.println(fs); 
 		
 		int i = Integer.valueOf(fs, 16);
-        float  value=Float.intBitsToFloat(Integer.valueOf(fs, 16));
-        System.out.println(value);     
+        float value = Float.intBitsToFloat(Integer.valueOf(fs, 16));
+        System.out.println(value);    
+        
+        double d = 120d;
+        long ll = Double.doubleToLongBits(d);
+        fs = Long.toHexString(ll);
+        System.out.println(fs);
+        
+        long ls = Long.valueOf(fs, 16);
+        double val = Double.longBitsToDouble(ls);
+        System.out.println(val);
+        
 	}
 }

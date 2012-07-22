@@ -88,8 +88,18 @@ public class VarSentence extends Sentence {
 			v.setValue(fv);
 			value = String.valueOf(v.getValue())+"F";
 		}else if(type.equals("double")){
-			v.setValue(Double.valueOf(value.replace("D", "")));
-			value = String.valueOf(v.getValue());
+			StringBuilder sb = new StringBuilder(value);
+			//去掉0x,不足8位补到8位
+			sb.delete(0, 2);
+			for (int i = sb.length(); i < 16; i++) {
+				sb.append("0");
+			}
+			double lv = Double.longBitsToDouble(Long.parseLong(sb.toString(),16));
+			v.setValue(lv);
+			value = String.valueOf(v.getValue())+"D";
+			
+//			v.setValue(Double.valueOf(value.replace("D", "")));
+//			value = String.valueOf(v.getValue());
 		}else if(type.equals("Class")){
 			//TODO 无法确定Class值 ,暂存String
 			v.setValue(value);
