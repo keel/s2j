@@ -35,7 +35,7 @@ public final class IO {
 		String str;
 		StringBuilder sb = new StringBuilder();
 		while ((str = in.readLine()) != null) {
-			sb.append(str).append("\n");
+			sb.append(str).append("\r\n");
 		}
 		return sb.toString();
 	}
@@ -104,6 +104,31 @@ public final class IO {
 			}
 		}
 	}
+	
+	public static final void copyFullDirWithFn(File from,File to,IOInterface iof, String encode) throws IOException{
+		if (from.exists()) {
+			if (from.isDirectory()) {
+				to.mkdirs();
+				String[] children = from.list();
+				for (int i = 0; i < children.length; i++) {
+					copyFullDirWithFn(new File(from, children[i]),new File(to, children[i]),iof,encode);
+				}
+			}else{
+				copyWithFn(from,to,iof,encode);
+			}
+		}
+	}
+	
+	public static final void copyWithFn(File fileFrom, File fileTo,IOInterface iof, String encode) throws IOException {  
+		String from = fileFrom.getAbsolutePath();
+		if (iof.doFilter(from)) {
+			String org = readTxt(from,encode);
+			String target = iof.doFileContent(org);
+			writeTxt(target,encode,fileTo.getAbsolutePath());
+			System.out.println(from);
+		}
+    } 
+	
 	
 	/**
 	 * 复制单个文件,如原文件存在则直接覆盖
