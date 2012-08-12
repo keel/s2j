@@ -46,6 +46,9 @@ public class SentenceMgr {
 		sentenceMap.put(LocalSentence.KEY, l);
 		GotoSentence gt = new GotoSentence(null, null);
 		sentenceMap.put(GotoSentence.KEY, gt);
+		CastSentence cast = new CastSentence(null, null);
+		sentenceMap.put(CastSentence.KEY, cast);
+		
 		
 		GetSentence g = new GetSentence(null, null);
 		for (int i = 0; i < GetSentence.KEYS.length; i++) {
@@ -93,6 +96,10 @@ public class SentenceMgr {
 			sentenceMap.put(VarSentence.KEYS[i], v);
 		}
 		
+		ArraySentence ar = new ArraySentence(null, null);
+		for (int i = 0; i < ArraySentence.KEYS.length; i++) {
+			sentenceMap.put(ArraySentence.KEYS[i], ar);
+		}
 		//-------------------
 		//if结构语句name
 		ifMap.put("if", "if");
@@ -238,29 +245,32 @@ public class SentenceMgr {
 			if (javaLine > -1) {
 				s.setJavaLineNum(javaLine);
 			}
-//			//最多尝试5次切换Sentence
-//			int i = 0;
-//			while (i<=5) {
-			if (s.exec()) {
+			//对数组赋值行特殊处理
+			if (key.equals(".array-data")) {
+				cNum++;
+				l = this.srcLines.get(cNum);
+				while(!l.startsWith(".end")){
+					ArraySentence as = (ArraySentence)s;
+					as.addToArrMatrix(l);
+					cNum++;
+					l = this.srcLines.get(cNum);
+				}
+				s.exec();
+			}
+			//其他语句
+			else if (s.exec()) {
 				//成功处理语句后加入语句列表
 				//只有能成行输出的操作加入到sentenceList
 				if (s.getType()>Sentence.TYPE_NOT_LINE) {
 					this.sentenceList.add(s);
 				}
-//				break;
 			}else{
-				key = s.maybeSentence();
-				if (key.equals("")) {
-					Sentence e = new CommSentence(this, "#ERR: unknown sententce. line:"+l);
-					e.exec();
-					this.sentenceList.add(e);
-					break;
-				}else{
-					s = this.createSentence(key, l);
-				}
+				Sentence e = new CommSentence(this, "#ERR: unknown sententce. line:"+l);
+				e.exec();
+				this.sentenceList.add(e);
+				//后面语句不处理了
+				break;
 			}
-//				i++;
-//			}
 			cNum++;
 		}
 		//处理IFScan
@@ -302,6 +312,24 @@ public class SentenceMgr {
 	
 	public final int indexOfSentence(Sentence sen){
 		return this.sentenceList.indexOf(sen);
+	}
+	
+	public final int findSentenceIndexByLineNum(int lineNum){
+		int len = this.sentenceList.size();
+		if (len<1) {
+			return -1;
+		}
+		for (int i = len-1; i >= 0; i--) {
+			Sentence s = this.sentenceList.get(i);
+			if (s.getLineNum() == lineNum) {
+				return this.sentenceList.indexOf(s);
+			}
+		}
+		return -1;
+	}
+	
+	public final Sentence findSentenceByIndex(int index){
+		return this.sentenceList.get(index);
 	}
 	
 	public final String getSrcline(int index){
@@ -351,6 +379,26 @@ public class SentenceMgr {
 		return null;
 	}
 	
+//	/**
+//	 * 查找上一个匹配 name的Sentence
+//	 * @param senName
+//	 * @param fromIndex 从某一个index向上找
+//	 * @return
+//	 */
+//	public final Sentence findLastSentence(String senName,int fromIndex){
+//		int len = this.sentenceList.size();
+//		if (len<1 || fromIndex>=len) {
+//			return null;
+//		}
+//		for (int i = fromIndex; i >= 0; i--) {
+//			Sentence s = this.sentenceList.get(i);
+//			if (s.getName().equals(senName)) {
+//				return s;
+//			}
+//		}
+//		return null;
+//	}
+	
 	/**
 	 * 向前查找标签
 	 * @param tagName
@@ -377,15 +425,15 @@ public class SentenceMgr {
 	/**
 	 * 查找上一个匹配 name的Sentence
 	 * @param senName
-	 * @param lineNum
+	 * @param fromIndex 从某一个index向上找
 	 * @return
 	 */
-	public final Sentence findLastSentence(String senName,int lineNum){
+	public final Sentence findLastSentence(String senName,int fromIndex){
 		int len = this.sentenceList.size();
-		if (len<1 || lineNum<=0 || lineNum>=len) {
+		if (len<1 || fromIndex<=0 || fromIndex>=len) {
 			return null;
 		}
-		for (int i = lineNum-1; i >= 0; i--) {
+		for (int i = fromIndex-1; i >= 0; i--) {
 			Sentence s = this.sentenceList.get(i);
 			if (s.getName().equals(senName)) {
 				return s;

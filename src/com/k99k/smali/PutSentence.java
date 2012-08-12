@@ -15,7 +15,18 @@ public class PutSentence extends Sentence {
 	 */
 	public PutSentence(SentenceMgr mgr, String line) {
 		super(mgr, line);
+		this.type = Sentence.TYPE_LINE;
 	}
+	
+	/**
+	 * 如果是数组赋值,在此保存数组对应的源name，如: v1
+	 */
+	private String arrSourceVar = null;
+
+	/**
+	 * 如果是数组赋值,在此保存所赋的某一位置的值
+	 */
+	private String arrVal = null;
 
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Sentence#exec()
@@ -73,6 +84,7 @@ public class PutSentence extends Sentence {
 			Var v1 = this.mgr.getVar(ws[2]);
 			Var v2 = this.mgr.getVar(ws[3]);
 			Var v3 = this.mgr.getVar(ws[1]);
+			this.arrSourceVar = ws[2];
 			String name = ws[1];
 			v.setName(name);
 			v.setClassName(v1.getClassName());
@@ -83,8 +95,8 @@ public class PutSentence extends Sentence {
 			if (s != null && s.getName().equals("var")) {
 				s.over();
 			}
-			
-			this.out.append(v.getOut()).append(" = ").append(v3.getOut());
+			this.arrVal = v3.getOut();
+			this.out.append(v.getOut()).append(" = ").append(arrVal);
 		}
 		
 		
@@ -105,20 +117,28 @@ public class PutSentence extends Sentence {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.k99k.smali.Sentence#getType()
-	 */
-	@Override
-	public int getType() {
-		return Sentence.TYPE_LINE;
-	}
-
-	/* (non-Javadoc)
 	 * @see com.k99k.smali.Sentence#getName()
 	 */
 	@Override
 	public String getName() {
 		return "put";
 	}
+	
+	
+	/**
+	 * @return the arrSourceVar
+	 */
+	public final String getArrSourceVar() {
+		return arrSourceVar;
+	}
+
+	/**
+	 * @return the arrVal
+	 */
+	public final String getArrVal() {
+		return arrVal;
+	}
+
 	static final String[] KEYS = new String[]{
 		"aput",
 		"aput-wide",

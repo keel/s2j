@@ -76,6 +76,11 @@ public abstract class Sentence {
 	int javaLineNum;
 	
 	/**
+	 * 语句类型
+	 */
+	int type = Sentence.TYPE_UNKOWN;
+	
+	/**
 	 * 原始语句
 	 */
 	String line;
@@ -112,14 +117,6 @@ public abstract class Sentence {
 	 */
 	public abstract Sentence newOne(SentenceMgr mgr,String line);
 
-	
-	/**
-	 * 处理失败时返回可能能处理的其他Sentence的key
-	 * @return String key of other Sentence
-	 */
-	public String maybeSentence(){
-		return "";
-	}
 	
 	/**
 	 * 添加相关的Sentence,仅针对结构类型的Sentence
@@ -164,8 +161,16 @@ public abstract class Sentence {
 	/**
 	 * @return the type
 	 */
-	public abstract int getType() ;
+	public int getType() {
+		return type;
+	}
 
+	/**
+	 * @param type
+	 */
+	public void setType(int type){
+		this.type = type;
+	}
 
 	/**
 	 * 名称，用于查找时匹配特定的Sentence

@@ -19,6 +19,7 @@ public class VarSentence extends Sentence {
 	 */
 	public VarSentence(SentenceMgr mgr, String line) {
 		super(mgr, line);
+		this.type = Sentence.TYPE_NOT_LINE;
 		//始终是结束状态,不需要再处理 
 		this.over();
 	}
@@ -122,14 +123,6 @@ public class VarSentence extends Sentence {
 	@Override
 	public Sentence newOne(SentenceMgr mgr,String line) {
 		return new VarSentence(mgr, line);
-	}
-
-	/* (non-Javadoc)
-	 * @see com.k99k.smali.Sentence#getType()
-	 */
-	@Override
-	public int getType() {
-		return Sentence.TYPE_NOT_LINE;
 	}
 
 	/* (non-Javadoc)

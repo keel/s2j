@@ -16,6 +16,7 @@ public class ErrSentence extends Sentence {
 	 */
 	public ErrSentence(SentenceMgr mgr, String line) {
 		super(mgr, line);
+		this.type = Sentence.TYPE_LINE;
 	}
 
 	/* (non-Javadoc)
@@ -36,13 +37,6 @@ public class ErrSentence extends Sentence {
 		return new ErrSentence(mgr, line);
 	}
 
-	/* (non-Javadoc)
-	 * @see com.k99k.smali.Sentence#getType()
-	 */
-	@Override
-	public int getType() {
-		return Sentence.TYPE_LINE;
-	}
 
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Sentence#getName()

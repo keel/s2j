@@ -15,11 +15,11 @@ public class InvokeSentence extends Sentence {
 	 */
 	public InvokeSentence(SentenceMgr mgr, String line) {
 		super(mgr, line);
+		this.type = Sentence.TYPE_LINE;
 	}
 
 	private Var var = new Var(this);
 	
-	private int type = Sentence.TYPE_LINE;
 	
 	
 	/* (non-Javadoc)
@@ -93,9 +93,10 @@ public class InvokeSentence extends Sentence {
 			Sentence s1 = this.mgr.getVar(rang[0]).getSen();
 			
 			
-//FIXME 对于前一个语句的处理依据，应该结合状态考虑
+// 对于前一个语句为local语句时只按Var方式取val
 			
-			if (s1 != null && s1.getJavaLineNum() == this.getJavaLineNum() && s1.getOut().length()>0) {
+			//if (s1 != null && s1.getJavaLineNum() == this.getJavaLineNum() && s1.getOut().length()>0) {
+			if (s1 != null && !s1.getName().equals("local") && s1.getOut().length()>0) {
 				s1.over();
 				val = s1.getOut();
 			}else{
@@ -173,14 +174,7 @@ public class InvokeSentence extends Sentence {
 		return new InvokeSentence(mgr, line);
 	}
 
-	/* (non-Javadoc)
-	 * @see com.k99k.smali.Sentence#getType()
-	 */
-	@Override
-	public int getType() {
-		return this.type;
-	}
-
+	
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Sentence#getName()
 	 */

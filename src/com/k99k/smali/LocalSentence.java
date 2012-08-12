@@ -3,6 +3,8 @@
  */
 package com.k99k.smali;
 
+import com.k99k.tools.StringUtil;
+
 /**
  * 局部变量
  * @author keel
@@ -16,6 +18,7 @@ public class LocalSentence extends Sentence {
 	 */
 	public LocalSentence(SentenceMgr mgr, String line) {
 		super(mgr, line);
+		this.type = Sentence.TYPE_LINE;
 	}
 
 	/* (non-Javadoc)
@@ -70,6 +73,85 @@ public class LocalSentence extends Sentence {
 		this.out.append(obj).append(" ").append(name).append(" = ").append(val);
 		
 		this.mgr.setVar(v);
+		//数组的处理
+		if (obj.indexOf("[]")>0) {
+			String pre = null;
+			for (int i = this.lineNum-1; i >= 0; i--) {
+				pre = this.mgr.getSrcline(i);
+				if (pre.charAt(0) != '.') {
+					break;
+				}
+			}
+			
+			//Sentence preSen = this.mgr.getLastSentence();
+			if (pre.startsWith("check-cast")) {
+				//处理多维数组定义
+				CastSentence ca = new CastSentence(mgr, pre);
+				ca.exec();
+				if (StringUtil.isStringWithLen(ca.getArrVal(),1)) {
+					//向上找到filled-new-array语句
+					Sentence fs = this.mgr.findLastSentence("new");
+					if (fs.getLine().indexOf("filled-new-array") > -1) {
+						NewSentence ns = (NewSentence)fs;
+						String[] r = ns.getArrRang();
+						if (r != null && r.length>0) {
+							this.out = new StringBuilder();
+							this.out.append(obj).append(" ").append(name).append(" = ");
+							this.out.append(ns.getVar().getOut());
+							//计算总数组维数
+							int arrM = obj.split("\\[").length - 1;
+							for (int i = 0; i < r.length; i++) {
+								this.out.append("[");
+								this.out.append(r[i]);
+								this.out.append("]");
+								arrM--;
+							}
+							//追加最后的空[]
+							for (int i = 0; i < arrM; i++) {
+								this.out.append("[]");
+							}
+						}
+					}
+				}
+			}else if(pre.startsWith("aput")){
+				//处理数组在定义时初始化的情况，如String[] arr2 = new String[]{"aaa","bbb","ccc"};
+				Sentence preSen = this.mgr.getLastSentence();
+				int indexMe = this.mgr.findSentenceIndexByLineNum(preSen.getLineNum());
+				if (indexMe>0) {
+					int start = -1,from = indexMe;
+					while(start == -1){
+						Sentence ns = this.mgr.findLastSentence("new",from);
+						if (ns.getLine().indexOf("new-array") >= 0) {
+							//确定上方第一个包含new-array的语句为起始点
+							start = this.mgr.findSentenceIndexByLineNum(ns.getLineNum());
+							break;
+						}else{
+							from = this.mgr.findSentenceIndexByLineNum(ns.getLineNum());
+						}
+					}
+					if (start > -1) {
+						StringBuilder sb = new StringBuilder();
+						for (int i = start; i <= indexMe; i++) {
+							Sentence s = this.mgr.findSentenceByIndex(i);
+							if (s.getName().equals("put") && s.getLine().startsWith("aput")) {
+								PutSentence put = (PutSentence)s;
+								put.setType(Sentence.TYPE_NOT_LINE);
+								if (put.getArrSourceVar().equals(ws[1])) {
+									sb.append(",").append(put.getArrVal());
+								}
+							}
+						}
+						if (sb.length()>1) {
+							//删除第一个,号
+							sb.delete(0, 1);
+							//添加初始的数组定义
+							this.out.append("{").append(sb).append("}");
+						}
+					}
+				}
+			}
+			
+		}
 		
 		this.over();
 		return true;
@@ -81,14 +163,6 @@ public class LocalSentence extends Sentence {
 	@Override
 	public Sentence newOne(SentenceMgr mgr, String line) {
 		return new LocalSentence(mgr, line);
-	}
-
-	/* (non-Javadoc)
-	 * @see com.k99k.smali.Sentence#getType()
-	 */
-	@Override
-	public int getType() {
-		return Sentence.TYPE_LINE;
 	}
 
 	/* (non-Javadoc)

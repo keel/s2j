@@ -53,8 +53,6 @@ public class ComputSentence extends Sentence {
 		coms.put("ushr-", ">>>");
 	}
 	
-	private int type = Sentence.TYPE_LINE;
-	
 	private static String checkCom(String tag){
 		for (int i = 0; i < coma.length; i++) {
 			if (tag.indexOf(coma[i]) > -1) {
@@ -175,14 +173,6 @@ public class ComputSentence extends Sentence {
 	@Override
 	public Sentence newOne(SentenceMgr mgr, String line) {
 		return new ComputSentence(mgr, line);
-	}
-
-	/* (non-Javadoc)
-	 * @see com.k99k.smali.Sentence#getType()
-	 */
-	@Override
-	public int getType() {
-		return this.type;
 	}
 
 	/* (non-Javadoc)

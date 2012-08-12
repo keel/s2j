@@ -16,11 +16,10 @@ public class TagSentence extends Sentence {
 	 */
 	public TagSentence(SentenceMgr mgr, String line) {
 		super(mgr, line);
+		this.type = Sentence.TYPE_STRUCT;
 	}
 	
 	private String tag = "";
-	
-	private int type = TYPE_STRUCT;
 	
 	private Sentence ifSen;
 	
@@ -63,23 +62,6 @@ public class TagSentence extends Sentence {
 		return new TagSentence(mgr, line);
 	}
 
-	/* (non-Javadoc)
-	 * @see com.k99k.smali.Sentence#getType()
-	 */
-	@Override
-	public int getType() {
-		return this.type;
-	}
-	
-	
-
-	/**
-	 * @param type the type to set
-	 */
-	public final void setType(int type) {
-		this.type = type;
-	}
-	
 	/**
 	 * 设置结构的结束符,可多次设置，每次增加一个}号
 	 */

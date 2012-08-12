@@ -20,6 +20,7 @@ public class IfSentence extends Sentence {
 	 */
 	public IfSentence(SentenceMgr mgr, String line) {
 		super(mgr, line);
+		this.type = Sentence.TYPE_STRUCT;
 	}
 	
 //	/**
@@ -57,8 +58,6 @@ public class IfSentence extends Sentence {
 	private String left;
 	
 	private String right;
-	
-	private int type = TYPE_STRUCT;
 	
 	private boolean isBoolean = false;
 	
@@ -375,18 +374,6 @@ public class IfSentence extends Sentence {
 	@Override
 	public Sentence newOne(SentenceMgr mgr, String line) {
 		return new IfSentence(mgr, line);
-	}
-
-	/* (non-Javadoc)
-	 * @see com.k99k.smali.Sentence#getType()
-	 */
-	@Override
-	public int getType() {
-		return this.type;
-	}
-	
-	public void setType(int type){
-		this.type = type;
 	}
 
 	/* (non-Javadoc)

@@ -16,6 +16,7 @@ public class MoveSentence extends Sentence {
 	 */
 	public MoveSentence(SentenceMgr mgr, String line) {
 		super(mgr, line);
+		this.type = Sentence.TYPE_NOT_LINE;
 	}
 
 	/* (non-Javadoc)
@@ -47,6 +48,8 @@ public class MoveSentence extends Sentence {
 			String name = ws[1];
 			v.setName(name);
 			this.mgr.setVar(v);
+			//将last语句显示去掉
+			last.setType(Sentence.TYPE_NOT_LINE);
 		}else if(key.equals("move-exception")){
 			//FIXME 需要配合exception操作,可考虑将此key加入到处理exceiption的Sentence
 			
@@ -68,14 +71,6 @@ public class MoveSentence extends Sentence {
 	@Override
 	public Sentence newOne(SentenceMgr mgr, String line) {
 		return new MoveSentence(mgr, line);
-	}
-
-	/* (non-Javadoc)
-	 * @see com.k99k.smali.Sentence#getType()
-	 */
-	@Override
-	public int getType() {
-		return Sentence.TYPE_NOT_LINE;
 	}
 
 	/* (non-Javadoc)

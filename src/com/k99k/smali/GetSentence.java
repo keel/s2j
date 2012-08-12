@@ -17,6 +17,7 @@ public class GetSentence extends Sentence {
 	 */
 	public GetSentence(SentenceMgr mgr, String line) {
 		super(mgr, line);
+		this.type = Sentence.TYPE_NOT_LINE;
 	}
 
 	/* (non-Javadoc)
@@ -94,14 +95,6 @@ public class GetSentence extends Sentence {
 		return new GetSentence(mgr, line);
 	}
 
-	/* (non-Javadoc)
-	 * @see com.k99k.smali.Sentence#getType()
-	 */
-	@Override
-	public int getType() {
-		return Sentence.TYPE_NOT_LINE;
-	}
-	
 	
 	static final String[] KEYS = new String[]{
 		"aget", //array

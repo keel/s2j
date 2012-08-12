@@ -18,7 +18,7 @@ public class Var {
 	}
 	
 	/**
-	 * 最近一次在smali行中的原始key
+	 * 最近一次在smali行中的原始key,如:const/4
 	 */
 	private String key;
 	
@@ -33,7 +33,7 @@ public class Var {
 	private Object value;
 	
 	/**
-	 * 变量名
+	 * 变量名,如:v1
 	 */
 	private String name;
 	
