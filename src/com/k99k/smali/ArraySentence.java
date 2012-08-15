@@ -5,6 +5,8 @@ package com.k99k.smali;
 
 import java.util.ArrayList;
 
+import com.k99k.tools.StringUtil;
+
 /**
  * 数组处理
  * @author keel
@@ -22,6 +24,8 @@ public class ArraySentence extends Sentence {
 	}
 	
 	private ArrayList<String> arrMatrix;
+	
+	private String[] arrData;
 
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Sentence#exec()
@@ -33,11 +37,15 @@ public class ArraySentence extends Sentence {
 		String[] ws = this.line.split(" ");
 		String key = ws[0];
 		if (key.equals("fill-array-data")) {
-			//填充int数组
-			
-			
-			
-		}else if(key.equals(".array-data")) {
+			//向var集合中保存
+			//Var的sen定位于fill-array-data的前一句,即:new-array
+			Var v = new Var(this);
+			v.setKey(key);
+			v.setClassName("array");
+			v.setName(ws[2]);//以ws[2]为key
+			v.setValue(ws[1]);//value为变量，如：v0
+			this.mgr.setVar(v);
+		}else if(key.equals(".array-data")){
 			if (this.arrMatrix == null) {
 				this.out.append("arrMatrix is null. line:").append(this.line);
 				this.mgr.err(this);
@@ -45,13 +53,41 @@ public class ArraySentence extends Sentence {
 				return false;
 			}
 			//处理填入的数组数据
-			//int arrLen = Integer.parseInt(ws[1],16);
+			int arrLen = Integer.parseInt(StringUtil.a16to10(ws[1]))+1;
 			int alen = this.arrMatrix.size();
+			String[] arrVals = new String[alen];
+			StringBuilder asb = new StringBuilder();
 			for (int i = 0; i < alen; i++) {
-				String l = this.arrMatrix.get(i);
-				
+				String[] ls = this.arrMatrix.get(i).split(" ");
+				StringBuilder sb = new StringBuilder("0x");
+				for (int j = ls.length-1; j >= 0 ; j--) {
+					String str = ls[j].substring(2,ls[j].length()-1);
+					if (str.length() == 1) {
+						sb.append("0");
+					}
+					sb.append(str);
+				}
+				arrVals[i] = sb.toString();
+				asb.append(",").append(arrVals[i]);
 			}
-			
+			this.arrData = arrVals;
+			//查找标识,在上一句中
+			String vkey = this.mgr.getLastSentence().getLine();
+			//补充到fill-array-data中
+			Var v = this.mgr.getVar(vkey);
+			//Var arrDef = v.getSen().getVar();
+			asb.delete(0, 1);
+			asb.insert(0, "{");
+			//asb.insert(0, this.mgr.getVar(v.getValue().toString()).getOut());
+			asb.append("}");
+			//v.getSen().setOut(asb.toString());
+			int ii = this.mgr.findSentenceIndexByLineNum(v.getSen().getLineNum())+1;
+			Sentence sarr = this.mgr.findSentenceByIndex(ii);
+			StringBuilder sb = new StringBuilder(sarr.getOut());
+			sb.delete(sb.indexOf("=")+1, sb.length());
+			sb.append(asb);
+			sarr.setOut(sb.toString());
+//			this.mgr.setVar(arrDef);
 		}else{
 			
 		}
@@ -85,6 +121,13 @@ public class ArraySentence extends Sentence {
 	}
 
 	
+	/**
+	 * @return the arrData
+	 */
+	public final String[] getArrData() {
+		return arrData;
+	}
+
 	static final String[] KEYS = new String[]{
 		".array-data",
 		"fill-array-data",
@@ -170,4 +213,6 @@ public class ArraySentence extends Sentence {
 		":array_4f",
 		":array_50"
 	};
+	
+	
 }

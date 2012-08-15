@@ -45,18 +45,21 @@ public class LocalSentence extends Sentence {
 		v.setName(ws[1]);
 		v.setOut(name);
 		
+		
 //		String val = "";
 		Var ov = this.mgr.getVar(ws[1]);
 		
 		String val = ov.getOut();
 		if (obj.equals("float")) {
-			if (val.matches("(0x)?\\d+[F]?")) {
-				val = String.valueOf(Float.intBitsToFloat(Integer.valueOf(val)))+"F";
-			}
+			val = StringUtil.float16to10(val)+"F";
+//			if (val.matches("(0x)?\\d+[F]?")) {
+//				val = String.valueOf(Float.intBitsToFloat(Integer.valueOf(val)))+"F";
+//			}
 		}else if(obj.equals("double")){
-			if (val.matches("(0x)?\\d+[D]?")) {
-				val = String.valueOf(Double.longBitsToDouble(Long.valueOf(val)))+"D";
-			}
+			val = StringUtil.double16to10(val)+"D";
+//			if (val.matches("(0x)?\\d+[D]?")) {
+//				val = String.valueOf(Double.longBitsToDouble(Long.valueOf(val)))+"D";
+//			}
 		}
 		
 		
@@ -71,8 +74,8 @@ public class LocalSentence extends Sentence {
 		
 		
 		this.out.append(obj).append(" ").append(name).append(" = ").append(val);
-		
 		this.mgr.setVar(v);
+		
 		//数组的处理
 		if (obj.indexOf("[]")>0) {
 			String pre = null;
@@ -145,6 +148,7 @@ public class LocalSentence extends Sentence {
 							//删除第一个,号
 							sb.delete(0, 1);
 							//添加初始的数组定义
+							this.out.delete(this.out.indexOf("=")+1, this.out.length());
 							this.out.append("{").append(sb).append("}");
 						}
 					}

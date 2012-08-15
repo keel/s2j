@@ -39,6 +39,8 @@ public class Tool {
 		}
 		else if (smaliObj.equals("F")) {
 			return "float";
+		}else if (smaliObj.equals("J")) {
+			return "long";
 		}else if (smaliObj.equals("D")) {
 			return "double";
 		}else if (smaliObj.startsWith("[")) {
@@ -74,7 +76,7 @@ public class Tool {
 	}
 	
 	/**
-	 * 将String按行转换成String[],删除空行,trim处理
+	 * 将String按行转换成ArrayList,删除空行,trim处理
 	 * @param str
 	 * @return ArrayList
 	 */

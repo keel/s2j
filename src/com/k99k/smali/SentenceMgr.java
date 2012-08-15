@@ -314,6 +314,11 @@ public class SentenceMgr {
 		return this.sentenceList.indexOf(sen);
 	}
 	
+	/**
+	 * 根据行号查找在sentenceList中的index
+	 * @param lineNum
+	 * @return
+	 */
 	public final int findSentenceIndexByLineNum(int lineNum){
 		int len = this.sentenceList.size();
 		if (len<1) {

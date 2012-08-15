@@ -18,7 +18,7 @@ public class Var {
 	}
 	
 	/**
-	 * 最近一次在smali行中的原始key,如:const/4
+	 * 最近一次在smali行中的原始key,如: const/4
 	 */
 	private String key;
 	

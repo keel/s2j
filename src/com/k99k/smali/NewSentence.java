@@ -45,7 +45,7 @@ public class NewSentence extends Sentence {
 			v.setClassName(obj);
 			v.setName(ws[1]);
 			v.setKey("new-instance");
-			v.setOut(obj);
+			v.setOut("new "+obj);
 		}else if(ws[0].equals("new-array")){
 			obj = Tool.parseObject(ws[3]);
 			//加入初始化数量
@@ -58,7 +58,7 @@ public class NewSentence extends Sentence {
 			v.setClassName(obj);
 			v.setName(ws[1]);
 			v.setKey("new-array");
-			v.setOut(obj);
+			v.setOut("new "+obj);
 		}else if(ws[0].equals("filled-new-array")){
 			int rangStart = this.line.indexOf("{")+1;
 			int rangEnd = this.line.indexOf("}");
@@ -79,7 +79,7 @@ public class NewSentence extends Sentence {
 			v.setClassName(obj);
 			v.setName(ws[1]);
 			v.setKey("filled-new-array");
-			v.setOut(obj);
+			v.setOut("new "+obj);
 		}else if(ws[0].equals("filled-new-array-range")){
 			int rangStart = this.line.indexOf("{")+1;
 			int rangEnd = this.line.indexOf("}");
@@ -110,7 +110,7 @@ public class NewSentence extends Sentence {
 			v.setClassName(obj);
 			v.setName(ws[1]);
 			v.setKey("filled-new-array-range");
-			v.setOut(obj);
+			v.setOut("new "+obj);
 		}
 		this.mgr.setVar(v);
 		this.over();

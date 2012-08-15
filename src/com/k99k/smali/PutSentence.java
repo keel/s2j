@@ -38,7 +38,7 @@ public class PutSentence extends Sentence {
 		//去除,号
 		this.line = this.line.replaceAll(",", "");
 		String[] ws = this.line.split(" ");
-		if (ws.length<4) {
+		if (ws.length<3) {
 			this.out.append("exec putSentence error. line:").append(this.line);
 			this.mgr.err(this);
 			System.err.println(this.out);

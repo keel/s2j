@@ -281,18 +281,72 @@ public final class StringUtil {
 		return str;
 	}
 	
-	public static void main(String[] args) {
-		String s = "23,234234,2342,21341234,22";
-		int[] ia = stringToIntArray("23,32,342,3,,",",");
-		if (ia==null) {
-			System.out.println("null");
-		}else{
+	/**
+	 * 10进制转16进制
+	 * @param ten
+	 * @return
+	 */
+	public static final String a10to16(int ten){
+		return Integer.toHexString(ten);
+	}
 	
-			for (int i = 0; i < ia.length; i++) {
-				System.out.println(ia[i]);
-			}
+	public static final String a10to16(float ten){
+		return Integer.toHexString(Float.floatToIntBits(ten));
+	}
+	
+	public static final String a10to16(double ten){
+		return Long.toHexString(Double.doubleToLongBits(ten));
+	}
+
+	/**
+	 * 16进制转10进制,会自动去掉0x
+	 * @param sixten
+	 * @return
+	 */
+	public static final String a16to10(String sixten){
+		if (sixten.startsWith("0x")) {
+			sixten = sixten.substring(2);
 		}
+		return Integer.valueOf(sixten,16).toString() ;
+	}
+	
+	/**
+	 * float的16进制转10进制,会自动去掉0x
+	 * @param f16
+	 * @return 
+	 */
+	public static final float float16to10(String f16){
+		if (f16.startsWith("0x")) {
+			f16 = f16.substring(2);
+		}
+		return Float.intBitsToFloat( Integer.parseInt(f16,16));
+	}
+	/**
+	 * double的16进制转10进制,会自动去掉0x
+	 * @param d16
+	 * @return 
+	 */
+	public static final double double16to10(String d16){
+		if (d16.startsWith("0x")) {
+			d16 = d16.substring(2);
+		}
+		return Double.longBitsToDouble(Long.valueOf(d16,16));
+	}
+	
+	public static void main(String[] args) {
+		String s = "23.22";
+		float f = 22223.333F;
+		//String s1 = a10to16(s);
+		//System.out.println(s1);
+		String s1 = a10to16(f);
+		System.out.println(s1);
+		float f1 = float16to10(s1);
+		System.out.println(f1);
 		
-		System.out.println(s.matches("(\\d+,)*(\\d+)"));
+		
+		double d = 45345554.2D;
+		String s2 = a10to16(d);
+		System.out.println(s2);
+		System.out.println(double16to10(s2));
 	}
 }
