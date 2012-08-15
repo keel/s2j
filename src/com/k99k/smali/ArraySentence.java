@@ -67,6 +67,9 @@ public class ArraySentence extends Sentence {
 					}
 					sb.append(str);
 				}
+				if (ls.length>=8) {
+					sb.append("L");
+				}
 				arrVals[i] = sb.toString();
 				asb.append(",").append(arrVals[i]);
 			}
@@ -80,14 +83,13 @@ public class ArraySentence extends Sentence {
 			asb.insert(0, "{");
 			//asb.insert(0, this.mgr.getVar(v.getValue().toString()).getOut());
 			asb.append("}");
-			//v.getSen().setOut(asb.toString());
+			v.getSen().setType(Sentence.TYPE_NOT_LINE);
 			int ii = this.mgr.findSentenceIndexByLineNum(v.getSen().getLineNum())+1;
 			Sentence sarr = this.mgr.findSentenceByIndex(ii);
 			StringBuilder sb = new StringBuilder(sarr.getOut());
 			sb.delete(sb.indexOf("=")+1, sb.length());
 			sb.append(asb);
 			sarr.setOut(sb.toString());
-//			this.mgr.setVar(arrDef);
 		}else{
 			
 		}
