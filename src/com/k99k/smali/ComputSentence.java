@@ -17,6 +17,7 @@ public class ComputSentence extends Sentence {
 	 */
 	public ComputSentence(SentenceMgr mgr, String line) {
 		super(mgr, line);
+		this.type = Sentence.TYPE_LINE;
 	}
 	
 	private String comTag = null;

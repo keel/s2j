@@ -100,6 +100,10 @@ public class SentenceMgr {
 		for (int i = 0; i < ArraySentence.KEYS.length; i++) {
 			sentenceMap.put(ArraySentence.KEYS[i], ar);
 		}
+		SwitchSentence ss = new SwitchSentence(null, null);
+		for (int i = 0; i < SwitchSentence.KEYS.length; i++) {
+			sentenceMap.put(SwitchSentence.KEYS[i], ss);
+		}
 		//-------------------
 		//if结构语句name
 		ifMap.put("if", "if");
@@ -172,6 +176,7 @@ public class SentenceMgr {
 	 */
 	private boolean hasIF = false;;
 	
+	private boolean hasSwitch = false;
 	/**
 	 * 处理原始语句集
 	 */
@@ -257,6 +262,19 @@ public class SentenceMgr {
 				}
 				s.exec();
 			}
+			//对switch行特殊处理
+			else if (key.equals(".packed-switch") || key.equals(".sparse-switch")) {
+				cNum++;
+				hasSwitch = true;
+				l = this.srcLines.get(cNum);
+				while(!l.startsWith(".end")){
+					SwitchSentence as = (SwitchSentence)s;
+					as.addSwitchKey(l);
+					cNum++;
+					l = this.srcLines.get(cNum);
+				}
+				s.exec();
+			}
 			//其他语句
 			else if (s.exec()) {
 				//成功处理语句后加入语句列表
@@ -272,6 +290,10 @@ public class SentenceMgr {
 				break;
 			}
 			cNum++;
+		}
+		if (hasSwitch) {
+			SwitchScan ss = new SwitchScan(this, this.sentenceList);
+			ss.scan();
 		}
 		//处理IFScan
 		if (hasIF) {

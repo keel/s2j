@@ -290,10 +290,20 @@ public final class StringUtil {
 		return Integer.toHexString(ten);
 	}
 	
+	/**
+	 * 10进制转16进制
+	 * @param ten
+	 * @return
+	 */
 	public static final String a10to16(float ten){
 		return Integer.toHexString(Float.floatToIntBits(ten));
 	}
 	
+	/**
+	 * 10进制转16进制
+	 * @param ten
+	 * @return
+	 */
 	public static final String a10to16(double ten){
 		return Long.toHexString(Double.doubleToLongBits(ten));
 	}
@@ -304,9 +314,7 @@ public final class StringUtil {
 	 * @return
 	 */
 	public static final String a16to10(String sixten){
-		if (sixten.startsWith("0x")) {
-			sixten = sixten.substring(2);
-		}
+		sixten = clear16Data(sixten);
 		return Integer.valueOf(sixten,16).toString() ;
 	}
 	
@@ -316,10 +324,8 @@ public final class StringUtil {
 	 * @return 
 	 */
 	public static final float float16to10(String f16){
-		if (f16.startsWith("0x")) {
-			f16 = f16.substring(2);
-		}
-		return Float.intBitsToFloat( Integer.parseInt(f16,16));
+		f16 = clear16Data(f16);
+		return Float.intBitsToFloat( Integer.valueOf(f16,16));
 	}
 	/**
 	 * double的16进制转10进制,会自动去掉0x
@@ -327,10 +333,21 @@ public final class StringUtil {
 	 * @return 
 	 */
 	public static final double double16to10(String d16){
-		if (d16.startsWith("0x")) {
-			d16 = d16.substring(2);
-		}
+		d16 = clear16Data(d16);
 		return Double.longBitsToDouble(Long.valueOf(d16,16));
+	}
+	
+	/**
+	 * 处理16进制的数字
+	 * @param a16
+	 * @return
+	 */
+	private static final String clear16Data(String a16){
+		if (a16.startsWith("0x")) {
+			a16 = a16.substring(2);
+		}
+		//对于末尾有L的进行去除
+		return a16.replace("L", "");
 	}
 	
 	public static void main(String[] args) {

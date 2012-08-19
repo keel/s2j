@@ -90,8 +90,9 @@ public class ArraySentence extends Sentence {
 			sb.delete(sb.indexOf("=")+1, sb.length());
 			sb.append(asb);
 			sarr.setOut(sb.toString());
+			this.type = Sentence.TYPE_NOT_LINE;
 		}else{
-			
+			this.type = Sentence.TYPE_NOT_LINE;
 		}
 		
 		this.over();

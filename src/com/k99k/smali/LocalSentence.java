@@ -51,15 +51,15 @@ public class LocalSentence extends Sentence {
 		
 		String val = ov.getOut();
 		if (obj.equals("float")) {
-			val = StringUtil.float16to10(val)+"F";
-//			if (val.matches("(0x)?\\d+[F]?")) {
-//				val = String.valueOf(Float.intBitsToFloat(Integer.valueOf(val)))+"F";
-//			}
+//			val = StringUtil.float16to10(val)+"F";
+			if (val.matches("(0x)?[\\d|a-f]+[F]?")) {
+				val = String.valueOf(Float.intBitsToFloat(Integer.valueOf(val)))+"F";
+			}
 		}else if(obj.equals("double")){
-			val = StringUtil.double16to10(val)+"D";
-//			if (val.matches("(0x)?\\d+[D]?")) {
-//				val = String.valueOf(Double.longBitsToDouble(Long.valueOf(val)))+"D";
-//			}
+//			val = StringUtil.double16to10(val)+"D";
+			if (val.matches("(0x)?[\\d|a-f]+[D]?")) {
+				val = String.valueOf(Double.longBitsToDouble(Long.valueOf(val)))+"D";
+			}
 		}
 		
 		
