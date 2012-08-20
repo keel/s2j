@@ -4,7 +4,6 @@
 package com.k99k.smali;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import com.k99k.tools.StringUtil;
 
@@ -29,7 +28,7 @@ public class SwitchSentence extends Sentence {
 	
 	private int caseNum;
 	
-	private HashMap<String,String> cases;
+//	private ArrayList<String> cases;
 	
 	private String key;
 
@@ -42,6 +41,7 @@ public class SwitchSentence extends Sentence {
 		this.line = this.line.replaceAll(",", "");
 		String[] ws = this.line.split(" ");
 		this.key = ws[0];
+		ArrayList<String> cases = new ArrayList<String>();
 		if (key.equals("packed-switch") || key.equals("sparse-switch")) {
 			//switch
 			Var v = new Var(this);
@@ -77,31 +77,31 @@ public class SwitchSentence extends Sentence {
 			if (key.startsWith(".packed-switch")) {
 				int start = Integer.parseInt(StringUtil.a16to10(ws[1]));
 				int slen = this.switchKey.size();
-				this.cases = new HashMap<String, String>();
+				
 				for (int i = 0; i < slen; i++) {
 					String caseStr = this.switchKey.get(i);
 					String add = StringUtil.a16to10(caseStr.substring(caseStr.indexOf("_")+1));
 					String caseval = "case " + (Integer.parseInt(add)+start);
-					this.cases.put(caseStr, caseval);
+					cases.add(caseStr+","+caseval);
 				}
 				
 			}else{
 				//.sparse-switch
 				int slen = this.switchKey.size();
-				this.cases = new HashMap<String, String>();
+				cases = new ArrayList<String>();
 				for (int i = 0; i < slen; i++) {
 					String[] ss = this.switchKey.get(i).split(" -> ");
 					String caseval = "case " + StringUtil.a16to10(ss[0]);
-					this.cases.put(ss[1], caseval);
+					cases.add(ss[1]+","+caseval);
 				}
 			}
 			String tag = this.mgr.getLastSentence().getLine();
 			Var sv = this.mgr.getVar(tag);
 			//加入到原switch开始句的Var的value中
-			sv.setValue(this.cases);
+			sv.setValue(cases);
 			this.type = Sentence.TYPE_NOT_LINE;
 		}else{
-			this.type = Sentence.TYPE_NOT_LINE;
+			//this.type = Sentence.TYPE_NOT_LINE;
 		}
 		
 		
@@ -134,14 +134,6 @@ public class SwitchSentence extends Sentence {
 	}
 	
 	
-
-	/**
-	 * @return the cases
-	 */
-	public final HashMap<String, String> getCases() {
-		return cases;
-	}
-
 	/**
 	 * @return the caseNum
 	 */
