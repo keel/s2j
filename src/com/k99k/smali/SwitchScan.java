@@ -4,7 +4,11 @@
 package com.k99k.smali;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+
+import com.k99k.tools.StringUtil;
 
 /**
  * @author keel
@@ -70,6 +74,8 @@ public class SwitchScan {
 			String[] ss = caseData.get(i).split(",");
 			cases.put(ss[0], ss[1]);
 		}
+		//FIXME 这里需要将caseData排序
+		Collections.sort(caseData, comp);
 		ArrayList<Sentence> ls = new ArrayList<Sentence>();
 		for (int i = 0; i < caseData.size(); i++) {
 			String[] ss = caseData.get(i).split(",");
@@ -118,4 +124,23 @@ public class SwitchScan {
 	}
 	
 	
+	private final CompareCase comp = new CompareCase();
+	/**
+	 * case比较器
+	 * @author keel
+	 *
+	 */
+	class CompareCase implements Comparator<String>{
+
+		@Override
+		public int compare(String s1, String s2) {
+			String n1 = s1.substring(s1.indexOf("_")+1,s1.indexOf(","));
+			String n2 = s2.substring(s2.indexOf("_")+1,s1.indexOf(","));
+			if (StringUtil.isDigits(n1) && StringUtil.isDigits(n2)) {
+				return Integer.parseInt(n1)-Integer.parseInt(n2);
+			}
+			return 0;
+		}
+		
+	}
 }
