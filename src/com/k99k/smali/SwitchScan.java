@@ -45,11 +45,15 @@ public class SwitchScan {
 					}
 					Sentence se = this.senList.get(i+1);
 					String end = null;
-					if (!se.getLine().startsWith(":goto_")) {
+					if (se.getLine().startsWith(":goto_")) {
+						end = se.getLine();
+					}else if(se.getName().equals("goto")){
+						GotoSentence gt = (GotoSentence)se;
+						end = gt.getTarget();
+					}else{
 						System.err.println("switch end not found:"+se.getLine());
 						continue;
 					}
-					end = se.getLine();
 					se.setOut("} //end of switch");
 					se.over();
 					//加入位置
@@ -65,7 +69,6 @@ public class SwitchScan {
 			}
 		}
 		
-		
 	}
 	
 	private ArrayList<Sentence> findCases(ArrayList<String> caseData,int startIndex,String endGoto){
@@ -74,7 +77,6 @@ public class SwitchScan {
 			String[] ss = caseData.get(i).split(",");
 			cases.put(ss[0], ss[1]);
 		}
-		//FIXME 这里需要将caseData排序
 		Collections.sort(caseData, comp);
 		ArrayList<Sentence> ls = new ArrayList<Sentence>();
 		for (int i = 0; i < caseData.size(); i++) {
