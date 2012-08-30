@@ -5,6 +5,8 @@ package com.k99k.smali;
 
 import java.util.ArrayList;
 
+import org.apache.log4j.Logger;
+
 import com.k99k.tools.StringUtil;
 
 /**
@@ -22,6 +24,7 @@ public class ArraySentence extends Sentence {
 		super(mgr, line);
 		this.type = Sentence.TYPE_LINE;
 	}
+	static final Logger log = Logger.getLogger(ArraySentence.class);
 	
 	private ArrayList<String> arrMatrix;
 	
@@ -49,7 +52,7 @@ public class ArraySentence extends Sentence {
 			if (this.arrMatrix == null) {
 				this.out.append("arrMatrix is null. line:").append(this.line);
 				this.mgr.err(this);
-				System.err.println(this.out);
+				log.error(this.out);
 				return false;
 			}
 			//处理填入的数组数据

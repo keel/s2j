@@ -5,6 +5,8 @@ package com.k99k.smali;
 
 import java.util.HashMap;
 
+import org.apache.log4j.Logger;
+
 
 /**
  * 声明语句,注意此类将作为静态类在mgr中使用,不可在内部访问mgr
@@ -23,6 +25,7 @@ public class VarSentence extends Sentence {
 		//始终是结束状态,不需要再处理 
 		this.over();
 	}
+	static final Logger log = Logger.getLogger(VarSentence.class);
 	
 	private static HashMap<String,String> varMap  = new HashMap<String, String>();
 	
@@ -54,7 +57,7 @@ public class VarSentence extends Sentence {
 		if (p1 == -1 || p2 == -1 || p2>=this.line.length()) {
 			this.out.append("exec var error. line:").append(this.line);
 			this.mgr.err(this);
-			System.err.println(this.out);
+			log.error(this.out);
 			return false;
 		}
 		String[] ws = new String[3];

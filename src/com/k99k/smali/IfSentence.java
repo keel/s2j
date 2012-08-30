@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import org.apache.log4j.Logger;
+
 
 /**
  * @author keel
@@ -22,6 +24,7 @@ public class IfSentence extends Sentence {
 		super(mgr, line);
 		this.type = Sentence.TYPE_STRUCT;
 	}
+	static final Logger log = Logger.getLogger(IfSentence.class);
 	
 //	/**
 //	 * 准备输出的行
@@ -95,7 +98,7 @@ public class IfSentence extends Sentence {
 		if (ws.length<3) {
 			this.out.append("exec IfSentence error. line:").append(this.line);
 			this.mgr.err(this);
-			System.err.println(this.out);
+			log.error(this.out);
 			return false;
 		}
 		this.key = ws[0];
@@ -232,7 +235,7 @@ public class IfSentence extends Sentence {
 	 */
 	public void mergeIf(boolean logicAnd,IfSentence ifs){
 		if (this.getLineNum() == ifs.getLineNum()) {
-			System.err.println("mergeIf error! lineNum is same:"+ifs.getLineNum());
+			log.error("mergeIf error! lineNum is same:"+ifs.getLineNum());
 			return;
 		}
 		if (logicAnd) {

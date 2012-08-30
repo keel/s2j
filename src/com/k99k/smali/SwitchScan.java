@@ -8,6 +8,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 
+import org.apache.log4j.Logger;
+
 import com.k99k.tools.StringUtil;
 
 /**
@@ -22,6 +24,8 @@ public class SwitchScan {
 		this.len = this.senList.size();
 	}
 	
+	static final Logger log = Logger.getLogger(SwitchScan.class);
+	
 	private SentenceMgr mgr;
 	
 	private ArrayList<Sentence> senList;
@@ -32,7 +36,7 @@ public class SwitchScan {
 	public void scan(){
 		for (int i = 0; i < this.len; i++) {
 			Sentence s = this.senList.get(i);
-			if (s.getName().equals("switch")) {
+			if (s.getName().equals("switch") || s.getName().equals("gotoTag")) {
 				SwitchSentence ss = (SwitchSentence)s;
 				String key = ss.getKey();
 				if (key.equals("packed-switch") || key.equals("sparse-switch")) {
@@ -40,7 +44,8 @@ public class SwitchScan {
 					String tag = ss.getDataTag();
 					ArrayList<String> cases = (ArrayList<String>) this.mgr.getVar(tag).getValue();
 					if (cases == null) {
-						System.err.println("switch cases not found:"+ss.getLine());
+//						Logger.getLogger(name)
+						log.error("switch cases not found:"+ss.getLine());
 						continue;
 					}
 					Sentence se = this.senList.get(i+1);
@@ -51,7 +56,7 @@ public class SwitchScan {
 						GotoSentence gt = (GotoSentence)se;
 						end = gt.getTarget();
 					}else{
-						System.err.println("switch end not found:"+se.getLine());
+						log.error("switch end not found:"+se.getLine());
 						continue;
 					}
 					se.setOut("} //end of switch");
@@ -114,7 +119,7 @@ public class SwitchScan {
 					this.senList.remove(i);
 					break;
 				}
-			}else if(s.getName().equals("switch")){
+			}else if(s.getName().equals("switch") || s.getName().equals("gotoTag")){
 				String t = s.getLine();
 				if (cases.containsKey(t)) {
 					break;

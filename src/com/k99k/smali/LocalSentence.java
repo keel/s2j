@@ -3,6 +3,8 @@
  */
 package com.k99k.smali;
 
+import org.apache.log4j.Logger;
+
 import com.k99k.tools.StringUtil;
 
 /**
@@ -20,7 +22,8 @@ public class LocalSentence extends Sentence {
 		super(mgr, line);
 		this.type = Sentence.TYPE_LINE;
 	}
-
+	static final Logger log = Logger.getLogger(LocalSentence.class);
+	
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Sentence#exec()
 	 */
@@ -33,7 +36,7 @@ public class LocalSentence extends Sentence {
 		if (len<3) {
 			this.out.append("exec var error. line:").append(this.line);
 			this.mgr.err(this);
-			System.err.println(this.out);
+			log.error(this.out);
 			return false;
 		}
 		String[] tar = ws[2].split(":");
@@ -48,7 +51,17 @@ public class LocalSentence extends Sentence {
 		
 //		String val = "";
 		Var ov = this.mgr.getVar(ws[1]);
-		
+		// null可能是exception
+		if (ov == null) {
+			if (obj.toLowerCase().matches(".*exception.*")) {
+				this.mgr.setVar(v);
+				this.over();
+				return true;
+			}else{
+				log.error(this.out);
+				return false;
+			}
+		}
 		String val = ov.getOut();
 		if (obj.equals("float")) {
 //			val = StringUtil.float16to10(val)+"F";

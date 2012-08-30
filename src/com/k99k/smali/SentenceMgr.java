@@ -86,11 +86,14 @@ public class SentenceMgr {
 		for (int i = 0; i < TagSentence.KEYS.length; i++) {
 			sentenceMap.put(TagSentence.KEYS[i], t);
 		}
+		CondTagSentence condtag = new CondTagSentence(null,null);
+		for (int i = 0; i < CondTagSentence.KEYS.length; i++) {
+			sentenceMap.put(CondTagSentence.KEYS[i], condtag);
+		}
 		GotoTagSentence gotag = new GotoTagSentence(null,null);
 		for (int i = 0; i < GotoTagSentence.KEYS.length; i++) {
 			sentenceMap.put(GotoTagSentence.KEYS[i], gotag);
 		}
-		
 		VarSentence v = new VarSentence(null, null);
 		for (int i = 0; i < VarSentence.KEYS.length; i++) {
 			sentenceMap.put(VarSentence.KEYS[i], v);
@@ -103,6 +106,16 @@ public class SentenceMgr {
 		SwitchSentence ss = new SwitchSentence(null, null);
 		for (int i = 0; i < SwitchSentence.KEYS.length; i++) {
 			sentenceMap.put(SwitchSentence.KEYS[i], ss);
+		}
+		
+		TrySentence tr = new TrySentence(null, null);
+		for (int i = 0; i < TrySentence.KEYS.length; i++) {
+			sentenceMap.put(TrySentence.KEYS[i], tr);
+		}
+		
+		OtherSentence other = new OtherSentence(null, null);
+		for (int i = 0; i < OtherSentence.KEYS.length; i++) {
+			sentenceMap.put(OtherSentence.KEYS[i], other);
 		}
 		//-------------------
 		//if结构语句name

@@ -3,6 +3,8 @@
  */
 package com.k99k.smali;
 
+import org.apache.log4j.Logger;
+
 /**
  * @author keel
  *
@@ -17,6 +19,7 @@ public class PutSentence extends Sentence {
 		super(mgr, line);
 		this.type = Sentence.TYPE_LINE;
 	}
+	static final Logger log = Logger.getLogger(PutSentence.class);
 	
 	/**
 	 * 如果是数组赋值,在此保存数组对应的源name，如: v1
@@ -41,7 +44,7 @@ public class PutSentence extends Sentence {
 		if (ws.length<3) {
 			this.out.append("exec putSentence error. line:").append(this.line);
 			this.mgr.err(this);
-			System.err.println(this.out);
+			log.error(this.out);
 			return false;
 		}
 		String key = ws[0];

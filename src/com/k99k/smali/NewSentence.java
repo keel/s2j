@@ -3,6 +3,8 @@
  */
 package com.k99k.smali;
 
+import org.apache.log4j.Logger;
+
 /**
  * @author keel
  *
@@ -17,6 +19,7 @@ public class NewSentence extends Sentence {
 		super(mgr, line);
 		this.type = Sentence.TYPE_LINE;
 	}
+	static final Logger log = Logger.getLogger(NewSentence.class);
 	
 	private Var v = new Var(this);
 	
@@ -36,7 +39,7 @@ public class NewSentence extends Sentence {
 		if (len < 3) {
 			this.out.append("exec newSentence error. line:").append(this.line);
 			this.mgr.err(this);
-			System.err.println(this.out);
+			log.error(this.out);
 			return false;
 		}
 		String obj = "";

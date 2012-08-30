@@ -3,6 +3,8 @@
  */
 package com.k99k.smali;
 
+import org.apache.log4j.Logger;
+
 import com.k99k.tools.StringUtil;
 
 /**
@@ -20,6 +22,7 @@ public class GotoSentence extends Sentence {
 		this.type = Sentence.TYPE_STRUCT;
 	}
 
+	static final Logger log = Logger.getLogger(GotoSentence.class);
 	
 	
 	/**
@@ -44,7 +47,7 @@ public class GotoSentence extends Sentence {
 		if (ws.length<2) {
 			this.out.append("exec GotoSentence error. line:").append(this.line);
 			this.mgr.err(this);
-			System.err.println(this.out);
+			log.error(this.out);
 			return false;
 		}
 		this.target = ws[1];

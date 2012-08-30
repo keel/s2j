@@ -3,6 +3,8 @@
  */
 package com.k99k.smali;
 
+import org.apache.log4j.Logger;
+
 
 /**
  * 处理get类语句
@@ -19,7 +21,8 @@ public class GetSentence extends Sentence {
 		super(mgr, line);
 		this.type = Sentence.TYPE_NOT_LINE;
 	}
-
+	static final Logger log = Logger.getLogger(GetSentence.class);
+	
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Sentence#exec()
 	 */
@@ -33,7 +36,7 @@ public class GetSentence extends Sentence {
 		if (ws.length<3) {
 			this.out.append("exec getSentence error. line:").append(this.line);
 			this.mgr.err(this);
-			System.err.println(this.out);
+			log.error(this.out);
 			return false;
 		}
 		String key = ws[0];

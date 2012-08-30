@@ -5,6 +5,8 @@ package com.k99k.smali;
 
 import java.util.HashMap;
 
+import org.apache.log4j.Logger;
+
 /**
  * @author keel
  *
@@ -19,6 +21,7 @@ public class ComputSentence extends Sentence {
 		super(mgr, line);
 		this.type = Sentence.TYPE_LINE;
 	}
+	static final Logger log = Logger.getLogger(ComputSentence.class);
 	
 	private String comTag = null;
 	
@@ -75,7 +78,7 @@ public class ComputSentence extends Sentence {
 		if (arr.length<3) {
 			this.out.append("exec invoke error. line:").append(this.line);
 			this.mgr.err(this);
-			System.err.println(this.out);
+			log.error(this.out);
 			return false;
 		}
 //		int alen = arr.length;
@@ -94,7 +97,7 @@ public class ComputSentence extends Sentence {
 			//存值 
 			com=checkCom(this.comTag);
 			if (com == null) {
-				System.err.println("/2addr error:"+this.line);
+				log.error("/2addr error:"+this.line);
 				return false;
 			}
 			Var org = this.mgr.getVar(target);

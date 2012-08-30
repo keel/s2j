@@ -3,6 +3,8 @@
  */
 package com.k99k.smali;
 
+import org.apache.log4j.Logger;
+
 /**
  * Move语句
  * @author keel
@@ -18,7 +20,8 @@ public class MoveSentence extends Sentence {
 		super(mgr, line);
 		this.type = Sentence.TYPE_NOT_LINE;
 	}
-
+	static final Logger log = Logger.getLogger(MoveSentence.class);
+	
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Sentence#exec()
 	 */
@@ -30,7 +33,7 @@ public class MoveSentence extends Sentence {
 		if (ws.length<2) {
 			this.out.append("exec move error. line:").append(this.line);
 			this.mgr.err(this);
-			System.err.println(this.out);
+			log.error(this.out);
 			return false;
 		}
 		String key = ws[0];
@@ -40,7 +43,7 @@ public class MoveSentence extends Sentence {
 			if (last == null || last.getVar()==null ) {
 				this.out.append("exec move error. last sentence or it's var is null. line:").append(this.line);
 				this.mgr.err(this);
-				System.err.println(this.out);
+				log.error(this.out);
 				return false;
 			}
 			//使用前一个invoke语句生成的Var,改变其name后加入到Var集合

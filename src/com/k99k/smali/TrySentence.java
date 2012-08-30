@@ -66,6 +66,7 @@ public class TrySentence extends Sentence {
 	static final String[] KEYS = new String[]{
 		".catch",
 		".catchall",
+		"throw",
 		":catchall_0",
 		":catchall_1",
 		":catchall_2",

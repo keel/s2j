@@ -3,6 +3,8 @@
  */
 package com.k99k.smali;
 
+import org.apache.log4j.Logger;
+
 /**
  * @author keel
  *
@@ -19,6 +21,7 @@ public class InvokeSentence extends Sentence {
 	}
 
 	private Var var = new Var(this);
+	static final Logger log = Logger.getLogger(InvokeSentence.class);
 	
 	
 	
@@ -32,7 +35,7 @@ public class InvokeSentence extends Sentence {
 		if (arr.length<3) {
 			this.out.append("exec invoke error. line:").append(this.line);
 			this.mgr.err(this);
-			System.err.println(this.out);
+			log.error(this.out);
 			return false;
 		}
 		int alen = arr.length;

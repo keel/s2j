@@ -3,6 +3,8 @@
  */
 package com.k99k.smali;
 
+import org.apache.log4j.Logger;
+
 /**
  * @author keel
  *
@@ -17,7 +19,8 @@ public class ReturnSentence extends Sentence {
 		super(mgr, line);
 		this.type = Sentence.TYPE_STRUCT;
 	}
-
+	static final Logger log = Logger.getLogger(ReturnSentence.class);
+	
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Sentence#exec()
 	 */
@@ -36,7 +39,7 @@ public class ReturnSentence extends Sentence {
 		}else{
 			this.out.append("exec return error. line:").append(this.line);
 			this.mgr.err(this);
-			System.err.println(this.out);
+			log.error(this.out);
 			return false;
 		}
 		this.over();
