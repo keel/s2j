@@ -46,7 +46,7 @@ public class SwitchScan {
 					ArrayList<String> cases = (ArrayList<String>) this.mgr.getVar(tag).getValue();
 					if (cases == null) {
 //						Logger.getLogger(name)
-						log.error("switch cases not found:"+ss.getLine());
+						log.error(this.mgr.getMeth().getName()+" - switch cases not found:"+ss.getLine());
 						continue;
 					}
 					Sentence se = this.senList.get(i+1);
@@ -56,7 +56,7 @@ public class SwitchScan {
 						GotoSentence gt = (GotoSentence)se;
 						end = gt.getTarget();
 					}else{
-						log.error("switch end not found:"+se.getLine());
+						log.error(this.mgr.getMeth().getName()+" - switch end not found:"+se.getLine());
 						continue;
 					}
 					se.setOut("} //end of switch");

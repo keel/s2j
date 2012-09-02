@@ -775,7 +775,7 @@ public class IFStructScan {
 		//合并条件
 		ifs = this.mergeCondsForWhile(firstIfIndex, lastCondIndex+1,lastCond,true);
 		if (ifs == null) {
-			log.error("scanReversedWhile mergeCondsForWhile failed.");
+			log.error(this.mgr.getMeth().getName()+" - scanReversedWhile mergeCondsForWhile failed.");
 			return;
 		}
 		//移动内容块,将最后一个tag后面的内容移到lastCond后
@@ -1050,7 +1050,7 @@ public class IFStructScan {
 		if (this.senList.get(this.contEndIndex-1).getName().equals("tag")) {
 			beforeContentTag = (TagSentence) this.senList.get(this.contEndIndex-1);
 		}else{
-			log.error("contEndIndex-1 is not tag. Method: "+this.mgr.getMeth().getName());
+			log.error(this.mgr.getMeth().getName()+" - contEndIndex-1 is not tag. Method: "+this.mgr.getMeth().getName());
 			return null;
 		}
 		beforeContentTagLn = beforeContentTag.getLineNum();
@@ -1311,7 +1311,7 @@ public class IFStructScan {
 					ifs.setCondTag(ts);
 					ts.setIfSen(ifs);
 				}else{
-					log.error("ifs cond not found:"+ifs.getCond());
+					log.error(this.mgr.getMeth().getName()+" - ifs cond not found: "+ifs.getCond());
 				}
 			}else if(s.getName().equals("goto")){
 				GotoSentence gs = (GotoSentence)s;
@@ -1320,7 +1320,7 @@ public class IFStructScan {
 					ts.setIfSen(gs);
 					gs.setTargetSen(ts);
 				}else{
-					log.error("goto cond not found:"+gs.getTarget());
+					log.error(this.mgr.getMeth().getName()+" - goto cond not found: "+gs.getTarget());
 				}
 			}
 		}

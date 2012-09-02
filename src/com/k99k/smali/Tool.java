@@ -26,6 +26,9 @@ public class Tool {
 	public static final String parseObject(String smaliObj){
 		if (smaliObj.startsWith("L") && smaliObj.endsWith(";")) {
 			String s = smaliObj.substring(1,smaliObj.length()-1);
+			s = s.replaceAll("\\/", "\\.");
+			//处理掉java.lang
+			s = s.replaceAll("java\\.lang\\.", "");
 			return s.replaceAll("\\/", "\\.");
 		}
 		else if (smaliObj.equals("V")) {

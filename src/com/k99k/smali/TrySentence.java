@@ -51,7 +51,7 @@ public class TrySentence extends Sentence {
 			this.mgr.setHasTry(true);
 			this.over();
 		}else if(this.key.indexOf(":try_end_")>-1){
-			this.out.append(" //end of try");
+			this.out.append("//end of try");
 			this.over();
 		}else if(this.key.indexOf(":catch_")>-1){
 			this.isTag = true;
@@ -65,7 +65,6 @@ public class TrySentence extends Sentence {
 			this.out.append("} catch ("+ex+" _E_) {");
 		}else if(this.key.equals(".catchall")){
 			this.catchTag = ws[ws.length-1];
-			this.out.append("finally {");
 		}else if(this.key.equals("throw")){
 		}
 		return true;

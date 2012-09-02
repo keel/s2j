@@ -97,7 +97,7 @@ public class ComputSentence extends Sentence {
 			//存值 
 			com=checkCom(this.comTag);
 			if (com == null) {
-				log.error("/2addr error:"+this.line);
+				log.error(this.mgr.getMeth().getName()+" - /2addr error:"+this.line);
 				return false;
 			}
 			Var org = this.mgr.getVar(target);

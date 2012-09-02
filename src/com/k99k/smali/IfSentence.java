@@ -235,7 +235,7 @@ public class IfSentence extends Sentence {
 	 */
 	public void mergeIf(boolean logicAnd,IfSentence ifs){
 		if (this.getLineNum() == ifs.getLineNum()) {
-			log.error("mergeIf error! lineNum is same:"+ifs.getLineNum());
+			log.error(this.mgr.getMeth().getName()+" - mergeIf error! lineNum is same:"+ifs.getLineNum());
 			return;
 		}
 		if (logicAnd) {

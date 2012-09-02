@@ -16,14 +16,15 @@ public class TryCatchScan {
 	public TryCatchScan(SentenceMgr mgr,ArrayList<Sentence> senList) {
 		this.mgr = mgr;
 		this.senList = senList;
-		this.len = this.senList.size();
+//		this.len = this.senList.size();
 	}
 	
 	private SentenceMgr mgr;
 	
 	private ArrayList<Sentence> senList;
 	
-	private int len;
+//	private int len;
+	
 	static final Logger log = Logger.getLogger(TryCatchScan.class);
 	/**
 	 * 保存已经识别的catch tag，用于去重
@@ -83,7 +84,6 @@ public class TryCatchScan {
 				}
 			}
 		}
-		log.debug("tryCatchScan end");
 		//移动finally块
 		for (int i = 0; i < this.senList.size(); i++) {
 			Sentence s = this.senList.get(i);
@@ -94,6 +94,7 @@ public class TryCatchScan {
 				}
 			}
 		}
+		log.debug("tryCatchScan end");
 	}
 	
 	/**
@@ -132,7 +133,8 @@ public class TryCatchScan {
 				if (isFirst) {
 					if (trs.getCatchTag().equals(ts.getCatchTag())) {
 						insertPo = i;
-						isFirst = false;						
+						isFirst = false;
+						s.over();
 					}
 				}else if(trs.getCatchTag().equals(ts.getCatchTag())){
 					s.setType(Sentence.TYPE_NOT_LINE);
@@ -153,7 +155,7 @@ public class TryCatchScan {
 	}
 	
 	/**
-	 * 处理finally块
+	 * 初步处理finally块
 	 * @param start
 	 */
 	private void doFinally(int start){
@@ -170,40 +172,54 @@ public class TryCatchScan {
 		}
 	}
 	
+	/**
+	 * 处理catch块的移动
+	 * @param start
+	 * @param ts
+	 */
 	private void doCatch(int start,TrySentence ts){
 		ArrayList<Sentence> ls = new ArrayList<Sentence>();
 		String vs = "_E_";
 		for (int j = start+1; j < this.senList.size(); j++) {
 			Sentence s1 = this.senList.get(j);
 			if (s1.getName().equals("local") || s1.getLine().startsWith(".restart")) {
+				//找到Exception的变量名
 				vs = s1.getVar().getOut();
 				this.senList.remove(j);
 				s1.level++;
 				ls.add(s1);
 				j--;
 			}else if (s1.getName().equals("goto")) {
+				//goto语句为catch块结束标志
 				GotoSentence gt = (GotoSentence)s1;
 				for (int i = 0; i < j; i++) {
 					Sentence s2 = this.senList.get(i);
 					if (s2.getName().equals("try")) {
 						TrySentence s3 = (TrySentence)s2;
+						//定位到catchTag位置进行插入操作
 						if (s3.getKey().equals(".catch") && s3.getCatchTag().equals(ts.getCatchTag())) {
-							//定位到gotoTag位置进行插入操作
 							s3.setOut(s3.getOut().replace("_E_", vs));
 							gt.setOut("} //end of catch: "+gt.getLine());
 							this.senList.remove(j);
-							s1.level++;
 							ls.add(s1);
 							j--;
 							this.senList.addAll(i+1, ls);
 							gt.over();
 							ts.over();
 							s3.over();
+							//return; //还需要进一步将gotoTag置为over
+							continue;
+						}
+					}else if(s2.getName().equals("gotoTag") && s2.getState()!=Sentence.STATE_OVER){
+						//将gotoTag置为over
+						GotoTagSentence gtt = (GotoTagSentence)s2;
+						if (gtt.getTag().equals(gt.getTarget())) {
+							gtt.over();
 							return;
 						}
 					}
 				}
-				log.error("catch end error:"+ts.getLine());
+				log.error(this.mgr.getMeth().getName()+" - catch end error:"+ts.getLine());
 				return;
 			}else{
 				this.senList.remove(j);
@@ -212,8 +228,8 @@ public class TryCatchScan {
 				j--;
 			}
 		}
-		//还可以检测gotoTag之前是否还有其他的gotoTag，应该是finally块
 	}
+	
 	
 	/**
 	 * 向上查找第一个:try_start和:try_end块，不显示try
@@ -235,4 +251,5 @@ public class TryCatchScan {
 			}
 		}
 	}
+	
 }

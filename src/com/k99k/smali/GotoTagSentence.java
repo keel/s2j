@@ -16,7 +16,6 @@ public class GotoTagSentence extends TagSentence {
 	public GotoTagSentence(SentenceMgr mgr, String line) {
 		super(mgr, line);
 		this.type = Sentence.TYPE_STRUCT;
-		this.out.append("//"+line);
 	}
 	
 	/* (non-Javadoc)

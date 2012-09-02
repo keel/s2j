@@ -240,7 +240,7 @@ public class SentenceMgr {
 					this.outLines.add(ostr);
 				}
 			}else{
-				log.error("[Sentence not over] ["+s.getLineNum()+"] "+s.getLine());
+				log.error(this.getMeth().getName()+" - [Sentence not over] ["+s.getLineNum()+"] "+s.getLine());
 			}
 		}
 	}
