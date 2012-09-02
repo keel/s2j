@@ -24,6 +24,8 @@ public class LocalSentence extends Sentence {
 	}
 	static final Logger log = Logger.getLogger(LocalSentence.class);
 	
+	private Var v;
+	
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Sentence#exec()
 	 */
@@ -42,7 +44,7 @@ public class LocalSentence extends Sentence {
 		String[] tar = ws[2].split(":");
 		String name = tar[0];
 		String obj = Tool.parseObject(tar[1]);
-		Var v = new Var(this);
+		this.v = new Var(this);
 		v.setClassName(obj);
 		v.setKey(KEY);
 		v.setName(ws[1]);
@@ -180,6 +182,14 @@ public class LocalSentence extends Sentence {
 	@Override
 	public Sentence newOne(SentenceMgr mgr, String line) {
 		return new LocalSentence(mgr, line);
+	}
+
+	/* (non-Javadoc)
+	 * @see com.k99k.smali.Sentence#getVar()
+	 */
+	@Override
+	public Var getVar() {
+		return this.v;
 	}
 
 	/* (non-Javadoc)

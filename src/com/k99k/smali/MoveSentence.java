@@ -38,14 +38,28 @@ public class MoveSentence extends Sentence {
 		}
 		String key = ws[0];
 		if (key.startsWith("move-result")) {
-			//move-result
-			Sentence last = this.mgr.getLastSentence();
-			if (last == null || last.getVar()==null ) {
-				this.out.append("exec move error. last sentence or it's var is null. line:").append(this.line);
-				this.mgr.err(this);
-				log.error(this.out);
-				return false;
+			Sentence last = null;
+			//向上定位到非STRUCT句
+			for(int i=0;i<this.lineNum;i++){
+				last = this.mgr.getLastSentence(i);
+				if (last == null) {
+					this.out.append("exec move error. last sentence is null. line:").append(this.line);
+					this.mgr.err(this);
+					log.error(this.out);
+					return false;
+				}else if(last.getType() == Sentence.TYPE_STRUCT){
+					continue;
+				}
+				if (last.getVar()==null ) {
+					this.out.append("exec move error. last sentence's var is null. line:").append(this.line);
+					this.mgr.err(this);
+					log.error(this.out);
+					return false;
+				}else{
+					break;
+				}
 			}
+			
 			//使用前一个invoke语句生成的Var,改变其name后加入到Var集合
 			Var v = last.getVar();
 			String name = ws[1];
@@ -54,9 +68,7 @@ public class MoveSentence extends Sentence {
 			//将last语句显示去掉
 			last.setType(Sentence.TYPE_NOT_LINE);
 		}else if(key.equals("move-exception")){
-			//FIXME 需要配合exception操作,可考虑将此key加入到处理exceiption的Sentence
-			
-			
+			//不处理,已由try catch处理
 			
 		}else{
 			//TODO move变量,判断是否需要clone

@@ -59,6 +59,9 @@ public class SwitchSentence extends Sentence {
 			this.out.append(this.mgr.getVar(ws[1]).getOut());
 			this.out.append("){");
 			this.over();
+		}else if(key.startsWith(":pswitch_data") || key.startsWith(":sswitch_data")){
+			//data
+			this.over();
 		}else if(key.startsWith(":pswitch_") || key.startsWith(":sswitch_")){
 			//case
 			Var v = new Var(this);
@@ -67,8 +70,6 @@ public class SwitchSentence extends Sentence {
 			v.setName(this.line);
 			this.mgr.setVar(v);
 			this.out.append("//"+this.line);
-//		}else if(key.startsWith(":pswitch_data") || key.startsWith(":sswitch_data")){
-			//data
 		}else if(key.equals(".packed-switch") || key.equals(".sparse-switch")){
 			if (this.switchKey == null) {
 				this.out.append("switchKey is null. line:").append(this.line);

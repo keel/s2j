@@ -15,6 +15,8 @@ public class GotoTagSentence extends TagSentence {
 	 */
 	public GotoTagSentence(SentenceMgr mgr, String line) {
 		super(mgr, line);
+		this.type = Sentence.TYPE_STRUCT;
+		this.out.append("//"+line);
 	}
 	
 	/* (non-Javadoc)
@@ -31,7 +33,7 @@ public class GotoTagSentence extends TagSentence {
 	 */
 	@Override
 	public Sentence newOne(SentenceMgr mgr, String line) {
-		return new CondTagSentence(mgr, line);
+		return new GotoTagSentence(mgr, line);
 	}
 	
 	static final String[] KEYS = new String[]{

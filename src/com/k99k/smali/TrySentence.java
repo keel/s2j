@@ -21,6 +21,21 @@ public class TrySentence extends Sentence {
 	}
 	
 	private ArrayList<String> tryKey;
+	
+	/**
+	 * 本句的指令词
+	 */
+	private String key;
+	
+	/**
+	 * .catch或.catchall语句的目标tag
+	 */
+	private String catchTag;
+	
+	/**
+	 * 是否是catch和catchall的tag语句
+	 */
+	private boolean isTag = false;
 
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Sentence#exec()
@@ -30,8 +45,29 @@ public class TrySentence extends Sentence {
 		this.doComm(this.line);
 		this.line = this.line.replaceAll(",", "");
 		String[] ws = this.line.split(" ");
-		
-		
+		this.key = ws[0];
+		if (this.key.indexOf(":try_start_")>-1) {
+			this.out.append("try {");
+			this.mgr.setHasTry(true);
+			this.over();
+		}else if(this.key.indexOf(":try_end_")>-1){
+			this.out.append(" //end of try");
+			this.over();
+		}else if(this.key.indexOf(":catch_")>-1){
+			this.isTag = true;
+			this.catchTag = this.key;
+		}else if(this.key.indexOf(":catchall_")>-1){
+			this.isTag = true;
+			this.catchTag = this.key;
+		}else if(this.key.equals(".catch")){
+			String ex = Tool.parseObject(ws[1]);
+			this.catchTag = ws[ws.length-1];
+			this.out.append("} catch ("+ex+" _E_) {");
+		}else if(this.key.equals(".catchall")){
+			this.catchTag = ws[ws.length-1];
+			this.out.append("finally {");
+		}else if(this.key.equals("throw")){
+		}
 		return true;
 	}
 
@@ -53,6 +89,27 @@ public class TrySentence extends Sentence {
 	
 	
 	
+	/**
+	 * @return the isTag
+	 */
+	public final boolean isTag() {
+		return isTag;
+	}
+
+	/**
+	 * @return the catchTag
+	 */
+	public final String getCatchTag() {
+		return catchTag;
+	}
+
+	/**
+	 * @return the key
+	 */
+	public final String getKey() {
+		return key;
+	}
+
 	/**
 	 * @return the tryKey
 	 */

@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import org.apache.log4j.Logger;
+
 import com.k99k.tools.StringUtil;
 
 /**
@@ -23,6 +25,9 @@ public class SentenceMgr {
 		sentenceList = new ArrayList<Sentence>();
 		this.meth = meth;
 	}
+	
+	static final Logger log = Logger.getLogger(SentenceMgr.class);
+	
 	
 	/**
 	 * sentenceMap,用于定位不同的Sentence
@@ -190,6 +195,8 @@ public class SentenceMgr {
 	private boolean hasIF = false;;
 	
 	private boolean hasSwitch = false;
+	
+	private boolean hasTry = false;
 	/**
 	 * 处理原始语句集
 	 */
@@ -232,6 +239,8 @@ public class SentenceMgr {
 					String ostr = StaticUtil.TABS[s.getLevel()]+s.getOut();
 					this.outLines.add(ostr);
 				}
+			}else{
+				log.error("[Sentence not over] ["+s.getLineNum()+"] "+s.getLine());
 			}
 		}
 	}
@@ -241,10 +250,12 @@ public class SentenceMgr {
 	 */
 	public void parse(){
 		maxNum = this.srcLines.size();
+		int javaLine = -1;
 		while (cNum < maxNum) {
 			String l = this.srcLines.get(cNum);
-			int javaLine = this.javaLineNum(l);
-			if (javaLine >= 0) {
+			int jaLine = this.javaLineNum(l);
+			if (jaLine >=0 && jaLine != javaLine) {
+				javaLine = jaLine;
 				cNum++;
 				l = this.srcLines.get(cNum);
 			}
@@ -304,9 +315,15 @@ public class SentenceMgr {
 			}
 			cNum++;
 		}
+		//处理switch
 		if (hasSwitch) {
 			SwitchScan ss = new SwitchScan(this, this.sentenceList);
 			ss.scan();
+		}
+		//处理try catch
+		if (hasTry) {
+			TryCatchScan ts = new TryCatchScan(this, this.sentenceList);
+			ts.scan();
 		}
 		//处理IFScan
 		if (hasIF) {
@@ -341,6 +358,17 @@ public class SentenceMgr {
 		tags.put(tsen.getTag(), tsen);
 	}
 	
+	/**
+	 * @param hasTry the hasTry to set
+	 */
+	public final void setHasTry(boolean hasTry) {
+		this.hasTry = hasTry;
+	}
+
+
+
+
+
 	public final TagSentence getTag(String tag){
 		return (TagSentence) tags.get(tag);
 	}
@@ -398,6 +426,18 @@ public class SentenceMgr {
 			return null;
 		}
 		return this.sentenceList.get(len -1);
+	}
+	
+	/**
+	 * 获取SentenceList中的倒数第skip个Sentence
+	 * @return
+	 */
+	public final Sentence getLastSentence(int skip){
+		int len = this.sentenceList.size();
+		if (len<(1+skip)) {
+			return null;
+		}
+		return this.sentenceList.get(len -1-skip);
 	}
 	
 	/**
@@ -537,7 +577,7 @@ public class SentenceMgr {
 		this.sentenceList.remove(sen);
 	}
 	/**
-	 * 设置p0的Var，根据是否静态方法有所不同
+	 * 设置p0和方法参数的Var，根据是否静态方法有所不同
 	 * @param sen Sentence
 	 * @param key 用于设置Var的key
 	 * @return Var

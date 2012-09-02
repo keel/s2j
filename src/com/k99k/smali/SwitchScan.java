@@ -35,8 +35,9 @@ public class SwitchScan {
 	@SuppressWarnings("unchecked")
 	public void scan(){
 		for (int i = 0; i < this.len; i++) {
+			String end = null;
 			Sentence s = this.senList.get(i);
-			if (s.getName().equals("switch") || s.getName().equals("gotoTag")) {
+			if (s.getName().equals("switch")) {
 				SwitchSentence ss = (SwitchSentence)s;
 				String key = ss.getKey();
 				if (key.equals("packed-switch") || key.equals("sparse-switch")) {
@@ -49,7 +50,6 @@ public class SwitchScan {
 						continue;
 					}
 					Sentence se = this.senList.get(i+1);
-					String end = null;
 					if (se.getLine().startsWith(":goto_")) {
 						end = se.getLine();
 					}else if(se.getName().equals("goto")){
@@ -119,7 +119,7 @@ public class SwitchScan {
 					this.senList.remove(i);
 					break;
 				}
-			}else if(s.getName().equals("switch") || s.getName().equals("gotoTag")){
+			}else if(s.getName().equals("switch")){
 				String t = s.getLine();
 				if (cases.containsKey(t)) {
 					break;

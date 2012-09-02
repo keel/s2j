@@ -19,13 +19,22 @@ public class OtherSentence extends TagSentence {
 	}
 	private String name = "other";
 	
+	private Var var;
 	
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.TagSentence#exec()
 	 */
 	@Override
 	public boolean exec() {
-		this.out.append("//[OTHER] ").append(this.line.substring(1));
+		//this.doComm(this.line);
+		this.line = this.line.replaceAll(",", "");
+		String[] ws = this.line.split(" ");
+		if (ws[0].equals(".restart")) {
+			this.var = this.mgr.getVar(ws[2]);
+		}else{
+			
+			this.out.append("//[OTHER] ").append(this.line.substring(1));
+		}
 		this.over();
 		return true;
 	}
@@ -45,6 +54,15 @@ public class OtherSentence extends TagSentence {
 	@Override
 	public String getName() {
 		return this.name;
+	}
+
+
+	/* (non-Javadoc)
+	 * @see com.k99k.smali.Sentence#getVar()
+	 */
+	@Override
+	public Var getVar() {
+		return this.var;
 	}
 
 
