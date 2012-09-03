@@ -139,14 +139,68 @@ public class IFStructScan {
 						this.contStartIndex = j;
 						this.contStart = sc.getLineNum();
 					}
+					//注意内容块中的gotoTag，有可能是else入口
+					else if(this.elseEntry== -1 && sc.getName().equals("gotoTag") && sc.getState() == Sentence.STATE_DOING){
+						this.elseEntry = j;
+					}
 				}
 				if(this.doIfStruct()){
+					if (this.elseEntry > 0) {
+						this.doElse();
+					}
 					i = this.contEndIndex;
 				}
 			}
 			
 		}
 		log.debug("IfScan end");
+	}
+	
+	/**
+	 * else 入口,初始值为-1
+	 */
+	private int elseEntry = -1;
+	
+	/**
+	 * 处理if的else语句(非"}if else{",仅针对最后的else)
+	 */
+	private void doElse(){
+		
+		Sentence elseGtTag = this.senList.get(this.elseEntry);
+		if (!elseGtTag.getName().equals("gotoTag")) {
+			log.error(this.mgr.getMeth().getName()+" - elseGtTag is not gotoTag");
+			return;
+		}
+		String elseTag = ((GotoTagSentence)elseGtTag).getTag();
+		
+		ArrayList<Sentence> ls = new ArrayList<Sentence>();
+		//定位到goto语句，并移动语句块
+		boolean elseStart = false;
+		for (int i = this.contStartIndex+1; i < this.senList.size();) {
+			Sentence s = this.senList.get(i);
+			if (s.getName().equals("condTag")) {
+				s.appendOut(" else {");
+				elseStart = true;
+			}else if(!elseStart){
+				i++;
+				continue;
+			}
+			ls.add(this.senList.remove(i));
+			if (s.getName().equals("goto")) {
+				GotoSentence gt = (GotoSentence)s;
+				if (gt.getTarget().equals(elseTag)) {
+					gt.setOut("} //end of ifElse: "+gt.getLine());
+					gt.over();
+					elseGtTag.setOut("//"+elseGtTag.getLine());
+					elseGtTag.over();
+					this.senList.addAll(this.elseEntry, ls);
+					this.contStartIndex = this.contStartIndex + ls.size();
+					return;
+				}
+			}
+		}
+		log.error(this.mgr.getMeth().getName()+" - elseGoto is not found.");
+		
 	}
 	
 	/**
@@ -1292,7 +1346,7 @@ public class IFStructScan {
 		//先扫描两次将cond和if对应上
 		for (int i = len-1; i >= 0; i--) {
 			Sentence s = senList.get(i);
-			if (s.getName().equals("tag") || s.getName().equals("condTag")) {
+			if (s.getState() != Sentence.STATE_OVER && (s.getName().equals("tag") || s.getName().equals("condTag")|| s.getName().equals("gotoTag"))) {
 				TagSentence ts = (TagSentence)s;
 				condMap.put(ts.getTag(), ts);
 			}
@@ -1320,7 +1374,7 @@ public class IFStructScan {
 					ts.setIfSen(gs);
 					gs.setTargetSen(ts);
 				}else{
-					log.error(this.mgr.getMeth().getName()+" - goto cond not found: "+gs.getTarget());
+					log.error(this.mgr.getMeth().getName()+" - goto target not found: "+gs.getTarget());
 				}
 			}
 		}
@@ -1352,7 +1406,7 @@ public class IFStructScan {
 					returnToEnd = 3;
 				}
 			}else if(returnToEnd == 3){
-				if (s.getName().equals("tag") || s.getName().equals("condTag")) {
+				if (s.getName().equals("tag") || s.getName().equals("condTag") ) {
 					returnIndex = this.senList.indexOf(s);
 				}else{
 					returnToEnd = 0;//不再处理

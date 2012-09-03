@@ -320,15 +320,15 @@ public class SentenceMgr {
 			SwitchScan ss = new SwitchScan(this, this.sentenceList);
 			ss.scan();
 		}
-		//处理try catch
-		if (hasTry) {
-			TryCatchScan ts = new TryCatchScan(this, this.sentenceList);
-			ts.scan();
-		}
 		//处理IFScan
 		if (hasIF) {
 			IFStructScan ifs = new IFStructScan(this,this.sentenceList);
 			ifs.scan();
+		}
+		//处理try catch
+		if (hasTry) {
+			TryCatchScan ts = new TryCatchScan(this, this.sentenceList);
+			ts.scan();
 		}
 	}
 	
