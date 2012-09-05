@@ -3,9 +3,12 @@
  */
 package com.k99k.smali;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import com.k99k.smalimv.PubReplace;
 import com.k99k.tools.IO;
 
 /**
@@ -27,6 +30,8 @@ public class S2J {
 		contextMap.put(f.getKey(), f);
 		Methods m = new Methods(this, null,null);
 		contextMap.put(m.getKey(), m);
+		Annotation a = new Annotation(this, null,null);
+		contextMap.put(a.getKey(), a);
 	}
 	
 	private final HashMap<String,Context> contextMap = new HashMap<String, Context>();
@@ -47,12 +52,26 @@ public class S2J {
 	 */
 	String packageName;
 	
+	private static S2J s2j = new S2J();
+	
+	public static final S2J getS2J(){
+		return s2j;
+	}
+	
 	public String exec(String fileName,String encode){
-		StringBuilder sb = new StringBuilder();
 		try {
 			String t = IO.readTxt(fileName, encode);
+			return exec(t);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return "ERR";
+	}
+	
+	public String exec(String t){
+		StringBuilder sb = new StringBuilder();
+		try {
 			ArrayList<String> lines = Tool.strToLine(t);
-			
 			while (!lines.isEmpty()) {
 				String nextLine = lines.get(0);
 				String key = Tool.getKey(nextLine);
@@ -75,15 +94,34 @@ public class S2J {
 		return sb.toString();
 	}
 	
-
+	
+	
+	
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		
+		/*
 		S2J s = new S2J();
 		//String re = s.exec("h:/SMSTest.smali", "utf-8");
 		String re = s.exec("f:/android/apk_manager/projects/SmaliTest.apk/smali/com/smlon/tools/Structs.smali", "utf-8");
 		System.out.println(re);
+		*/
+		
+		
+		String ec = "utf-8";
+		File from  = new File("F:/android/apk_manager/projects/ud.apk/smali");
+		File to  = new File("g:/ud");
+		FolderS2J r = new FolderS2J();
+		try {
+			
+			IO.copyFullDirWithFn(from, to, r, ec);
+			System.out.println("--------- END ----------");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
 	}
 
 }

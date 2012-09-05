@@ -124,8 +124,9 @@ public final class IO {
 		if (iof.doFilter(from)) {
 			String org = readTxt(from,encode);
 			String target = iof.doFileContent(org);
-			writeTxt(target,encode,fileTo.getAbsolutePath());
-			System.out.println(from);
+			File newFile = iof.newFile(fileTo);
+			writeTxt(target,encode,newFile.getAbsolutePath());
+//			System.out.println(from);
 		}
     } 
 	

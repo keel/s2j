@@ -183,14 +183,16 @@ public class TryCatchScan {
 			}
 		}
 		
-		//FIXME 需要确定finally的插入位置
-		
-		//从insertPo再向下找到第一个gotoTag位置，插入
-		for (int i = insertPo; i < this.senList.size(); i++) {
+		//需要确定finally的插入位置,从后向前找到第一个endOfCatch的goto，插入
+		for (int i = this.senList.size()-1; i > 0; i--) {
 			Sentence s = this.senList.get(i);
-			if (s.getName().equals("gotoTag")) {
-				this.senList.addAll(i,ls);
-				break;
+			if (s.getName().equals("goto") ) {
+				GotoSentence gts =(GotoSentence)s;
+				if (gts.isEndOfCatch()) {
+					this.senList.addAll(i+1,ls);
+					gts.setEndOfCatch(false);
+					break;
+				}
 			}
 		}
 		ts.over();

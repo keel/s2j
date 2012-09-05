@@ -1,5 +1,7 @@
 package com.k99k.tools;
 
+import java.io.File;
+
 public interface IOInterface {
 	
 	/**
@@ -15,5 +17,12 @@ public interface IOInterface {
 	 * @return
 	 */
 	public boolean doFilter(String fileName);
+	
+	/**
+	 * 处理目标文件,比如更新目标文件扩展名等
+	 * @param fileTo
+	 * @return
+	 */
+	public File newFile(File fileTo);
 
 }

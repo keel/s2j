@@ -31,6 +31,10 @@ public class Fields extends Context {
 	private String name;
 	
 	private String scope = "";
+	
+	private String defaultValue = "";
+	
+	private ArrayList<String> annotations;
 
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Context#out()
@@ -43,7 +47,18 @@ public class Fields extends Context {
 				this.out.append(this.scope);
 			}
 			
-			this.out.append(this.objType).append(" ").append(this.name).append(";").append(StaticUtil.NEWLINE);
+			this.out.append(this.objType).append(" ").append(this.name);
+			if (!this.defaultValue.equals("")) {
+				this.out.append(" = ").append(this.defaultValue);
+			}
+			this.out.append(";").append(StaticUtil.NEWLINE);
+			if (this.annotations != null) {
+				for (int i = 0; i < this.annotations.size(); i++) {
+					this.out.append("// ");
+					this.out.append(this.annotations.get(i));
+					this.out.append(StaticUtil.NEWLINE);
+				}
+			}
 			return true;
 		}else{
 			this.err = "//ERR: some prop missed. props:"+this.objType+","+this.name;
@@ -60,16 +75,35 @@ public class Fields extends Context {
 		String l = this.lines.remove(0);
 		String[] words = l.split(" ");
 		int len = words.length;
-		for (int i = 1; i < len-1; i++) {
-			this.scope += words[i]+" ";
+		int vpo = 0;
+		for (int i = 1; i < len; i++) {
+			if (words[i].indexOf(":") < 0) {
+				this.scope += words[i]+" ";
+			}else{
+				vpo = i;
+				break;
+			}
 		}
-		String[] objstr = words[len-1].split(":");
+		String[] objstr = words[vpo].split(":");
 		if (objstr.length != 2) {
 			this.err = "//ERR: fields objstr error. line:"+l;
 			return false;
 		}
 		this.name = objstr[0];
 		this.objType = Tool.parseObject(objstr[1]);
+		if (l.indexOf("=")>0) {
+			this.defaultValue = words[words.length-1];
+		}
+		
+		//判断下一个是不是.annotation
+		l = this.lines.get(0);
+		if (l.indexOf(StaticUtil.TYPE_ANNOTATION)>=0) {
+			annotations = new ArrayList<String>();
+			while(!(l = this.lines.remove(0)).equals(StaticUtil.TYPE_FIELD_END)){
+				this.annotations.add(l);
+			}
+		}
+		
 		return true;
 	}
 

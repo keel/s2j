@@ -71,6 +71,8 @@ public class StaticUtil {
 	public static final String TYPE_SUPER = ".super";
 	public static final String TYPE_SOURCE = ".source";
 	public static final String TYPE_FIELD = ".field";
+	public static final String TYPE_FIELD_END = ".end field";
+	
 	public static final String TYPE_METHOD = ".method";
 	public static final String TYPE_END_METHOD = ".end method";
 	public static final String TYPE_IMPLEMENTS = ".implements";
@@ -91,7 +93,7 @@ public class StaticUtil {
 	public static final String TYPE_REGISTERS = ".registers";
 	public static final String TYPE_SPARSE_SWITCH = ".sparse-switch";
 	public static final String TYPE_ANNOTATION = ".annotation";
-	
+	public static final String TYPE_ANNOTATION_END = ".end annotation";
 	/*
 	 add-double
 add-double/2addr

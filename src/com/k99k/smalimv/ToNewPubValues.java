@@ -70,7 +70,7 @@ public class ToNewPubValues {
 		String ec = "utf-8";
 		String conf = "g:/cc3.txt";
 		File from  = new File("F:/android/apk_manager/projects/EgameSocialSdk1.apk");
-		File to  = new File("g:/EgameSocialSdk1");
+		File to  = new File("g:/EgameSocialSdk2");
 		PubReplace r = new PubReplace(conf,ec);
 		try {
 			
