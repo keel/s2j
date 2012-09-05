@@ -140,13 +140,13 @@ public class IFStructScan {
 						this.contStart = sc.getLineNum();
 					}
 					//注意内容块中的gotoTag，有可能是else入口
-					else if(this.elseEntry== -1 && sc.getName().equals("gotoTag") && sc.getState() == Sentence.STATE_DOING){
-						this.elseEntry = j;
+					else if(sc.getName().equals("gotoTag") && sc.getState() == Sentence.STATE_DOING){
+						this.elseEntrys.add(j);
 					}
 				}
 				if(this.doIfStruct()){
-					if (this.elseEntry > 0) {
-						this.doElse();
+					if (!this.elseEntrys.isEmpty()) {
+						this.doElses();
 					}
 					i = this.contEndIndex;
 				}
@@ -156,27 +156,40 @@ public class IFStructScan {
 		log.debug("IfScan end");
 	}
 	
+//	/**
+//	 * else 入口,初始值为-1
+//	 */
+//	private int elseEntry = -1;
+	
+	private ArrayList<Integer> elseEntrys = new ArrayList<Integer>();
+	
 	/**
-	 * else 入口,初始值为-1
+	 * 处理多个if的else
 	 */
-	private int elseEntry = -1;
+	private void doElses(){
+		int len = this.elseEntrys.size();
+		for (int i = 0; i < len; i++) {
+			int po = this.elseEntrys.get(i);
+			this.doElse(po);
+		}
+	}
 	
 	/**
 	 * 处理if的else语句(非"}if else{",仅针对最后的else)
 	 */
-	private void doElse(){
+	private void doElse(int po){
 		
-		Sentence elseGtTag = this.senList.get(this.elseEntry);
+		Sentence elseGtTag = this.senList.get(po);
 		if (!elseGtTag.getName().equals("gotoTag")) {
-			log.error(this.mgr.getMeth().getName()+" - elseGtTag is not gotoTag");
+			log.debug(this.mgr.getMeth().getName()+" - elseGtTag is not gotoTag");
 			return;
 		}
 		String elseTag = ((GotoTagSentence)elseGtTag).getTag();
 		//向上跳过catch块部分
-		while (elseEntry >= 0) {
-			Sentence s = this.senList.get(this.elseEntry-1);
+		while (po >= 0) {
+			Sentence s = this.senList.get(po-1);
 			if (s.getName().equals("try")) {
-				elseEntry--;
+				po--;
 			}else{
 				break;
 			}
@@ -202,7 +215,7 @@ public class IFStructScan {
 					gt.over();
 					elseGtTag.setOut("//"+elseGtTag.getLine());
 					elseGtTag.over();
-					this.senList.addAll(this.elseEntry, ls);
+					this.senList.addAll(po, ls);
 					this.contStartIndex = this.contStartIndex + ls.size();
 					return;
 				}

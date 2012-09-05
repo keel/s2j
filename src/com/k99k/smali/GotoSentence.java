@@ -37,6 +37,11 @@ public class GotoSentence extends Sentence {
 	
 	private boolean isReturn = false;
 	
+	/**
+	 * 是否为catch块的结尾
+	 */
+	private boolean isEndOfCatch = false;
+	
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Sentence#exec()
 	 */
@@ -119,6 +124,22 @@ public class GotoSentence extends Sentence {
 	
 	
 	
+	/**
+	 * @return the isEndOfCatch
+	 */
+	public final boolean isEndOfCatch() {
+		return isEndOfCatch;
+	}
+
+
+	/**
+	 * @param isEndOfCatch the isEndOfCatch to set
+	 */
+	public final void setEndOfCatch(boolean isEndOfCatch) {
+		this.isEndOfCatch = isEndOfCatch;
+	}
+
+
 	/**
 	 * @return the target
 	 */

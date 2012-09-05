@@ -158,8 +158,8 @@ public class TryCatchScan {
 				}
 			}
 		}
-		//清理整个方法体中与取批javaLineNum相同的语句,同时将第一个.catchall下方所有相同tag的.catchall语句处理不显示
-		boolean isFirst = true;
+		//清理整个方法体中与取批javaLineNum相同的语句,同时将已经over的.catchall处理不显示
+//		boolean isFirst = true;
 		int insertPo = 0;
 		for (int i = 0; i < this.senList.size(); i++) {
 			Sentence s = this.senList.get(i);
@@ -169,10 +169,10 @@ public class TryCatchScan {
 			}
 			else if (s.getLine().startsWith(".catchall ")) {
 				TrySentence trs = (TrySentence)s;
-				if (isFirst) {
+				if (trs.state != Sentence.STATE_OVER) {
 					if (trs.getCatchTag().equals(ts.getCatchTag())) {
 						insertPo = i;
-						isFirst = false;
+//						isFirst = false;
 						s.over();
 					}
 				}else if(trs.getCatchTag().equals(ts.getCatchTag())){
@@ -182,6 +182,9 @@ public class TryCatchScan {
 				
 			}
 		}
+		
+		//FIXME 需要确定finally的插入位置
+		
 		//从insertPo再向下找到第一个gotoTag位置，插入
 		for (int i = insertPo; i < this.senList.size(); i++) {
 			Sentence s = this.senList.get(i);
@@ -258,6 +261,7 @@ public class TryCatchScan {
 				s3 = (TrySentence) this.senList.get(addP);
 				s3.setOut(s3.getOut().replace("_E_", vs));
 				gt.setOut("} //end of catch: "+gt.getLine());
+				gt.setEndOfCatch(true);
 				this.senList.remove(j);
 				ls.add(s1);
 				j--;
