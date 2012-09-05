@@ -31,8 +31,12 @@ public class OtherSentence extends TagSentence {
 		String[] ws = this.line.split(" ");
 		if (ws[0].equals(".restart")) {
 			this.var = this.mgr.getVar(ws[2]);
-		}else{
 			
+//		}else if(ws[0].equals(".end")){
+//			if (ws[1].equals("local")) {
+//				this.mgr.removeVar(ws[2]);
+//			}
+		}else{
 			this.out.append("//[OTHER] ").append(this.line.substring(1));
 		}
 		this.over();

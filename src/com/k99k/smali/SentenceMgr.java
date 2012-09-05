@@ -623,6 +623,13 @@ public class SentenceMgr {
 		vars.put(var.getName(), var);
 	}
 	
+	/**
+	 * 去除变量 
+	 * @param varName
+	 */
+	public final void removeVar(String varName){
+		this.vars.remove(varName);
+	}
 	
 	/**
 	 * @return the hasIF

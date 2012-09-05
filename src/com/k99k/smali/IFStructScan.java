@@ -172,6 +172,15 @@ public class IFStructScan {
 			return;
 		}
 		String elseTag = ((GotoTagSentence)elseGtTag).getTag();
+		//向上跳过catch块部分
+		while (elseEntry >= 0) {
+			Sentence s = this.senList.get(this.elseEntry-1);
+			if (s.getName().equals("try")) {
+				elseEntry--;
+			}else{
+				break;
+			}
+		}
 		
 		ArrayList<Sentence> ls = new ArrayList<Sentence>();
 		//定位到goto语句，并移动语句块
@@ -202,6 +211,8 @@ public class IFStructScan {
 		log.error(this.mgr.getMeth().getName()+" - elseGoto is not found.");
 		
 	}
+	
+	
 	
 	/**
 	 * 分析并处理某一内容块的if结构

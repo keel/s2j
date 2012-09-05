@@ -29,10 +29,49 @@ public class TryCatchScan {
 	/**
 	 * 保存已经识别的catch tag，用于去重
 	 */
-	private HashMap<String,Sentence> catchTagMap = new HashMap<String, Sentence>();
+	private HashMap<String,TrySentence> catchTagMap = new HashMap<String, TrySentence>();
 	
 	public void scan(){
 		
+		//去除同样tag的.catch和.catchall,留下tryStartNum最小的
+		for (int i = 0; i < this.senList.size(); i++) {
+			Sentence s = this.senList.get(i);
+			if (s.getName().equals("try") && s.getState()!=Sentence.STATE_OVER) {
+				TrySentence ts = (TrySentence)s;
+				if (ts.getKey().equals(".catch") ) {
+					String ctag = ts.getCatchTag();
+					if (this.catchTagMap.containsKey(ctag)) {
+						TrySentence pre = this.catchTagMap.get(ctag);
+						if (ts.getTryStartNum() < pre.getTryStartNum()) {
+							noShowTry(this.senList.indexOf(pre));
+							pre.setOut("// alrady show catch:"+ctag);
+							pre.over();
+							this.catchTagMap.put(ctag, ts);
+						}else{
+							//已经有过的catchtag,进行上方的try start-end块的不显示处理，本句不显示
+							noShowTry(i);
+							ts.setOut("// alrady show catch:"+ctag);
+							ts.over();
+							continue;
+						}
+					}else{
+						this.catchTagMap.put(ctag, ts);
+					}
+				}else if (ts.getKey().equals(".catchall")) {
+					String ctag = ts.getCatchTag();
+					if (i+1<this.senList.size() && (!this.senList.get(i+1).getLine().startsWith(".catch "))) {
+						noShowTry(i);
+						ts.setOut("// alrady show catch:"+ctag);
+						ts.over();
+					}
+				}
+				else if (ts.getKey().startsWith(":catchall_")) {
+					this.doFinally(i);
+				}
+			}
+		}
+		
+		/*
 		for (int i = 0; i < this.senList.size(); i++) {
 			Sentence s = this.senList.get(i);
 			if (s.getName().equals("try") && s.getState()!=Sentence.STATE_OVER) {
@@ -73,7 +112,7 @@ public class TryCatchScan {
 				}
 				
 			}
-		}
+		}*/
 		//移动catch块
 		for (int i = 0; i < this.senList.size(); i++) {
 			Sentence s = this.senList.get(i);
@@ -192,35 +231,72 @@ public class TryCatchScan {
 			}else if (s1.getName().equals("goto")) {
 				//goto语句为catch块结束标志
 				GotoSentence gt = (GotoSentence)s1;
-				for (int i = 0; i < j; i++) {
+				TrySentence s3 = null;
+				int addP = -1;
+				for (int i = 0; i < this.senList.size(); i++) {
 					Sentence s2 = this.senList.get(i);
-					if (s2.getName().equals("try")) {
-						TrySentence s3 = (TrySentence)s2;
-						//定位到catchTag位置进行插入操作
-						if (s3.getKey().equals(".catch") && s3.getCatchTag().equals(ts.getCatchTag())) {
-							s3.setOut(s3.getOut().replace("_E_", vs));
-							gt.setOut("} //end of catch: "+gt.getLine());
-							this.senList.remove(j);
-							ls.add(s1);
-							j--;
-							this.senList.addAll(i+1, ls);
-							gt.over();
-							ts.over();
-							s3.over();
-							//return; //还需要进一步将gotoTag置为over
-							continue;
-						}
-					}else if(s2.getName().equals("gotoTag") && s2.getState()!=Sentence.STATE_OVER){
-						//将gotoTag置为over
-						GotoTagSentence gtt = (GotoTagSentence)s2;
-						if (gtt.getTag().equals(gt.getTarget())) {
-							gtt.over();
-							return;
+					if (s2.getState() == Sentence.STATE_DOING) {
+						if (s2.getName().equals("try")) {
+							s3 = (TrySentence)s2;
+							if (s3.getKey().equals(".catch") && s3.getCatchTag().equals(ts.getCatchTag())) {
+								addP = i;
+								continue;
+							}
+						}else if(s2.getName().equals("gotoTag")){
+							//将gotoTag置为over
+							GotoTagSentence gtt = (GotoTagSentence)s2;
+							if (gtt.getTag().equals(gt.getTarget())) {
+								gtt.over();
+							}
 						}
 					}
 				}
-				log.error(this.mgr.getMeth().getName()+" - catch end error:"+ts.getLine());
+				if (addP == -1) {
+					log.error(this.mgr.getMeth().getName()+" - .catch not found.");
+					return;
+				}
+				s3 = (TrySentence) this.senList.get(addP);
+				s3.setOut(s3.getOut().replace("_E_", vs));
+				gt.setOut("} //end of catch: "+gt.getLine());
+				this.senList.remove(j);
+				ls.add(s1);
+				j--;
+				this.senList.addAll(addP+1, ls);
+				gt.over();
+				ts.over();
+				s3.over();
 				return;
+//				for (int i = 0; i < this.senList.size(); i++) {
+//					Sentence s2 = this.senList.get(i);
+//					if (s2.getName().equals("try")) {
+//						TrySentence s3 = (TrySentence)s2;
+//						//定位到catchTag位置进行插入操作
+//						if (s3.getKey().equals(".catch")&& s3.getState()!=Sentence.STATE_OVER && s3.getCatchTag().equals(ts.getCatchTag())) {
+//							// 比较{:try_start_1 .. :try_end_1}中间的数值大小，取最小的
+//							
+//							s3.setOut(s3.getOut().replace("_E_", vs));
+//							gt.setOut("} //end of catch: "+gt.getLine());
+//							this.senList.remove(j);
+//							ls.add(s1);
+//							j--;
+//							this.senList.addAll(i+1, ls);
+//							gt.over();
+//							ts.over();
+//							s3.over();
+//							//return; //还需要进一步将gotoTag置为over
+//							continue;
+//						}
+//					}else if(s2.getName().equals("gotoTag")){
+//						//将gotoTag置为over
+//						GotoTagSentence gtt = (GotoTagSentence)s2;
+//						if (gtt.getTag().equals(gt.getTarget())) {
+//							gtt.over();
+//							return;
+//						}
+//					}
+//				}
+//				log.error(this.mgr.getMeth().getName()+" - catch end error:"+ts.getLine());
+//				return;
 			}else{
 				this.senList.remove(j);
 				s1.level++;
@@ -252,4 +328,5 @@ public class TryCatchScan {
 		}
 	}
 	
+
 }

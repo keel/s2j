@@ -33,6 +33,11 @@ public class TrySentence extends Sentence {
 	private String catchTag;
 	
 	/**
+	 * :try_start_X最后一位数字
+	 */
+	private int tryStartNum = -1;
+	
+	/**
 	 * 是否是catch和catchall的tag语句
 	 */
 	private boolean isTag = false;
@@ -50,9 +55,11 @@ public class TrySentence extends Sentence {
 			this.out.append("try {");
 			this.mgr.setHasTry(true);
 			this.over();
+			return true;
 		}else if(this.key.indexOf(":try_end_")>-1){
 			this.out.append("//end of try");
 			this.over();
+			return true;
 		}else if(this.key.indexOf(":catch_")>-1){
 			this.isTag = true;
 			this.catchTag = this.key;
@@ -63,10 +70,17 @@ public class TrySentence extends Sentence {
 			String ex = Tool.parseObject(ws[1]);
 			this.catchTag = ws[ws.length-1];
 			this.out.append("} catch ("+ex+" _E_) {");
+			int p = this.line.indexOf(":try_start_")+11;
+			String s = this.line.substring(p,p+1);
+			this.tryStartNum = Integer.parseInt(s);
 		}else if(this.key.equals(".catchall")){
 			this.catchTag = ws[ws.length-1];
+			int p = this.line.indexOf(":try_start_")+11;
+			String s = this.line.substring(p,p+1);
+			this.tryStartNum = Integer.parseInt(s);
 		}else if(this.key.equals("throw")){
 		}
+		this.state = Sentence.STATE_DOING;
 		return true;
 	}
 
@@ -88,6 +102,13 @@ public class TrySentence extends Sentence {
 	
 	
 	
+	/**
+	 * @return the tryStartNum
+	 */
+	public final int getTryStartNum() {
+		return tryStartNum;
+	}
+
 	/**
 	 * @return the isTag
 	 */
