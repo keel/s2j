@@ -94,6 +94,8 @@ public class ArraySentence extends Sentence {
 			sb.append(asb);
 			sarr.setOut(sb.toString());
 			//this.type = Sentence.TYPE_NOT_LINE;
+		}else if(key.equals("array-length")){
+			log.debug(this.mgr.getMeth().getName()+" - array-length:"+this.line);
 		}else{
 			//this.type = Sentence.TYPE_NOT_LINE;
 		}
@@ -135,6 +137,7 @@ public class ArraySentence extends Sentence {
 	}
 
 	static final String[] KEYS = new String[]{
+		"array-length",
 		".array-data",
 		"fill-array-data",
 		":array_0",

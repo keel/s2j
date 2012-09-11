@@ -6,6 +6,8 @@ package com.k99k.smali;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import org.apache.log4j.Logger;
+
 import com.k99k.tools.StringUtil;
 
 
@@ -18,6 +20,9 @@ public class Methods extends Context {
 	public Methods(S2J s2j, ArrayList<String> lines, StringBuilder out) {
 		super(s2j, lines, out);
 	}
+	
+	static final Logger log = Logger.getLogger(Methods.class);
+	
 
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Context#getKey()
@@ -103,6 +108,7 @@ public class Methods extends Context {
 			//处理方法首行
 			this.parseFn(l);
 			
+			log.debug(this.name+"() - starting...");
 			//方法内的部分
 			this.parseInner();
 			
@@ -112,7 +118,7 @@ public class Methods extends Context {
 			this.err = "//ERR: parse method failed! mline:"+l;
 			return false;
 		}
-		
+//		log.debug(this.name+" - finished.");
 		return true;
 	}
 	

@@ -84,7 +84,11 @@ public class VarSentence extends Sentence {
 		}else if(type.equals("float")){
 			StringBuilder sb = new StringBuilder(value);
 			//去掉0x,不足8位补到8位
-			sb.delete(0, 2);
+			if (sb.charAt(0) == '-') {
+				sb.delete(1, 3);
+			}else{
+				sb.delete(0, 2);
+			}
 			for (int i = sb.length(); i < 8; i++) {
 				sb.append("0");
 			}
@@ -94,7 +98,11 @@ public class VarSentence extends Sentence {
 		}else if(type.equals("double")){
 			StringBuilder sb = new StringBuilder(value);
 			//去掉0x,不足8位补到8位
-			sb.delete(0, 2);
+			if (sb.charAt(0) == '-') {
+				sb.delete(1, 3);
+			}else{
+				sb.delete(0, 2);
+			}
 			for (int i = sb.length(); i < 16; i++) {
 				sb.append("0");
 			}

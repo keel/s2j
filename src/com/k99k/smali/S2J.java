@@ -94,7 +94,24 @@ public class S2J {
 		return sb.toString();
 	}
 	
-	
+	/**
+	 * 转换整个目录,编码为utf-8
+	 * @param srcFolder
+	 * @param targetFolder
+	 */
+	public static final void doFolder(String srcFolder,String targetFolder){
+		String ec = "utf-8";
+		File from  = new File(srcFolder);
+		File to  = new File(targetFolder);
+		FolderS2J r = new FolderS2J();
+		try {
+			
+			IO.copyFullDirWithFn(from, to, r, ec);
+			
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 	
 	
 	/**
@@ -102,14 +119,23 @@ public class S2J {
 	 */
 	public static void main(String[] args) {
 		
-		/*
+		
 		S2J s = new S2J();
 		//String re = s.exec("h:/SMSTest.smali", "utf-8");
 		String re = s.exec("f:/android/apk_manager/projects/SmaliTest.apk/smali/com/smlon/tools/Structs.smali", "utf-8");
+//		String re = s.exec("F:/android/apk_manager/projects/ud.apk/smali/com/faluosi/bigrunner/C_EVTEffect.smali","utf-8");
+		
 		System.out.println(re);
+		
+		/*
+		String from  = "F:/android/apk_manager/projects/ud.apk/smali";
+		String to = "g:/ud";
+		doFolder(from, to);
+		System.out.println("--------- END ----------");
 		*/
 		
-		
+		/*
+		//转换整个目录
 		String ec = "utf-8";
 		File from  = new File("F:/android/apk_manager/projects/ud.apk/smali");
 		File to  = new File("g:/ud");
@@ -121,7 +147,7 @@ public class S2J {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+		*/
 	}
 
 }

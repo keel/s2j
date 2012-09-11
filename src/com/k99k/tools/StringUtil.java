@@ -343,8 +343,11 @@ public final class StringUtil {
 	 * @return
 	 */
 	private static final String clear16Data(String a16){
-		if (a16.startsWith("0x")) {
+		int p = a16.indexOf("0x");
+		if (p==0) {
 			a16 = a16.substring(2);
+		}else if(p==1){
+			a16 = "-"+a16.substring(3);
 		}
 		//对于末尾有L的进行去除
 		return a16.replace("L", "");

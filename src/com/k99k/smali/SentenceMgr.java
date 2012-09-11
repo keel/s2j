@@ -91,10 +91,6 @@ public class SentenceMgr {
 		for (int i = 0; i < TagSentence.KEYS.length; i++) {
 			sentenceMap.put(TagSentence.KEYS[i], t);
 		}
-		CondTagSentence condtag = new CondTagSentence(null,null);
-		for (int i = 0; i < CondTagSentence.KEYS.length; i++) {
-			sentenceMap.put(CondTagSentence.KEYS[i], condtag);
-		}
 		GotoTagSentence gotag = new GotoTagSentence(null,null);
 		for (int i = 0; i < GotoTagSentence.KEYS.length; i++) {
 			sentenceMap.put(GotoTagSentence.KEYS[i], gotag);

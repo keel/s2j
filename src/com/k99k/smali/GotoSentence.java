@@ -63,7 +63,7 @@ public class GotoSentence extends Sentence {
 //		if (this.mgr.getLevel()>0) {
 //			this.mgr.addLevel(-1);
 //		}
-		this.over();
+		this.state = Sentence.STATE_DOING;
 		return true;
 	}
 	
