@@ -47,6 +47,7 @@ public class TagSentence extends Sentence {
 		
 		this.state = STATE_DOING;
 		//this.over();
+		this.mgr.addTag(this);
 		return true;
 	}
 	

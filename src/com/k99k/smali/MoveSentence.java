@@ -65,6 +65,7 @@ public class MoveSentence extends Sentence {
 			String name = ws[1];
 			v.setName(name);
 			this.mgr.setVar(v);
+			this.setOut(v.getOut());
 			//将last语句显示去掉
 			last.setType(Sentence.TYPE_NOT_LINE);
 		}else if(key.equals("move-exception")){
@@ -75,7 +76,9 @@ public class MoveSentence extends Sentence {
 			Var v1 =  this.mgr.getVar(ws[2]).cloneVar();
 			v1.setName(ws[1]);
 			this.mgr.setVar(v1);
+			this.setOut(v1.getOut());
 		}
+		
 		this.over();
 		return true;
 	}

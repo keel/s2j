@@ -18,6 +18,11 @@ public class GotoTagSentence extends TagSentence {
 		this.type = Sentence.TYPE_STRUCT;
 	}
 	
+	/**
+	 * goto到本句的次数
+	 */
+	private int gotoTimes = 0;
+	
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Sentence#getName()
 	 */
@@ -26,6 +31,27 @@ public class GotoTagSentence extends TagSentence {
 		return "gotoTag";
 	}
 
+
+	/**
+	 * @return the gotoTimes
+	 */
+	public final int getGotoTimes() {
+		return gotoTimes;
+	}
+
+	/**
+	 * gotoTimes加一
+	 */
+	public final void addGotoTimes() {
+		this.gotoTimes++;
+	}
+
+	/**
+	 * gotoTimes减一
+	 */
+	public final void lessGotoTimes() {
+		this.gotoTimes--;
+	}
 
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Sentence#newOne(com.k99k.smali.SentenceMgr, java.lang.String)

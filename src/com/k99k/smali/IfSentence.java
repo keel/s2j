@@ -148,7 +148,7 @@ public class IfSentence extends Sentence {
 	 * 输出
 	 */
 	private void render(){
-		if(isDoWhile){
+		if(isClosePre){
 			this.out.append("} ");
 		}else if (isElse) {
 			this.out.append("else ");
@@ -157,7 +157,7 @@ public class IfSentence extends Sentence {
 		this.out.append(" (");
 		this.out.append(getCondOut());
 		this.out.append(")");
-		if (this.isDoWhile) {
+		if (this.isClosePre) {
 			this.out.append(";");
 		}else{
 			this.out.append(" {");
@@ -278,9 +278,9 @@ public class IfSentence extends Sentence {
 	private boolean isElse = false;
 	
 	/**
-	 * 是否为do while的条件
+	 * 是否需要在前面添加上一语句的关闭}号,如为do while的条件或} else if时
 	 */
-	private boolean isDoWhile = false;
+	private boolean isClosePre = false;
 	
 	/**
 	 * @return the isElse
@@ -294,10 +294,9 @@ public class IfSentence extends Sentence {
 	 */
 	public final void setElse(boolean isElse) {
 		this.isElse = isElse;
-		if (isElse) {
-			this.out = new StringBuilder();
-			//this.render();
-		}
+//		if (isElse) {
+//			this.out = new StringBuilder();
+//		}
 	}
 	
 	/**
@@ -347,10 +346,17 @@ public class IfSentence extends Sentence {
 
 
 	/**
-	 * @return the isDoWhile
+	 * @return the isClosePre
 	 */
-	public final boolean isDoWhile() {
-		return isDoWhile;
+	public final boolean isClosePre() {
+		return isClosePre;
+	}
+	
+	/**
+	 * @param set isClosePre
+	 */
+	public final void setClosePre(boolean isClosePre) {
+		this.isClosePre = isClosePre;
 	}
 
 	/**
@@ -358,11 +364,11 @@ public class IfSentence extends Sentence {
 	 */
 	public final void setDoWhile(boolean isDoWhile) {
 		if (isDoWhile) {
-			this.isDoWhile = isDoWhile;
+			this.isClosePre = isDoWhile;
 			this.ifCond = "while";
 			this.isReversed = true;
 		}else{
-			this.isDoWhile = false;
+			this.isClosePre = false;
 			if (this.isWhile()) {
 				this.ifCond = "while";
 			}else{

@@ -42,6 +42,11 @@ public class GotoSentence extends Sentence {
 	 */
 	private boolean isEndOfCatch = false;
 	
+	/**
+	 * goto的前一句，用于处理return某个值对象， 这个对象一般会保存在前一句中
+	 */
+	private Sentence preSen;
+	
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Sentence#exec()
 	 */
@@ -58,8 +63,8 @@ public class GotoSentence extends Sentence {
 		this.target = ws[1];
 		this.out.append("// ").append(this.line);
 		
-		//找到
-		
+		//保存前一句，以用于return 某值的情况
+		this.preSen = this.mgr.getLastSentence();
 //		if (this.mgr.getLevel()>0) {
 //			this.mgr.addLevel(-1);
 //		}
@@ -105,7 +110,7 @@ public class GotoSentence extends Sentence {
 			this.out.append("return;");
 		}
 	}
-
+	
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Sentence#newOne(com.k99k.smali.SentenceMgr, java.lang.String)
 	 */
@@ -124,6 +129,14 @@ public class GotoSentence extends Sentence {
 	
 	
 	
+	/**
+	 * @return the preSen
+	 */
+	public final Sentence getPreSen() {
+		return preSen;
+	}
+
+
 	/**
 	 * @return the isEndOfCatch
 	 */
