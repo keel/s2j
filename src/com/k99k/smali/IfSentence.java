@@ -86,6 +86,11 @@ public class IfSentence extends Sentence {
 	private String cond;
 	
 	
+	/**
+	 * 是否是指向
+	 */
+	private boolean isToReturn = false;
+	
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Sentence#exec()
 	 */
@@ -215,8 +220,22 @@ public class IfSentence extends Sentence {
 		return super.getOut();
 	}
 
-//	private boolean condProtect = false;
 	
+	
+	/**
+	 * @return the isToReturn
+	 */
+	public final boolean isToReturn() {
+		return isToReturn;
+	}
+
+	/**
+	 * @param isToReturn the isToReturn to set
+	 */
+	public final void setToReturn(boolean isToReturn) {
+		this.isToReturn = isToReturn;
+	}
+
 	/**
 	 * 在条件中加上括号保护
 	 */

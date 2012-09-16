@@ -19,10 +19,34 @@ public class GotoTagSentence extends TagSentence {
 	}
 	
 	/**
-	 * goto到本句的次数
+	 * goto到本句的次数,初始值为0
 	 */
 	private int gotoTimes = 0;
 	
+	/**
+	 * 插入语句的位置,默认值-1
+	 */
+	private int insertPosition = -1;
+	
+	
+
+
+	/**
+	 * @return the insertPosition
+	 */
+	public final int getInsertPosition() {
+		return insertPosition;
+	}
+
+
+	/**
+	 * @param insertPosition the insertPosition to set
+	 */
+	public final void setInsertPosition(int insertPosition) {
+		this.insertPosition = insertPosition;
+	}
+
+
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Sentence#getName()
 	 */
@@ -51,6 +75,9 @@ public class GotoTagSentence extends TagSentence {
 	 */
 	public final void lessGotoTimes() {
 		this.gotoTimes--;
+		if (this.gotoTimes <= 0) {
+			this.state = Sentence.STATE_OVER;
+		}
 	}
 
 	/* (non-Javadoc)

@@ -183,7 +183,7 @@ public class SentenceMgr {
 	/**
 	 * 结构语句中的标记集合,用于快递定位指定的tag
 	 */
-	private HashMap<String,Sentence> tags;
+	private HashMap<String,Sentence> tags = new HashMap<String, Sentence>();
 	
 	/**
 	 * 是否包含if结构

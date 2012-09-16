@@ -26,6 +26,11 @@ public class TagSentence extends Sentence {
 //	private boolean isGoto = false;
 	
 	private boolean isReturn = false;
+	
+	/**
+	 * 是否被移动到return语句之前
+	 */
+	private boolean isShift = false;
 
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Sentence#exec()
@@ -89,6 +94,20 @@ public class TagSentence extends Sentence {
 	
 	
 	/**
+	 * @return the isShift
+	 */
+	public final boolean isShift() {
+		return isShift;
+	}
+
+	/**
+	 * @param isShift the isShift to set
+	 */
+	public final void setShift(boolean isShift) {
+		this.isShift = isShift;
+	}
+
+	/**
 	 * @return the ifSen
 	 */
 	public final Sentence getIfSen() {
@@ -117,8 +136,8 @@ public class TagSentence extends Sentence {
 	public final void setReturn(boolean isReturn) {
 		this.isReturn = isReturn;
 		if (isReturn) {
-			this.out.append(StaticUtil.NEWLINE).append(StaticUtil.TABS[this.level]);
-			this.out.append("return;");
+//			this.out.append(StaticUtil.NEWLINE).append(StaticUtil.TABS[this.level]);
+//			this.out.append("return;");
 		}
 	}
 

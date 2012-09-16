@@ -293,6 +293,13 @@ public class Methods extends Context {
 	public Context newOne(S2J s2j, ArrayList<String> lines, StringBuilder out) {
 		return new Methods(s2j, lines, out);
 	}
+
+	/**
+	 * @return the returnStr
+	 */
+	public final String getReturnStr() {
+		return returnStr;
+	}
 	
 
 
