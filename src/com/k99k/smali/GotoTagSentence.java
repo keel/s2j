@@ -18,33 +18,33 @@ public class GotoTagSentence extends TagSentence {
 		this.type = Sentence.TYPE_STRUCT;
 	}
 	
-	/**
-	 * goto到本句的次数,初始值为0
-	 */
-	private int gotoTimes = 0;
+//	/**
+//	 * goto到本句的次数,初始值为0
+//	 */
+//	private int gotoTimes = 0;
+//	
+//	/**
+//	 * 插入语句的位置,默认值-1
+//	 */
+//	private int insertPosition = -1;
 	
-	/**
-	 * 插入语句的位置,默认值-1
-	 */
-	private int insertPosition = -1;
 	
-	
-
-
-	/**
-	 * @return the insertPosition
-	 */
-	public final int getInsertPosition() {
-		return insertPosition;
-	}
-
-
-	/**
-	 * @param insertPosition the insertPosition to set
-	 */
-	public final void setInsertPosition(int insertPosition) {
-		this.insertPosition = insertPosition;
-	}
+//
+//
+//	/**
+//	 * @return the insertPosition
+//	 */
+//	public final int getInsertPosition() {
+//		return insertPosition;
+//	}
+//
+//
+//	/**
+//	 * @param insertPosition the insertPosition to set
+//	 */
+//	public final void setInsertPosition(int insertPosition) {
+//		this.insertPosition = insertPosition;
+//	}
 
 
 	/* (non-Javadoc)
@@ -55,30 +55,30 @@ public class GotoTagSentence extends TagSentence {
 		return "gotoTag";
 	}
 
-
-	/**
-	 * @return the gotoTimes
-	 */
-	public final int getGotoTimes() {
-		return gotoTimes;
-	}
-
-	/**
-	 * gotoTimes加一
-	 */
-	public final void addGotoTimes() {
-		this.gotoTimes++;
-	}
-
-	/**
-	 * gotoTimes减一
-	 */
-	public final void lessGotoTimes() {
-		this.gotoTimes--;
-		if (this.gotoTimes <= 0) {
-			this.state = Sentence.STATE_OVER;
-		}
-	}
+//
+//	/**
+//	 * @return the gotoTimes
+//	 */
+//	public final int getGotoTimes() {
+//		return gotoTimes;
+//	}
+//
+//	/**
+//	 * gotoTimes加一
+//	 */
+//	public final void addGotoTimes() {
+//		this.gotoTimes++;
+//	}
+//
+//	/**
+//	 * gotoTimes减一
+//	 */
+//	public final void lessGotoTimes() {
+//		this.gotoTimes--;
+//		if (this.gotoTimes <= 0) {
+//			this.state = Sentence.STATE_OVER;
+//		}
+//	}
 
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Sentence#newOne(com.k99k.smali.SentenceMgr, java.lang.String)

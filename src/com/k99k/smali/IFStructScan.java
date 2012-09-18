@@ -200,62 +200,25 @@ public class IFStructScan {
 				//tag是否在return后
 				if (tag.getLineNum()>this.returnLineNum && (!tag.isShift())) {
 					//可能有else块,定位ifs后的gotoTag
-					GotoTagSentence gts = null;
-					int po = 0;
+//					GotoTagSentence gts = null;
+//					int po = 0;
+					int gtTagIndex = 0;
 					String elseGtTag = null;
 					for (int j = i+1; j < this.senList.size(); j++) {
 						Sentence s1 = this.senList.get(j);
-						if (s1.getName().equals("gotoTag") && s1.getState() == Sentence.STATE_DOING) {
-							gts = (GotoTagSentence)s1;
-							po = j;
-//							if (gts.getInsertPosition()<0) {
-//								gts.setInsertPosition(po);
-//								//向上跳过catch块部分
-//								while (po >= 0) {
-//									Sentence s2 = this.senList.get(po-1);
-//									if (s2.getName().equals("try")) {
-//										po--;
-//										gts.setInsertPosition(po);
-//									}else{
-//										break;
-//									}
-//								}
-//							}else{
-//								po = gts.getInsertPosition();
-//							}
-							elseGtTag = gts.getTag();
+						//这里无法判断gotoTag的state，有可能state已经over
+						if (s1.getName().equals("gotoTag")) {
+							elseGtTag = ((GotoTagSentence)s1).getTag();
+							gtTagIndex = j;
 							break;
 						}
 					}
-					
-					if (gts == null) {
-						//gts没找到gotoTag时,用if下面的goto定位po
-						boolean findGT = false;
-						for (int j = i+1; j < this.senList.size(); j++) {
-							Sentence s1 = this.senList.get(j);
-							if (s1.getName().equals("goto")) {
-								po = j+1;
-								findGT = true;
-								break;
-							}
-						}
-						if (!findGT) {
-							log.error(this.mgr.getMeth().getName()+" - scanIf error. gotoTag not found.");
-							return;
-						}
-					}
-					//向上跳过catch块部分
-					while (po >= 0) {
-						Sentence s2 = this.senList.get(po-1);
-						if (s2.getName().equals("try")) {
-							po--;
-//							gts.setInsertPosition(po);
-						}else{
-							break;
-						}
+					if (gtTagIndex == 0 || elseGtTag == null) {
+						log.error(this.mgr.getMeth().getName()+" - if's tag after returnLineNum,but cannot find gotoTag after if:"+ifs.getLine());
+						continue;
 					}
 					//移动else块
-					this.shiftElse(po, this.contStart+1, tag, elseGtTag);
+					this.shiftElse(this.contStart+1, tag,elseGtTag,gtTagIndex);
 					
 				}else if(tag.isShift()){
 					ifs.setElse(true);
@@ -277,117 +240,32 @@ public class IFStructScan {
 			}
 		}
 	}
-
+	
+	
 //	/**
 //	 * else 入口,初始值为-1
 //	 */
 //	private int elseEntry = -1;
 	
-	private ArrayList<GotoTagSentence> elseEntrys = new ArrayList<GotoTagSentence>();
+//	private ArrayList<GotoTagSentence> elseEntrys = new ArrayList<GotoTagSentence>();
 	
-	/**
-	 * 处理多个if的else
-	 */
-	private void doElses(){
-		int len = this.elseEntrys.size();
-		for (int i = 0; i < len; i++) {
-			GotoTagSentence po = this.elseEntrys.get(i);
-			this.doElse(po);
-		}
-	}
-	
-	/**
-	 * 处理if的else语句(非"}if else{",仅针对最后的else)
-	 */
-	private void doElse(GotoTagSentence elseGtTag){
-		int po = this.senList.indexOf(elseGtTag);
-		//Sentence elseGtTag = this.senList.get(po);
-//		if (!elseGtTag.getName().equals("gotoTag")) {
-//			log.debug(this.mgr.getMeth().getName()+" - elseGtTag is not gotoTag");
-//			return;
-//		}
-		String elseGtTagName = elseGtTag.getTag();
-		//向上跳过catch块部分
-		while (po >= 0) {
-			Sentence s = this.senList.get(po-1);
-			if (s.getName().equals("try")) {
-				po--;
-			}else{
-				break;
-			}
-		}
-		//找到上一个tag在return之后的if
-		for (int i = po-1; i >= 0; i--) {
-			Sentence s = this.senList.get(i);
-			if (s.getName().equals("if")) {
-				IfSentence ifs = (IfSentence)s;
-				if (ifs.getCondTag().getLineNum() > this.returnLineNum) {
-					//定位到elseTag
-					String elseTagName = ifs.getCondTag().getTag();
-					//从return后查找所有的elseTag
-					for (int j = this.senList.indexOf(this.returnSentence); j < this.senList.size(); j++) {
-						Sentence s2 = this.senList.get(j);
-						if (s2.getName().equals("tag")) {
-							TagSentence ts = (TagSentence)s2;
-							if (ts.getTag().equals(elseTagName)) {
-								//处理else块
-								j = this.shiftElse(po,j, ts, elseGtTagName)-1;
-							}
-						}
-					}
-					
-					
-				}
-			}
-			
-		}
-		/*//
-		ArrayList<Sentence> ls = new ArrayList<Sentence>();
-		//定位到goto语句，并移动语句块
-		boolean elseStart = false;
-		for (int i = this.contStartIndex+1; i < this.senList.size();) {
-			Sentence s = this.senList.get(i);
-			if (s.getName().equals("gotoTag")) {
-				s.appendOut(" else {");
-				elseStart = true;
-			}else if(!elseStart){
-				i++;
-				continue;
-			}
-			ls.add(this.senList.remove(i));
-			if (s.getName().equals("goto")) {
-				GotoSentence gt = (GotoSentence)s;
-				if (gt.getTarget().equals(elseTag)) {
-					gt.setOut("} //end of ifElse: "+gt.getLine());
-					gt.over();
-					elseGtTag.setOut("//"+elseGtTag.getLine());
-					elseGtTag.over();
-					this.senList.addAll(po, ls);
-					this.contStartIndex = this.contStartIndex + ls.size();
-					return;
-				}
-			}
-		}
-		log.error(this.mgr.getMeth().getName()+" - elseGoto is not found.");
-		*/
-	}
 	
 	/**
 	 * 移动else块，返回移动后的处理位置
-	 * @param po 移动块插入位置
 	 * @param startTagIndex else块开始的tag的index
 	 * @param ts else块开始的tag
-	 * @param elseGtTag gotoTag的tagName
+	 * @param gtTagName gotoTag的tagName
+	 * @param gtTagIndex gotoTag的index
 	 * @return 返回移动的语句数
 	 */
-	private int shiftElse(int po,int startTagIndex,TagSentence ts,String elseGtTagName){
-//		Sentence nextSentence = this.senList.get(startTagIndex+1);
+	private int shiftElse(int startTagIndex,TagSentence ts,String gtTagName,int gtTagIndex){
 		//定位到goto语句，并移动语句块
 		int elseEnd = startTagIndex;
+		GotoSentence gt = null;
 		for (int i = startTagIndex; i < this.senList.size();i++) {
 			Sentence s = this.senList.get(i);
-			if (s.getName().equals("goto")) {
-				GotoSentence gt = (GotoSentence)s;
+			if (s.getName().equals("goto") && s.getState() == Sentence.STATE_DOING) {
+				gt = (GotoSentence)s;
 				//如果else块的结束goto句的target不是if的 gotoTag,则判断是否处理为return
 				GotoTagSentence gtTag = (GotoTagSentence) gt.getTargetSen();
 				if (gtTag.isReturn()) {
@@ -398,74 +276,72 @@ public class IFStructScan {
 						Sentence pre = gt.getPreSen();
 						gt.setOut("return "+pre.getOut()+";  //else end. : "+gt.getLine());
 					}
-				}else if (gt.getTarget().equals(elseGtTagName)) {
-					gt.setOut("//end of ifElse: "+gt.getLine());
-//					if (i+1<this.senList.size()) {
-//						nextSentence = this.senList.get(i+1);
-//					}
-					((GotoTagSentence)gt.getTargetSen()).lessGotoTimes();
-				}else{
-					//可能为break或continue;
-					gt.setOut("//maybe break or continue: "+gt.getLine());
 				}
 				elseEnd = i;
 				gt.over();
-				gtTag.lessGotoTimes();
+				gtTag.over();
 				break;
 			}
 		}
 		//找不到goto语句时,说明已被其他else语句移动，将最末句作为elseEnd，同时需要补一个if的结束句
 		boolean fixEnd = false;
-		if (elseEnd == startTagIndex) {
+		if (gt == null || elseEnd == startTagIndex) {
 			elseEnd = this.senList.size()-1;
-//			log.error(this.mgr.getMeth().getName()+" - elseGoto is not found.");
-//			return 0;
 			fixEnd = true;
 		}
 		Sentence tss = this.senList.get(startTagIndex+1);
+		boolean isLastElse = false;
 		if (tss.getName().equals("if")) {
 			//处理else if
 			IfSentence ifs = (IfSentence)tss;
 			ifs.setElse(true);
-//			if (ifs.getState() == Sentence.STATE_DOING) {
-//				//处理此if块
-//				int[] re = this.defineIfBlock(startTagIndex+1);
-//				ifs = this.mergeConds(startTagIndex+1, re[0]);
-//				if (ifs == null) {
-//					log.error(this.mgr.getMeth().getName()+" - elseif mergeConds error.");
-//					return startTagIndex+1;
-//				}
-//			}
 			//ifs.over(); //ifs实际上可能还未over
 			ts.appendOut("//if's else will start");
 			ts.setEndStruct();
-			//po最后位置
-			for (int j = po-1; j >= 0; j--) {
+		}else{
+			//最后的else块
+			ts.setOut("} else { //"+ts.getLine());
+			fixEnd = true;
+			isLastElse = true;
+		}
+		//查找插入位置
+		GotoTagSentence gts = (GotoTagSentence) gt.getTargetSen();
+		//判断是否与if下方的gotoTag一致
+		int po = 0;
+		if (gts.getTag().equals(gtTagName)) {
+			po = this.senList.indexOf(gts);
+		}else{
+			po = gtTagIndex;
+		}
+		if (isLastElse) {
+			for (int j = po+1; j < this.senList.size(); j++) {
 				String sn = this.senList.get(j).getName();
 				if (sn.equals("tag") || sn.equals("gotoTag")) {
+					po++;
+				} else {
+					break;
+				}
+			}
+		}else{
+			for (int j = po - 1; j >= 0; j--) {
+				String sn = this.senList.get(j).getName();
+				if (sn.equals("tag") || sn.equals("gotoTag")) {
+					po--;
+				} else {
+					break;
+				}
+			}
+			//向上跳过catch块部分
+			while (po >= 0) {
+				Sentence s2 = this.senList.get(po-1);
+				if (s2.getName().equals("try")) {
 					po--;
 				}else{
 					break;
 				}
 			}
-		}else{
-			//最后的else块
-			ts.setOut("} else { //"+ts.getLine());
-			fixEnd = true;
-			//else 块的位置在po之后
-			po = po+1;
-			//po最后位置
-			for (int j = po; j <this.senList.size(); j++) {
-				String sn = this.senList.get(j).getName();
-				if (sn.equals("tag") || sn.equals("gotoTag")) {
-					po++;
-				}else{
-					break;
-				}
-			}
 		}
-		ts.over();
-		//移动
+		//移动else块
 		ArrayList<Sentence> ls = new ArrayList<Sentence>();
 		
 		int moveCount = elseEnd-startTagIndex+1;
@@ -476,6 +352,7 @@ public class IFStructScan {
 			}
 			ls.add(s2);
 		}
+		
 		if (fixEnd) {
 			//给最后一句补一个if的结束块 
 			Sentence lastMv = ls.get(ls.size()-1);
@@ -486,10 +363,9 @@ public class IFStructScan {
 		}
 		int cc = ls.size();
 		this.senList.addAll(po, ls);
+		ts.over();
 		return cc;
 	}
-	
-	
 	
 	
 	
@@ -1730,16 +1606,15 @@ public class IFStructScan {
 				if (ts != null) {
 					ts.setIfSen(gs);
 					gs.setTargetSen(ts);
-					((GotoTagSentence)ts).addGotoTimes();
+//					((GotoTagSentence)ts).addGotoTimes();
 				}else{
 					log.error(this.mgr.getMeth().getName()+" - goto target not found: "+gs.getTarget());
 				}
 			}
 		}
-		lastSenLineNum = this.senList.get(this.len-1).getLineNum();
+//		lastSenLineNum = this.senList.get(this.len-1).getLineNum();
 		return true;
 	}
-	private int lastSenLineNum = -1;
 	/*
 	/**
 	 * 将return前方的tag和gotoTag移动到方法最末尾
