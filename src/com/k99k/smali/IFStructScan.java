@@ -192,11 +192,14 @@ public class IFStructScan {
 				int[] re = this.defineIfBlock(i);
 				IfSentence ifs  = (IfSentence) this.senList.get(re[1]);
 				TagSentence tag = ifs.getCondTag();
-				this.contStart = this.senList.indexOf(tag)-1;
-				this.contEnd = re[0]+1;
-				ifs = this.mergeConds(i, this.contEnd);
+				this.contStartIndex = this.senList.indexOf(tag)-1;
+				this.contEndIndex = re[0]+1;
+				this.contStart = this.senList.get(this.contStartIndex).getLineNum();
+				this.contEnd = this.senList.get(this.contEndIndex).getLineNum();
+				
+				
 				//判断是否是到return的if
-				this.setIfToRetrun(contStart, ifs);
+				this.setIfToRetrun(contStartIndex, ifs);
 				//tag是否在return后
 				if (tag.getLineNum()>this.returnLineNum && (!tag.isShift())) {
 					//可能有else块,定位ifs后的gotoTag
@@ -218,14 +221,16 @@ public class IFStructScan {
 						continue;
 					}
 					//移动else块
-					this.shiftElse(this.contStart+1, tag,elseGtTag,gtTagIndex);
-					
+					this.shiftElse(this.contStartIndex+1, tag,elseGtTag,gtTagIndex);
+					ifs = this.mergeConds(i, this.contEndIndex);
 				}else if(tag.isShift()){
+					ifs = this.mergeConds(i, this.contEndIndex);
 					ifs.setElse(true);
 //					ifs.reverseCompare();
 //					tag.setEndStruct();
 					tag.over();
 				}else{
+					ifs = this.mergeConds(i, this.contEndIndex);
 					tag.setEndStruct();
 					tag.over();
 				}
@@ -240,6 +245,7 @@ public class IFStructScan {
 			}
 		}
 	}
+	
 	
 	
 //	/**
@@ -305,14 +311,17 @@ public class IFStructScan {
 			isLastElse = true;
 		}
 		//查找插入位置
-		GotoTagSentence gts = (GotoTagSentence) gt.getTargetSen();
-		//判断是否与if下方的gotoTag一致
-		int po = 0;
-		if (gts.getTag().equals(gtTagName)) {
-			po = this.senList.indexOf(gts);
-		}else{
-			po = gtTagIndex;
-		}
+		int po = gtTagIndex;
+//		if (gt != null) {
+//			GotoTagSentence gts = (GotoTagSentence) gt.getTargetSen();
+//			//判断是否与if下方的gotoTag一致
+//			if (gts.getTag().equals(gtTagName)) {
+//				po = this.senList.indexOf(gts);
+//			}else{
+//				po = gtTagIndex;
+//			}
+//		}
+		
 		if (isLastElse) {
 			for (int j = po+1; j < this.senList.size(); j++) {
 				String sn = this.senList.get(j).getName();
@@ -322,6 +331,7 @@ public class IFStructScan {
 					break;
 				}
 			}
+			po++;
 		}else{
 			for (int j = po - 1; j >= 0; j--) {
 				String sn = this.senList.get(j).getName();
@@ -368,95 +378,9 @@ public class IFStructScan {
 	}
 	
 	
+
 	
 	
-	
-	
-	
-	
-	
-	
-	/**
-	 * 分析并处理某一内容块的if结构
-	 * @return 返回是否所包含语句全部处理完
-	 */
-	private boolean doIfStruct(){
-//		if (this.ifls.isEmpty()) {
-//			return true;
-//		}
-//		int le = this.ifls.size();
-		if (contStartIndex < 0 || contEndIndex < 0) {
-			return false;
-		}
-		IfSentence ifs = null;
-		int ifEnd = -1;
-		//正向最开始的第一个if
-		int condStartIndex = -1;
-		//确定内容块最上方if位置,可能为内容块下方tag指向的最上方if
-		int topIfIndex = 0;
-		Sentence afterContSen = this.senList.get((contStartIndex+1 == this.len)?contStartIndex:contStartIndex+1);
-		if (afterContSen.getName().equals("tag")) {
-			//tag对应的最上方if
-			IfSentence topIf = (IfSentence) ((TagSentence)afterContSen).getIfSen();
-			topIfIndex = this.senList.indexOf(topIf);
-		}
-		//进一步确认if最上方的位置topIfIndex
-		for (int i = this.contEndIndex+1; i >= topIfIndex; i--) {
-			Sentence s = this.senList.get(i);
-			if (s.getName().equals("tag")) {
-				TagSentence tag = (TagSentence)s;
-				int ti = this.senList.indexOf(tag.getIfSen());
-				if (ti < topIfIndex) {
-					topIfIndex = ti;
-				}
-			}
-		}
-		
-		//仍然是从后向前的顺序,确定最上方的if位置
-		for (int i = this.contEndIndex-1; i >= topIfIndex; i--) {
-			Sentence s = this.senList.get(i);
-			//碰到topIfIndex下方新的内容块时中止
-			if (s.getType() == Sentence.TYPE_LINE) {
-				break;
-			}
-			//查找内容块之上的if
-			if (s.getName().equals("if") && s.getState() == Sentence.STATE_DOING) {
-				ifs = (IfSentence)s;
-				if (ifEnd == -1) {
-					//设置ifEndLineNum
-					ifEnd = this.findIfEndLineNum(this.contStartIndex+1);
-				}
-				//确定条件范围,内容块最上方一个if
-				condStartIndex = this.senList.indexOf(s);
-			}
-		}
-		//合并多条件
-		if (condStartIndex < 0) {
-			return false;
-		}
-		ifs = this.mergeConds(condStartIndex, this.contEndIndex);
-		if (ifs == null) {
-			return false;
-		}
-		TagSentence ifCond = (TagSentence)ifs.getCondTag();
-		ifCond.setEndStruct();
-		ifCond.over();
-		ifs.setEndSenLineNum(ifEnd);
-		
-		//更新内容块范围
-		this.contEndIndex = condStartIndex;
-		this.contEnd = this.senList.get(condStartIndex).getLineNum();
-		//this.contStartIndex = (this.contStartIndex+1==this.len) ? this.contStartIndex : this.contStartIndex + 1;
-		//this.contStart = this.senList.get(this.contStartIndex).getLineNum();
-		
-		
-//		//处理else
-//		if (this.ifEndMap.containsKey(ifEnd)) {
-//			this.ifEndMap.get(ifEnd).setElse(true);
-//		}
-//		this.ifEndMap.put(ifEnd, ifs);
-		return true;
-	}
 
 
 	/**
@@ -583,22 +507,6 @@ public class IFStructScan {
 			ifs.getCondTag().over();
 		}
 		return ifs;
-	}
-	
-	private void scanBreakGoto(){
-		for (int i = 0; i < this.len; i++) {
-			Sentence s = this.senList.get(i);
-			if (s.getName().equals("gotoTag")) {
-				s = this.senList.get(i+1);
-				if (s.getName().equals("return")) {
-					//处理breakGoto -----------------------
-					//向上查找if块
-					
-					//交换
-					
-				}
-			}
-		}
 	}
 	
 	/**
@@ -772,19 +680,6 @@ public class IFStructScan {
 		}
 	}
 	
-	/**
-	 * 处理倒置if,其后置的if为倒置的while的情况
-	 * @param ifs
-	 */
-	private void reverseWhile2(IfSentence ifs,int ifsIndex){
-		IfSentence lastCond = ifs;
-		TagSentence EndTag = lastCond.getCondTag();
-		int lastCondIndex = ifsIndex;
-		int conStart = lastCondIndex+1;
-		
-		
-		
-	}
 	
 	/**
 	 * 定位if条件块,去除if条件之外的if
@@ -1541,10 +1436,12 @@ public class IFStructScan {
 	
 	
 	/**
-	 * 设置if的toReturn为true
+	 * 判断并设置if的toReturn为true
+	 * @param contStartIndex
+	 * @param ifs
 	 */
-	private void setIfToRetrun(int conStart,IfSentence ifs){
-		for (int i = conStart+1; i < this.senList.size(); i++) {
+	private void setIfToRetrun(int contStartIndex,IfSentence ifs){
+		for (int i = contStartIndex+1; i < this.senList.size(); i++) {
 			Sentence s = this.senList.get(i);
 			if (s.getName().equals("tag") || s.getName().equals("gotoTag")) {
 				if(((TagSentence)s).isReturn()){
