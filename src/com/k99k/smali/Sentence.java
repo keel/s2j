@@ -103,13 +103,11 @@ public abstract class Sentence {
 	public abstract boolean exec();
 	
 	/**
-	 * 继续处理未完成的部分,返回是否处理成功
-	 * @return
+	 * 输出debug信息,默认实现同exec,输出其他信息需要重写
 	 */
-	public boolean execNext(){
-		return true;
+	public boolean debug(){
+		return this.exec();
 	}
-	
 	
 	/**
 	 * 新实例
@@ -117,17 +115,6 @@ public abstract class Sentence {
 	 */
 	public abstract Sentence newOne(SentenceMgr mgr,String line);
 
-	
-	/**
-	 * 添加相关的Sentence,仅针对结构类型的Sentence
-	 * @param sen Sentence
-	 */
-	public void addLink(Sentence sen){
-		if (this.linkedSentenceList == null) {
-			this.linkedSentenceList = new ArrayList<Sentence>();
-		}
-		this.linkedSentenceList.add(sen);
-	}
 	
 	/**
 	 * 对于invoke等类型的Sentence，会生成一个结果Var,由此方法返回

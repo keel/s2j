@@ -3,6 +3,8 @@
  */
 package com.k99k.smali;
 
+import com.k99k.tools.StringUtil;
+
 /**
  * 标记位置的Sentence
  * @author keel
@@ -56,6 +58,29 @@ public class TagSentence extends Sentence {
 		return true;
 	}
 	
+	
+	
+	/* (non-Javadoc)
+	 * @see com.k99k.smali.Sentence#debug()
+	 */
+	@Override
+	public boolean debug() {
+		this.tag = this.line.split(" ")[0];
+		int nn = this.tag.charAt(this.tag.indexOf("_")+1);
+		this.out.append(StringUtil.intToLetter(nn-48));
+		this.over();
+		return true;
+	}
+
+	
+	public static void main(String[] args) {
+		String s = "A";
+		int i = (int)s.charAt(0);
+		String n = ""+(char)i;
+		System.out.println(i);
+		System.out.println(n);
+	}
+
 	public int getIndex(){
 		return this.mgr.indexOfSentence(this);
 	}

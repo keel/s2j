@@ -544,7 +544,7 @@ public class IFStructScan {
 								}
 							}
 							if (outWhileGtagIndex == -1) {
-								System.out.println("scanReversedIf error! outWhileGtagIndex == -1, fn:"+this.mgr.getMeth().getName());
+								log.error(this.mgr.getMeth().getName()+" scanReversedIf error! outWhileGtagIndex == -1");
 								return;
 							}
 							

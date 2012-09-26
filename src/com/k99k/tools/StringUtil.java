@@ -14,6 +14,16 @@ public final class StringUtil {
 		
 	}
 	
+
+	/**
+	 * 数字转字母,支持0-25转成26个大写字母,如:0会转成A
+	 * @param num
+	 * @return
+	 */
+	public static final String intToLetter(int num){
+		return String.valueOf((char)(num+65));
+	}
+	
 	/**
 	 * 查找String中并关键词，并替换为指定的String
 	 * @param sb 原StringBuilder

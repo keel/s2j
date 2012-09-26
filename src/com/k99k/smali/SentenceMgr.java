@@ -213,6 +213,80 @@ public class SentenceMgr {
 		
 	}
 
+	public void debug(){
+		this.setProps();
+		
+		maxNum = this.srcLines.size();
+		int javaLine = -1;
+		while (cNum < maxNum) {
+			String l = this.srcLines.get(cNum);
+			int jaLine = this.javaLineNum(l);
+			if (jaLine >=0 && jaLine != javaLine) {
+				javaLine = jaLine;
+				cNum++;
+				l = this.srcLines.get(cNum);
+			}
+			String key = Tool.getKey(l);
+			Sentence s = this.createSentence(key, l);
+			if (s == null) {
+				//未知key的处理
+				Sentence e = new CommSentence(this, "#ERR: unknown sententce. line:"+l);
+				e.debug();
+				this.sentenceList.add(e);
+				cNum++;
+				continue;
+			}
+			s.setLevel(this.level);
+			s.setLineNum(cNum);
+			if (javaLine > -1) {
+				s.setJavaLineNum(javaLine);
+			}
+			//对数组赋值行特殊处理
+			if (key.equals(".array-data")) {
+				cNum++;
+				l = this.srcLines.get(cNum);
+				while(!l.startsWith(".end")){
+					ArraySentence as = (ArraySentence)s;
+					as.addToArrMatrix(l);
+					cNum++;
+					l = this.srcLines.get(cNum);
+				}
+				s.debug();
+			}
+			//对switch行特殊处理
+			else if (key.equals(".packed-switch") || key.equals(".sparse-switch")) {
+				cNum++;
+				hasSwitch = true;
+				l = this.srcLines.get(cNum);
+				while(!l.startsWith(".end")){
+					SwitchSentence as = (SwitchSentence)s;
+					as.addSwitchKey(l);
+					cNum++;
+					l = this.srcLines.get(cNum);
+				}
+				s.debug();
+			}
+			//其他语句
+			else if (s.debug()) {
+				//成功处理语句后加入语句列表
+				//只有能成行输出的操作加入到sentenceList
+				if (s.getType()>Sentence.TYPE_NOT_LINE) {
+					this.sentenceList.add(s);
+				}
+			}else{
+				Sentence e = new CommSentence(this, "#ERR: unknown sententce. line:"+l);
+				e.debug();
+				this.sentenceList.add(e);
+				//后面语句不处理了
+				break;
+			}
+			cNum++;
+		}
+		
+		this.render();
+		
+	}
+	
 	
 	
 	

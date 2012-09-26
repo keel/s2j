@@ -68,6 +68,38 @@ public class S2J {
 		return "ERR";
 	}
 	
+	public String debug(String fileName,String encode){
+		try {
+			String t = IO.readTxt(fileName, encode);
+			StringBuilder sb = new StringBuilder();
+			try {
+				ArrayList<String> lines = Tool.strToLine(t);
+				while (!lines.isEmpty()) {
+					String nextLine = lines.get(0);
+					String key = Tool.getKey(nextLine);
+					if (key != null) {
+						Context con = this.createContext(key,lines,sb);
+						if (con!=null) {
+							con.debug();
+						}else{
+							sb.append("//FIXME context not found! key: "+key);
+						}
+					}else{
+						sb.append("//FIXME key is empty! line: "+nextLine);
+					}
+				}
+				//结束
+				sb.append(StaticUtil.NEWLINE).append("}");
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			return sb.toString();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return "ERR";
+	}
+	
 	public String exec(String t){
 		StringBuilder sb = new StringBuilder();
 		try {
@@ -122,8 +154,12 @@ public class S2J {
 		
 		S2J s = new S2J();
 		//String re = s.exec("h:/SMSTest.smali", "utf-8");
-		String re = s.exec("f:/android/apk_manager/projects/SmaliTest.apk/smali/com/smlon/tools/Structs.smali", "utf-8");
+//		String re = s.exec("f:/android/apk_manager/projects/SmaliTest.apk/smali/com/smlon/tools/Structs.smali", "utf-8");
+		
 //		String re = s.exec("F:/android/apk_manager/projects/ud.apk/smali/com/faluosi/bigrunner/C_EVTEffect.smali","utf-8");
+		
+		String re = s.debug("f:/android/apk_manager/projects/SmaliTest.apk/smali/com/smlon/tools/Structs.smali", "utf-8");
+
 		
 		System.out.println(re);
 		

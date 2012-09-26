@@ -68,6 +68,10 @@ public abstract class Context {
 //		}
 	}
 	
+	public void debug(){
+		this.render();
+	}
+	
 //	/**
 //	 * 执行下一个处理
 //	 */

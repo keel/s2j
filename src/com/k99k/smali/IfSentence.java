@@ -9,6 +9,8 @@ import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 
+import com.k99k.tools.StringUtil;
+
 
 /**
  * @author keel
@@ -149,6 +151,22 @@ public class IfSentence extends Sentence {
 		return true;
 	}
 	
+	
+	
+	/* (non-Javadoc)
+	 * @see com.k99k.smali.Sentence#debug()
+	 */
+	@Override
+	public boolean debug() {
+		this.isDebug = true;
+		this.exec();
+		this.over();
+		return true;
+	}
+
+	private boolean isDebug = false;
+
+
 	/**
 	 * 输出
 	 */
@@ -216,7 +234,12 @@ public class IfSentence extends Sentence {
 	@Override
 	public String getOut() {
 		this.out = new StringBuilder();
+		if (isDebug) {
+			String t = StringUtil.intToLetter((this.cond.charAt(this.cond.indexOf("_")+1)-48));
+			this.out = new StringBuilder("if-").append(t).append(" - ");
+		}
 		this.render();
+		
 		return super.getOut();
 	}
 

@@ -122,6 +122,55 @@ public class Methods extends Context {
 		return true;
 	}
 	
+	
+	private boolean toDebug(){
+		// 先获取第一行
+		String l = this.lines.remove(0);
+		// 处理注释
+		l = this.doComm(l);
+		// 再导入此方法内的所有行
+		String ss = "";
+		while (!(ss = this.lines.remove(0)).equals(StaticUtil.TYPE_END_METHOD)) {
+			this.mLines.add(ss);
+		}
+		try {
+
+			// 处理方法首行
+			this.parseFn(l);
+
+			log.debug(this.name + "() - starting...");
+			// 方法内的部分
+			if (!this.mLines.isEmpty()) {
+				SentenceMgr sMgr = new SentenceMgr(this.mLines,this);
+				if (this.scope.indexOf("static")>=0) {
+					sMgr.setStatic(true);
+				}
+				sMgr.debug();
+				this.outLines.addAll(sMgr.getOutLines());
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			this.err = "//ERR: parse method failed! mline:" + l;
+			return false;
+		}
+		// log.debug(this.name+" - finished.");
+		return true;
+	}
+	
+	/* (non-Javadoc)
+	 * @see com.k99k.smali.Context#debug()
+	 */
+	@Override
+	public void debug() {
+		
+		if (this.toDebug() && this.out()) {
+		} else {
+			// 输出错误
+			this.out.append(this.getErr()).append(StaticUtil.NEWLINE);
+		}
+	}
+
 	/**
 	 * 处理方法内的部分
 	 */
