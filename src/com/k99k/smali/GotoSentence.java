@@ -73,6 +73,19 @@ public class GotoSentence extends Sentence {
 	}
 	
 	
+	/* (non-Javadoc)
+	 * @see com.k99k.smali.Sentence#debug()
+	 */
+	@Override
+	public boolean debug() {
+		String tag = this.line.split(" ")[1];
+		int nn = tag.charAt(tag.indexOf("_")+1);
+		this.out.append("goto >>").append(StringUtil.intToLetter(nn-48));
+		this.over();
+		return true;
+	}
+
+
 	/**
 	 * 设置为break语句
 	 * @param label break的目标label，可为null

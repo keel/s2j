@@ -3,6 +3,8 @@
  */
 package com.k99k.smali;
 
+import com.k99k.tools.StringUtil;
+
 /**
  * @author keel
  *
@@ -79,6 +81,8 @@ public class GotoTagSentence extends TagSentence {
 //			this.state = Sentence.STATE_OVER;
 //		}
 //	}
+	
+	
 
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Sentence#newOne(com.k99k.smali.SentenceMgr, java.lang.String)
@@ -88,6 +92,18 @@ public class GotoTagSentence extends TagSentence {
 		return new GotoTagSentence(mgr, line);
 	}
 	
+	/* (non-Javadoc)
+	 * @see com.k99k.smali.TagSentence#debug()
+	 */
+	@Override
+	public boolean debug() {
+		String tag = this.line.split(" ")[0];
+		int nn = tag.charAt(tag.indexOf("_")+1);
+		this.out.append(">>").append(StringUtil.intToLetter(nn-48));
+		this.over();
+		return true;
+	}
+
 	static final String[] KEYS = new String[]{
 		":goto_0",
 		":goto_1",
