@@ -33,6 +33,11 @@ public class TagSentence extends Sentence {
 	 * 是否被移动到return语句之前
 	 */
 	private boolean isShift = false;
+	
+	/**
+	 * 是否为倒置cond形式的while
+	 */
+	private boolean isReverseWhileStart = false;
 
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Sentence#exec()
@@ -92,14 +97,66 @@ public class TagSentence extends Sentence {
 	public Sentence newOne(SentenceMgr mgr, String line) {
 		return new TagSentence(mgr, line);
 	}
+	
+	/**
+	 * 作为if结束标记的次数
+	 */
+	private int endTimes = 0;
 
 	/**
 	 * 设置结构的结束符,可多次设置，每次增加一个}号
 	 */
-	public final void setEndStruct(){
-		this.out.append(StaticUtil.NEWLINE).append(StaticUtil.TABS[this.level]);
-		this.out.append("}");
+	public final TagSentence setEndStruct(){
+//		this.out.append(StaticUtil.NEWLINE).append(StaticUtil.TABS[this.level]);
+//		this.out.append("}");
+		endTimes++;
+		return this;
 	}
+	
+	
+
+
+	/**
+	 * @return the isReverseWhileStart
+	 */
+	public final boolean isReverseWhileStart() {
+		return isReverseWhileStart;
+	}
+
+
+
+	/**
+	 * @param isReverseWhileStart the isReverseWhileStart to set
+	 */
+	public final void setReverseWhileStart(boolean isReverseWhileStart) {
+		this.isReverseWhileStart = isReverseWhileStart;
+	}
+
+
+
+	/* (non-Javadoc)
+	 * @see com.k99k.smali.Sentence#getOut()
+	 */
+	@Override
+	public String getOut() {
+		for (int i = 0; i< this.endTimes; i++) {
+			this.out.append(StaticUtil.NEWLINE).append(StaticUtil.TABS[this.level]);
+			this.out.append("}");
+		}
+		return this.out.toString();
+	}
+
+
+
+	/**
+	 * 作为if结束标记的次数
+	 * @return the endTimes
+	 */
+	public final int getEndTimes() {
+		return endTimes;
+	}
+
+
 
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Sentence#getName()

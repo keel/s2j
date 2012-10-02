@@ -158,7 +158,7 @@ public class S2J {
 		
 //		String re = s.exec("F:/android/apk_manager/projects/ud.apk/smali/com/faluosi/bigrunner/C_EVTEffect.smali","utf-8");
 		
-		String re = s.debug("f:/android/apk_manager/projects/SmaliTest.apk/smali/com/smlon/tools/Structs.smali", "utf-8");
+		String re = s.exec("f:/android/apk_manager/projects/SmaliTest.apk/smali/com/smlon/tools/Structs.smali", "utf-8");
 
 		
 		System.out.println(re);

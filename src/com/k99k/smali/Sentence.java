@@ -193,6 +193,13 @@ public abstract class Sentence {
 	}
 	
 	/**
+	 * level增长或减少
+	 */
+	public void levelUpdate(int inc){
+		this.level = this.level + inc;
+	}
+	
+	/**
 	 * 设置输出
 	 * @param outStr
 	 */

@@ -83,6 +83,19 @@ public class GotoTagSentence extends TagSentence {
 //	}
 	
 	
+	/**
+	 * 保存移动语句块时定位插入位置,以便后面插入语句时作判断,默认为null
+	 */
+	private Sentence insertPoSen = null;
+	
+	public void setInserPoSen(Sentence sen){
+		this.insertPoSen = sen;
+	}
+	
+	public Sentence getInsertPoSen(){
+		return this.insertPoSen;
+	}
+	
 
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Sentence#newOne(com.k99k.smali.SentenceMgr, java.lang.String)

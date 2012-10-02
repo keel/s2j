@@ -239,7 +239,6 @@ public class IfSentence extends Sentence {
 			this.out = new StringBuilder("if-").append(t).append(" - ");
 		}
 		this.render();
-		
 		return super.getOut();
 	}
 
@@ -296,7 +295,7 @@ public class IfSentence extends Sentence {
 		this.ifCond = "while";
 		
 	}
-	
+
 	public boolean isWhile(){
 		if (this.ifCond.equals("while")) {
 			return true;
