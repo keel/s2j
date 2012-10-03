@@ -37,6 +37,11 @@ public class GotoSentence extends Sentence {
 	
 	private boolean isReturn = false;
 	
+	
+	private boolean isContinue = false;
+	
+	private boolean isBreak = false;
+	
 	/**
 	 * 是否为catch块的结尾
 	 */
@@ -90,12 +95,14 @@ public class GotoSentence extends Sentence {
 	 * 设置为break语句
 	 * @param label break的目标label，可为null
 	 */
-	public final void setBreak(String label){
-		this.out.append("break ");
+	public final void setBreak(String label,String info){
+		this.isBreak = true;
+		this.out.append(StaticUtil.NEWLINE).append("break ");
 		if (StringUtil.isStringWithLen(label, 1)) {
 			this.out.append(label);
 		}
-		this.out.append(";");
+		this.out.append("; //");
+		this.out.append(info);
 		this.type = TYPE_STRUCT;
 	}
 	
@@ -103,15 +110,36 @@ public class GotoSentence extends Sentence {
 	 * 设置为continue语句
 	 * @param label continue的目标label，可为null
 	 */
-	public final void setContinue(String label){
-		this.out.append("continue ");
+	public final void setContinue(String label,String info){
+		this.isContinue = true;
+		this.out.append(StaticUtil.NEWLINE).append("continue ");
 		if (StringUtil.isStringWithLen(label, 1)) {
 			this.out.append(label);
 		}
-		this.out.append(";");
+		this.out.append("; //");
+		this.out.append(info);
 		this.type = TYPE_STRUCT;
 	}
 	
+	
+	
+	
+	/**
+	 * @return the isContinue
+	 */
+	public final boolean isContinue() {
+		return isContinue;
+	}
+
+
+	/**
+	 * @return the isBreak
+	 */
+	public final boolean isBreak() {
+		return isBreak;
+	}
+
+
 	public final boolean isReturn() {
 		return isReturn;
 	}

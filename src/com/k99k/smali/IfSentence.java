@@ -87,6 +87,11 @@ public class IfSentence extends Sentence {
 	 */
 	private String cond;
 	
+	/**
+	 * 是否是doWhile
+	 */
+	private boolean isDoWhile = false;
+	
 	
 	/**
 	 * 是否是指向
@@ -175,12 +180,14 @@ public class IfSentence extends Sentence {
 			this.out.append("} ");
 		}else if (isElse) {
 			this.out.append("else ");
+		}else if(this.isDoWhile){
+			this.out.append("} ");
 		}
 		this.out.append(this.ifCond);
 		this.out.append(" (");
 		this.out.append(getCondOut());
 		this.out.append(")");
-		if (this.isClosePre) {
+		if (this.isClosePre || this.isDoWhile) {
 			this.out.append(";");
 		}else{
 			this.out.append(" {");
@@ -293,6 +300,16 @@ public class IfSentence extends Sentence {
 	
 	public void setWhile(){
 		this.ifCond = "while";
+		
+	}
+	
+	public void setDoWhile(){
+		this.ifCond = "while";
+		this.isDoWhile = true;
+	}
+	
+	public void setAsIf(){
+		this.ifCond = "if";
 		
 	}
 

@@ -83,7 +83,7 @@ public class IFStructScan {
 	/**
 	 * 每个if内容块内结束标记map,用于判断是否为else
 	 */
-	private HashMap<Integer,IfSentence> ifEndMap = new HashMap<Integer, IfSentence>();
+	private HashMap<String,IfSentence> ifEndMap = new HashMap<String, IfSentence>();
 	
 	/**
 	 * 判断是否是结构语句,返回false为内容,true为未处理的结构
@@ -115,9 +115,10 @@ public class IFStructScan {
 			this.setIfContendEnd();
 			
 			this.shiftIfBlock();
-//		this.setLevels();
 			
-			this.fixIfBlock(0,this.senList.size()-1);
+			this.finishIf();
+			
+//			this.fixIfBlock(0,this.senList.size()-1);
 			
 			
 //		this.scanReversedIf();
@@ -128,28 +129,121 @@ public class IFStructScan {
 //		
 		} catch (Exception e) {
 			e.printStackTrace();
-			log.error(this.mgr.getMeth().getName()+" ERR:"+e.getMessage());
+			log.error(this.mgr.getMeth().getName()+" ERR:"+e.getStackTrace()[0]);
 		}
 		
 		
-		log.debug("IfScan end");
+		log.debug("IfScan end:"+this.mgr.getMeth().getName());
 	}
 	
-	private void setLevels(){
-		//flag为0表示无操作,大于0表示增加的level,小于0表示减少的level
-		int flag = 0;
-		for (int i = 0; i < this.senList.size(); i++) {
+	
+	private void finishIf(){
+		int level = 0;
+		IfSentence ifs = new IfSentence(this.mgr, "");
+		level = reCheckIfBlock(ifs,0,this.senList.size(),level,false);
+	}
+	
+	private int reCheckIfBlock(IfSentence outIf,int outStart,int outEnd,int level,boolean isDoWhile){
+		for (int i = outStart+1; i < outEnd; i++) {
 			Sentence s = this.senList.get(i);
-			s.levelUpdate(flag);
-			if (s.getName().equals("if")) {
-				flag++;
-			}else if(s.getName().equals("tag")){
-				TagSentence tag = (TagSentence)s;
-				if (tag.getEndTimes()>0) {
-					flag = flag - tag.getEndTimes();
+			s.setLevel(level);
+			if (s.getName().equals("if") && s.getState() == Sentence.STATE_DOING) {
+				//内部,level++
+				level++;
+				IfSentence ifs = (IfSentence)s;
+				TagSentence tag = ifs.getCondTag();
+				int tagIndex = this.senList.indexOf(tag);
+				if (outIf.isWhile()) {
+					//while处理
+					if (tagIndex < outStart) {
+						//do while处理,注意这里通过判断外部if结束句是否在本if条件句以下确定是否是doWhile
+						boolean reallyDoWhile = outEnd < i;
+						int end = outEnd;
+						if (reallyDoWhile) {
+							end = tagIndex;
+							//误认的while变为if
+							if (this.senList.get(tagIndex+1).getName().equals("if")) {
+								((IfSentence)this.senList.get(tagIndex+1)).setAsIf();
+							}
+							tag.setOut("do {");
+							ifs.setDoWhile();
+						}
+						level = this.reCheckIfBlock(ifs, i, end,level,reallyDoWhile);
+					}else{
+						level = this.reCheckIfBlock(ifs, i, tagIndex,level,false);
+					}
+				}else{
+					//if处理
+					if (tagIndex < outEnd) {
+						if (tagIndex < i) {
+							//真正的do while
+							if (this.senList.get(tagIndex+1).getName().equals("if")) {
+								((IfSentence)this.senList.get(tagIndex+1)).setAsIf();
+							}
+							tag.setOut("do {");
+							ifs.setDoWhile();
+							level = this.reCheckIfBlock(ifs, i, tagIndex,level,true);
+						}else{
+							level = this.reCheckIfBlock(ifs, i, tagIndex,level,false);
+						}
+					}else{
+						//补一个endStruct在outEnd上
+						if (this.senList.size() != outEnd) {
+							((TagSentence)this.senList.get(outEnd)).setEndStruct().over();
+							level = this.reCheckIfBlock(ifs, i, outEnd,level,false);
+						}else{
+							log.error(this.mgr.getMeth().getName()+" Can't setEndStruct in the end of senList. ");
+						}
+					}
+					//判断是否else
+					if (this.ifEndMap.containsKey(level+"#"+outIf.getEndSenLineNum())) {
+						outIf.setElse(true);
+					}else{
+						this.ifEndMap.put(level+"#"+outIf.getEndSenLineNum(), outIf);
+					}
 				}
+			}else if(s.getName().equals("goto") && outIf.isWhile()){
+				//转向句
+				GotoSentence gt = (GotoSentence)s;
+				GotoTagSentence gtTag = (GotoTagSentence) gt.getTargetSen();
+				int gtTagIndex = this.senList.indexOf(gtTag);
+				if (gtTag.isReturn()) {
+					gt.setReturn(true);
+				}else{
+					if (!isDoWhile) {
+						if (gtTagIndex == outStart) {
+							gt.setContinue(null, "");
+						}else if(gtTagIndex < outStart){
+							gt.setContinue(null, gtTag.getLine());
+						}else if(gtTagIndex > outEnd){
+							gt.setBreak(null, gtTag.getLine());
+						}
+						
+					}else{
+						if (gtTagIndex == outEnd) {
+							gt.setContinue(null, "do while continue");
+						}else if(gtTagIndex < outStart){
+							gt.setContinue("label", "do while continue: "+gtTag.getLine());
+						}else if(gtTagIndex > outEnd){
+							gt.setBreak(null, "do while break: "+gtTag.getLine());
+						}
+					}
+				}
+				gt.over();
+				gtTag.over();
 			}
 		}
+		if (this.senList.size() != outEnd) {
+			TagSentence endTag = (TagSentence)this.senList.get(outEnd);
+			if (endTag.getOut().startsWith("do")) {
+				endTag.over();
+			}else{
+				endTag.setEndStruct().over();
+			}
+			outIf.over();
+			level--;
+		}
+		return level;
 	}
 	
 	
@@ -178,8 +272,12 @@ public class IFStructScan {
 								int gtTagIndex = this.senList.indexOf(gt.getTargetSen());
 								if (gtTagIndex < j) {
 									//倒指的goto,一般为continue
-									gt.setOut("continue; //"+gt.getLine()+" -> "+this.senList.get(gtTagIndex+1).getOut());
+									Sentence senAfterGTTag = this.senList.get(gtTagIndex+1);
+									gt.setContinue(null, gt.getLine()+" -> "+senAfterGTTag.getOut());
 									gt.over();
+									if (senAfterGTTag.getName().equals("if")) {
+										((IfSentence)senAfterGTTag).setWhile();
+									}
 									continue;
 								}
 								//先找到goto句后的非tag句
@@ -295,43 +393,60 @@ public class IFStructScan {
 							gotoTag = afterGotoTag;
 						}
 					}
-					//gotoTag为倒置时插入到if块之后,此时判断是while语句,不再进行最终move
-					else if (gotoTagIndex>=0 && gotoTagIndex < i) {
-						ifs.setWhile();
-						lastMove = false;
-						if (gotoTag.getInsertPoSen() == null) {
-							po = re[0]+1;
-						}else{
-							//如果gotoTag所在的while已经有插入的内容块了,则插入点在其之后
-							int wEnd = this.senList.indexOf(gotoTag.getInsertPoSen());
-							if (gts.getLineNum() < gotoTag.getInsertPoSen().getLineNum()) {
-								po = wEnd;
-							}else{
-								//goto的原始位置在WhileContentEnd之前时,从re[0]向下找到插入位置
-								po = re[0]+1;
-								for (int j = po; j < wEnd; j++) {
-									if (gts.getLineNum() < this.senList.get(j).getLineNum()) {
-										po = j+1;
-										continue;
-									}else{
+					else{
+						boolean isWhile = ifs.isWhile();
+						if (gotoTagIndex>=0 && gotoTagIndex < i) {
+							//gotoTag为倒置时插入到if块之后,此时判断是while语句,不再进行最终move
+							isWhile = true;
+							//gotoTagIndex后面不能有其他的if，否则视为while内部的if
+							for (int j = gotoTagIndex+1; j < i; j++) {
+								Sentence s4 = this.senList.get(j);
+								if (s4.getName().equals("if")) {
+									IfSentence ifw = (IfSentence)s4;
+									if (ifw.isWhile()) {
+										isWhile = false;
 										break;
 									}
 								}
 							}
 						}
-					}
-					//正常顺序时
-					else{
-						//gotoTagIndex为-1,应该与gotoTag==null同样，此情况应该不存在
-						if (gotoTagIndex == -1) {
-							log.error(this.mgr.getMeth().getName()+" gotoTagIndex is -1!");
+						if(isWhile){
+							ifs.setWhile();
+							lastMove = false;
+							if (gotoTag.getInsertPoSen() == null) {
+								po = re[0]+1;
+							}else{
+								//如果gotoTag所在的while已经有插入的内容块了,则插入点在其之后
+								int wEnd = this.senList.indexOf(gotoTag.getInsertPoSen());
+								if (gts.getLineNum() < gotoTag.getInsertPoSen().getLineNum()) {
+									po = wEnd;
+								}else{
+									//goto的原始位置在WhileContentEnd之前时,从re[0]向下找到插入位置
+									po = re[0]+1;
+									for (int j = po; j < wEnd; j++) {
+										if (gts.getLineNum() < this.senList.get(j).getLineNum()) {
+											po = j+1;
+											continue;
+										}else{
+											break;
+										}
+									}
+								}
+							}
 						}
-						//ifs后面没有afterGotoTag,取return的位置
-						if(afterGotoTag == null){
-							po = this.senList.indexOf(this.returnSentence);
-						}else{
-							//正常if语句插入位置在ifs下方的第一个gotoTag处  //TODO 为什么不直接是gotoTag
-							po = this.senList.indexOf(afterGotoTag);
+						//正常顺序的if时
+						else{
+							//gotoTagIndex为-1,应该与gotoTag==null同样，此情况应该不存在
+							if (gotoTagIndex == -1) {
+								log.error(this.mgr.getMeth().getName()+" gotoTagIndex is -1!");
+							}
+							//ifs后面没有afterGotoTag,取return的位置
+							if(afterGotoTag == null){
+								po = this.senList.indexOf(this.returnSentence);
+							}else{
+								//正常if语句插入位置在ifs下方的第一个gotoTag处  //TODO 为什么不直接是gotoTag
+								po = this.senList.indexOf(afterGotoTag);
+							}
 						}
 					}
 					//最后移动插入位置（跳过gotoTag之前的tag等）
@@ -412,9 +527,14 @@ public class IFStructScan {
 					}
 				}else{
 					//正常if
+					if (ifs.isWhile()) {
+						//FIXME 正常的却被误认为倒置cond的while，应该是do while的do部分s
+						log.info(this.mgr.getMeth().getName()+" ========= maybe do{}?"+ifs.getOut());
+					}
 					ifs = this.mergeConds(i, re[1]+1,this.senList.get(re[0]).getLineNum()+1);
+					
 				}
-				//处理else等结构
+			/*	//处理else等结构
 				if (!ifs.isWhile()) {
 					if (this.ifEndMap.containsKey(ifs.getEndSenLineNum())) {
 						ifs.setElse(true);
@@ -423,7 +543,7 @@ public class IFStructScan {
 					}
 					
 					
-				}
+				}*/
 			}
 		}
 	}
@@ -445,19 +565,26 @@ public class IFStructScan {
 				for (int j = i; j <= re[1]; j++) {
 					Sentence s1 = this.senList.get(j);
 					if (s1.getName().equals("if")) {
-						((IfSentence)s1).setEndSenLineNum(endLN);
+						IfSentence if2 = (IfSentence)s1;
+						if2.setEndSenLineNum(endLN);
+						//单独处理倒置cond的if
+						if (if2.getCondTag().getLineNum() < if2.getLineNum()) {
+							Sentence afterCondSen = this.senList.get(this.senList.indexOf(if2.getCondTag())+1);
+							if (afterCondSen.getName().equals("if")) {
+								//先通通算做while
+								((IfSentence)afterCondSen).setWhile();
+							}else{
+								//TODO 倒置if的cond后面不是if
+								log.info(this.mgr.getMeth().getName()+" reverse if's cond ,but after it is not if sen."+ifs.getOut());
+//							((TagSentence)afterCondSen).setReverseWhileStart(true);
+							}
+						}
 					}
 				}
-				//单独处理倒置cond的if
-				if (ifs.getCondTag().getLineNum() < ifs.getLineNum()) {
-					Sentence afterCondSen = this.senList.get(this.senList.indexOf(ifs.getCondTag())+1);
-					if (afterCondSen.getName().equals("if")) {
-						((IfSentence)afterCondSen).setWhile();
-					}else{
-						//TODO 倒置if的cond后面不是if
-						log.info(this.mgr.getMeth().getName()+" reverse if's cond ,but after it is not if sen."+ifs.getOut());
-//						((TagSentence)afterCondSen).setReverseWhileStart(true);
-					}
+				
+				//预处理所有可能的while,即if上方为gotoTag
+				if (i>1 && this.senList.get(i-1).getName().equals("gotoTag")) {
+					ifs.setWhile();
 				}
 				i = re[0];
 			}
@@ -584,8 +711,8 @@ public class IFStructScan {
 		}
 		//最后一个if设置over
 		if (ifs != null) {
-			ifs.over();
-			ifs.getCondTag().setEndStruct().over();
+			//ifs.over();
+			//ifs.getCondTag().setEndStruct().over();
 		}
 		return ifs;
 	}

@@ -107,8 +107,8 @@ public class TagSentence extends Sentence {
 	 * 设置结构的结束符,可多次设置，每次增加一个}号
 	 */
 	public final TagSentence setEndStruct(){
-//		this.out.append(StaticUtil.NEWLINE).append(StaticUtil.TABS[this.level]);
-//		this.out.append("}");
+		this.out.append(StaticUtil.NEWLINE).append(StaticUtil.TABS[this.level]);
+		this.out.append("}");
 		endTimes++;
 		return this;
 	}
@@ -139,10 +139,10 @@ public class TagSentence extends Sentence {
 	 */
 	@Override
 	public String getOut() {
-		for (int i = 0; i< this.endTimes; i++) {
-			this.out.append(StaticUtil.NEWLINE).append(StaticUtil.TABS[this.level]);
-			this.out.append("}");
-		}
+//		for (int i = 0; i< this.endTimes; i++) {
+//			this.out.append(StaticUtil.NEWLINE).append(StaticUtil.TABS[this.level]);
+//			this.out.append("}");
+//		}
 		return this.out.toString();
 	}
 
