@@ -49,12 +49,15 @@ public class SentenceMgr {
 		sentenceMap.put(ErrSentence.KEY, e);
 		LocalSentence l = new LocalSentence(null,null);
 		sentenceMap.put(LocalSentence.KEY, l);
-		GotoSentence gt = new GotoSentence(null, null);
-		sentenceMap.put(GotoSentence.KEY, gt);
+//		GotoSentence gt = new GotoSentence(null,null);
+//		sentenceMap.put(GotoSentence.KEY, gt);
 		CastSentence cast = new CastSentence(null, null);
 		sentenceMap.put(CastSentence.KEY, cast);
 		
-		
+		GotoSentence gt = new GotoSentence(null, null);
+		for (int i = 0; i < GotoSentence.KEYS.length; i++) {
+			sentenceMap.put(GotoSentence.KEYS[i], gt);
+		}
 		GetSentence g = new GetSentence(null, null);
 		for (int i = 0; i < GetSentence.KEYS.length; i++) {
 			sentenceMap.put(GetSentence.KEYS[i], g);

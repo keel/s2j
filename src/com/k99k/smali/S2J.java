@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import org.apache.log4j.Logger;
+
 import com.k99k.smalimv.PubReplace;
 import com.k99k.tools.IO;
 
@@ -33,6 +35,8 @@ public class S2J {
 		Annotation a = new Annotation(this, null,null);
 		contextMap.put(a.getKey(), a);
 	}
+	
+	static final Logger log = Logger.getLogger(S2J.class);
 	
 	private final HashMap<String,Context> contextMap = new HashMap<String, Context>();
 	
@@ -63,6 +67,7 @@ public class S2J {
 			String t = IO.readTxt(fileName, encode);
 			return exec(t);
 		} catch (Exception e) {
+			log.error(" ERROR: "+e.getStackTrace()[0]);
 			e.printStackTrace();
 		}
 		return "ERR";
@@ -91,10 +96,12 @@ public class S2J {
 				//结束
 				sb.append(StaticUtil.NEWLINE).append("}");
 			} catch (Exception e) {
+				log.error(t+" ERROR: "+e.getStackTrace()[0]);
 				e.printStackTrace();
 			}
 			return sb.toString();
 		} catch (Exception e) {
+			log.error(" ERROR: "+e.getStackTrace()[0]);
 			e.printStackTrace();
 		}
 		return "ERR";
@@ -121,7 +128,9 @@ public class S2J {
 			//结束
 			sb.append(StaticUtil.NEWLINE).append("}");
 		} catch (Exception e) {
+			log.error(t+" ERROR: "+e.getStackTrace()[0]);
 			e.printStackTrace();
+			
 		}
 		return sb.toString();
 	}
@@ -141,6 +150,7 @@ public class S2J {
 			IO.copyFullDirWithFn(from, to, r, ec);
 			
 		} catch (IOException e) {
+			log.error(" ERROR: "+e.getStackTrace()[0]);
 			e.printStackTrace();
 		}
 	}
@@ -154,21 +164,22 @@ public class S2J {
 		
 		S2J s = new S2J();
 		//String re = s.exec("h:/SMSTest.smali", "utf-8");
-//		String re = s.exec("f:/android/apk_manager/projects/SmaliTest.apk/smali/com/smlon/tools/Structs.smali", "utf-8");
 		
-//		String re = s.exec("F:/android/apk_manager/projects/ud.apk/smali/com/faluosi/bigrunner/C_EVTEffect.smali","utf-8");
 		
-		String re = s.exec("f:/android/apk_manager/projects/SmaliTest.apk/smali/com/smlon/tools/Structs.smali", "utf-8");
-
+//		String tar = "f:/android/apk_manager/projects/SmaliTest.apk/smali/com/smlon/tools/Structs.smali";
+//		//String tar = "F:/android/apk_manager/projects/ud.apk/smali/net/gatools/SpriteManager.smali";
+//		String re = s.exec(tar, "utf-8");
+//		
+//		System.out.println(re);
 		
-		System.out.println(re);
 		
-		/*
-		String from  = "F:/android/apk_manager/projects/ud.apk/smali";
-		String to = "g:/ud";
+		
+		
+		String from  = "F:/android/apk_manager/projects/com.game.UnicornDash.apk/smali";
+		String to = "g:/UnicornDash";
 		doFolder(from, to);
 		System.out.println("--------- END ----------");
-		*/
+		
 		
 		/*
 		//转换整个目录

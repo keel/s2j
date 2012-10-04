@@ -130,8 +130,8 @@ public class IFStructScan {
 //		this.scanIf();
 //		
 		} catch (Exception e) {
-			e.printStackTrace();
 			log.error(this.mgr.getMeth().getName()+" ERR:"+e.getStackTrace()[0]);
+			e.printStackTrace();
 		}
 		
 		

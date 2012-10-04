@@ -225,6 +225,7 @@ public class GotoSentence extends Sentence {
 	}
 
 
-	static final String KEY = "goto";
+	static final String[] KEYS = {"goto","goto/16","goto/32"};
+//	static final String KEY = "goto";
 
 }
