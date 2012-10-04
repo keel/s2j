@@ -102,6 +102,11 @@ public class TagSentence extends Sentence {
 	 * 作为if结束标记的次数
 	 */
 	private int endTimes = 0;
+	
+	/**
+	 * 是否为最后一个else块的开头
+	 */
+	private boolean isLastElseStart = false;
 
 	/**
 	 * 设置结构的结束符,可多次设置，每次增加一个}号
@@ -143,7 +148,32 @@ public class TagSentence extends Sentence {
 //			this.out.append(StaticUtil.NEWLINE).append(StaticUtil.TABS[this.level]);
 //			this.out.append("}");
 //		}
+		if (isLastElseStart) {
+			StringBuilder sb = new StringBuilder();
+			if (this.endTimes == 0) {
+				sb.append("}");
+			}
+			sb.append(" else { //else made");
+			return this.out.toString()+sb.toString();
+		}
 		return this.out.toString();
+	}
+
+
+	/**
+	 * @return the isLastElseStart
+	 */
+	public final boolean isLastElseStart() {
+		return isLastElseStart;
+	}
+
+
+
+	/**
+	 * @param isLastElseStart the isLastElseStart to set
+	 */
+	public final void setLastElseStart(boolean isLastElseStart) {
+		this.isLastElseStart = isLastElseStart;
 	}
 
 

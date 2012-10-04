@@ -73,6 +73,11 @@ public class IfSentence extends Sentence {
 	private boolean isReversed = false;
 	
 	/**
+	 * 自定义输出,因为重写了getOut方法,当此值为true时，恢复重写前的getOut方法
+	 */
+	private boolean customOut = false;
+	
+	/**
 	 * if 指向的cond_x的Sentence
 	 */
 	private TagSentence condTag;
@@ -92,7 +97,10 @@ public class IfSentence extends Sentence {
 	 */
 	private boolean isDoWhile = false;
 	
-	
+	/**
+	 * 是否是倒置cond形成的while
+	 */
+	private boolean isReversedWhile = false;
 	/**
 	 * 是否是指向
 	 */
@@ -240,6 +248,9 @@ public class IfSentence extends Sentence {
 	 */
 	@Override
 	public String getOut() {
+		if (customOut) {
+			return super.getOut();
+		}
 		this.out = new StringBuilder();
 		if (isDebug) {
 			String t = StringUtil.intToLetter((this.cond.charAt(this.cond.indexOf("_")+1)-48));
@@ -310,6 +321,8 @@ public class IfSentence extends Sentence {
 	
 	public void setAsIf(){
 		this.ifCond = "if";
+		this.isReversedWhile = false;
+		this.isDoWhile = false;
 		
 	}
 
@@ -434,6 +447,44 @@ public class IfSentence extends Sentence {
 			}
 		}
 	}
+
+	
+	/**
+	 * @return the customOut
+	 */
+	public final boolean isCustomOut() {
+		return customOut;
+	}
+
+
+
+	/**
+	 * @param customOut the customOut to set
+	 */
+	public final void setCustomOut(boolean customOut) {
+		this.customOut = customOut;
+	}
+
+
+
+	/**
+	 * @return the isReversedWhile
+	 */
+	public final boolean isReversedWhile() {
+		return isReversedWhile;
+	}
+
+
+
+	/**
+	 * 
+	 */
+	public final void setReversedWhile() {
+		this.isReversedWhile = true;
+		this.ifCond = "while";
+	}
+
+
 
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Sentence#newOne(com.k99k.smali.SentenceMgr, java.lang.String)

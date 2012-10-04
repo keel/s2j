@@ -148,10 +148,18 @@ public class GotoSentence extends Sentence {
 		this.isReturn = isReturn;
 		if (isReturn) {
 			this.out.append(StaticUtil.NEWLINE).append(StaticUtil.TABS[this.level]);
-			this.out.append("return;");
+			this.out.append("return ");
+			if (this.mgr.getMeth().getReturnStr().equals("void")) {
+				this.out.append(";");
+			}else{
+				this.out.append(this.preSen.getOut()).append(";");
+			}
 		}
 	}
 	
+	
+
+
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Sentence#newOne(com.k99k.smali.SentenceMgr, java.lang.String)
 	 */
