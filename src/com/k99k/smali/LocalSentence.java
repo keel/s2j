@@ -75,6 +75,12 @@ public class LocalSentence extends Sentence {
 			if (val.matches("(0x)?[\\d|a-f]+[D]?")) {
 				val = String.valueOf(Double.longBitsToDouble(Long.valueOf(val)))+"D";
 			}
+		}else if(obj.equals("boolean")){
+			if (val.equals(0)) {
+				val = "false";
+			}else{
+				val = "true";
+			}
 		}
 		
 		

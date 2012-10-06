@@ -47,6 +47,11 @@ public class Methods extends Context {
 	private String returnStr = "";
 	
 	/**
+	 * 是否已经在初始化方法中初始化过
+	 */
+	private boolean isInited = false;
+	
+	/**
 	 * 准备输出的行
 	 */
 	private ArrayList<String> outLines = new ArrayList<String>();
@@ -61,6 +66,22 @@ public class Methods extends Context {
 	}
 	
 	
+	
+	
+	/**
+	 * @return the isInited
+	 */
+	public final boolean isInited() {
+		return isInited;
+	}
+
+	/**
+	 * @param isInited the isInited to set
+	 */
+	public final void setInited(boolean isInited) {
+		this.isInited = isInited;
+	}
+
 	/**
 	 * 获取方法参数集
 	 * @return
@@ -114,8 +135,9 @@ public class Methods extends Context {
 			
 			
 		} catch (Exception e) {
-			e.printStackTrace();
 			this.err = "//ERR: parse method failed! mline:"+l;
+			log.error(this.name+" [E]:"+e.getStackTrace()[0]+" "+e.toString());
+			e.printStackTrace();
 			return false;
 		}
 //		log.debug(this.name+" - finished.");

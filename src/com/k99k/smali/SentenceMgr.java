@@ -207,13 +207,6 @@ public class SentenceMgr {
 		
 		this.render();
 		
-		//逐行读取，当读到Sendtence的key时，创建Sentence处理,并将此段内容传入处理
-		//如果处理失败,则创建另一可能处理的Sentence处理
-		//处理成功,则将Sentence加入已处理的lines,注意处理后的状态是完成还是完成中
-		//如果是完成则继续
-		//如果是处理中则将此Sentence加入待完成的
-		
-		
 	}
 
 	public void debug(){
@@ -666,7 +659,7 @@ public class SentenceMgr {
 			String c = this.getMeth().getClassName();
 			v.setClassName(c);
 			v.setKey("");
-			v.setName("this");
+			v.setName("p0");
 			v.setOut("this");
 			v.setValue("this");
 			vars.put("p0", v);
@@ -678,7 +671,7 @@ public class SentenceMgr {
 			Var v = new Var(null);
 			v.setClassName(ws[0]);
 			v.setKey("");
-			v.setName(ws[1]);
+			v.setName("p"+start);
 			v.setValue(ws[1]);
 			v.setOut(ws[1]);
 			vars.put("p"+start, v);

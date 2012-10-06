@@ -98,6 +98,26 @@ public class Var {
 	}
 
 	/**
+	 * iput或if-eqz比较时，确定后面的0是否需要输出为boolean或null
+	 * @param v1 原Var
+	 * @param v2Out 可能getOut=="0"的被比较Var的输出
+	 * @return v2真正的输出String
+	 */
+	public static final String checkIout(Var v1,String v2Out){
+		if(v1.getClassName().equals("int") || v1.getClassName().equals("java.lang.Integer")){
+			return v2Out;
+		}else if (v1.getClassName().equals("boolean")) {
+			return (v2Out.equals("0")) ? "false" : "true";
+		}else {
+			if (v2Out.equals("0")) {
+				return "null";
+			}else{
+				return v2Out;
+			}
+		}
+	}
+	
+	/**
 	 * @return the name
 	 */
 	public final String getName() {

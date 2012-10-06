@@ -90,7 +90,15 @@ public class ComputSentence extends Sentence {
 			String[] toa = this.comTag.split("-to-");
 			Var org = this.mgr.getVar(arr[2]);
 			Var tar = this.mgr.getVar(arr[1]);
+			if (tar == null) {
+				//tar实次出现
+				tar = new Var(this);
+				tar.setClassName(org.getClassName());
+				tar.setKey(org.getKey());
+				tar.setName(arr[1]);
+			}
 			tar.setOut("("+toa[1]+")"+org.getOut());
+			tar.setValue(org.getValue());
 			this.mgr.setVar(tar);
 			this.type = Sentence.TYPE_NOT_LINE;
 		}else if(this.comTag.indexOf("/2addr") > -1){
@@ -106,7 +114,7 @@ public class ComputSentence extends Sentence {
 			sb.append(tar);
 			sb.append(" ").append(coms.get(com)).append(" ");
 			sb.append(this.mgr.getVar(arr[2]).getOut());
-			if (org.getSen().getName().equals("var")) {
+			if (org.getSen().getName().equals("var") || org.getSen().getName().equals("get")) {
 				org.setOut("("+sb.toString()+")");
 				this.out.append(tar).append(" = ");
 				this.out.append(sb);

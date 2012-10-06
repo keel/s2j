@@ -72,17 +72,19 @@ public class InvokeSentence extends Sentence {
 		boolean isConstr = this.mgr.getMeth().isConstructor();
 		//输出构造方法
 		if (isInit) {
-			if (isConstr) {
+			if (isConstr && !this.mgr.getMeth().isInited()) {
 				//构造方法
 				String str = "super";
 				if(this.mgr.getMeth().getClassName().equals(src.substring(src.lastIndexOf('.')+1))){
 					str = "this";
 				}
 				this.out.append(str).append("(");
+				this.mgr.getMeth().setInited(true);
 				//this.out.append(this.mgr.getVar(rang[0]).getOut()).append(".");
 			}else{
 				//new 方法的构造方法
 				this.out.append("new ").append(src).append("(");
+				isConstr = false;
 			}
 			
 		}

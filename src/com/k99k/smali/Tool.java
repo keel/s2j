@@ -29,7 +29,9 @@ public class Tool {
 			s = s.replaceAll("\\/", "\\.");
 			//处理掉java.lang
 			s = s.replaceAll("java\\.lang\\.", "");
-			return s.replaceAll("\\/", "\\.");
+			//处理掉$符
+			s = s.replaceAll("\\$", "\\.");
+			return s;
 		}
 		else if (smaliObj.equals("V")) {
 			return "void";

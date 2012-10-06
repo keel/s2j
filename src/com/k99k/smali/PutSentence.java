@@ -5,6 +5,8 @@ package com.k99k.smali;
 
 import org.apache.log4j.Logger;
 
+import com.k99k.tools.StringUtil;
+
 /**
  * @author keel
  *
@@ -61,9 +63,18 @@ public class PutSentence extends Sentence {
 			String obj = Tool.parseObject(ws[3].substring(p+1));
 			v.setClassName(obj);
 			v.setOut(v1.getOut()+"."+name);
-			
-			this.out.append(v.getOut()).append(" = ").append(v2.getOut());
-			
+			//需要确认右边的输出
+			String right = null;
+			if (String.valueOf(v2.getValue()).equals("0")){
+				right = Var.checkIout(v, "0") +" /* " + v2.getOut() +" */";
+			}else{
+				right = Var.checkIout(v, v2.getOut());
+			}
+			if (v.getClassName().equals("int") && (!v2.getClassName().equals("int")) && StringUtil.isDigits(v2.getValue())) {
+				right = String.valueOf(v2.getValue());
+			}
+			this.out.append(v.getOut()).append(" = ").append(right);
+			v.setValue(v2.getValue());
 			//对于v1引用的语句，如果不成行则可去除
 			Sentence s = v1.getSen();
 			if (s != null && s.getState()>=Sentence.STATE_DONE && s.getType() == Sentence.TYPE_NOT_LINE) {
@@ -80,7 +91,7 @@ public class PutSentence extends Sentence {
 			v.setClassName(obj);
 			String v1 = Tool.parseObject(ws[2].substring(0,p2-1));
 			v.setOut(v1+"."+name);
-			
+			v.setValue(v2.getValue());
 			this.out.append(v.getOut()).append(" = ").append(v2.getOut());
 			
 		}else if(type == 'a'){
