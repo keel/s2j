@@ -146,7 +146,7 @@ public class IFStructScan {
 		int level = 0;
 		IfSentence ifs = new IfSentence(this.mgr, "");
 		level = reCheckIfBlock(ifs,-1,this.senList.size(),level,false);
-		log.info(this.mgr.getMeth().getName()+" level:"+level);
+		log.debug(this.mgr.getMeth().getName()+" level:"+level);
 	}
 	
 	private int reCheckIfBlock(IfSentence outIf,int outStart,int outEnd,int level,boolean isDoWhile){

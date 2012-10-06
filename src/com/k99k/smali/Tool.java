@@ -18,8 +18,31 @@ public class Tool {
 	public Tool() {
 	}
 	
+	
 	/**
-	 * FIXME 转换处理smali的对象
+	 * 从多个参数的String中解析出多个参数
+	 * @param propStr
+	 * @return
+	 */
+	public static final ArrayList<String> fetchObjects(String propStr){
+		ArrayList<String> ls = new ArrayList<String>();
+		for (int i = 0; i < propStr.length(); i++) {
+			char c = propStr.charAt(i);
+			if (Character.isUpperCase(c)) {
+				String s = String.valueOf(c);
+				if (c == 'L') {
+					int end = propStr.indexOf(';',i);
+					s = propStr.substring(i,end+1);
+					i = end;
+				}
+				ls.add(s);
+			}
+		}
+		return ls;
+	}
+	
+	/**
+	 * 转换处理smali的对象
 	 * @param smaliObj
 	 * @return
 	 */
@@ -44,6 +67,8 @@ public class Tool {
 		}
 		else if (smaliObj.equals("F")) {
 			return "float";
+		}else if (smaliObj.equals("S")) {
+			return "short";
 		}else if (smaliObj.equals("J")) {
 			return "long";
 		}else if (smaliObj.equals("D")) {

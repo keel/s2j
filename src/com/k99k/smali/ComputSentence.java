@@ -114,12 +114,18 @@ public class ComputSentence extends Sentence {
 			sb.append(tar);
 			sb.append(" ").append(coms.get(com)).append(" ");
 			sb.append(this.mgr.getVar(arr[2]).getOut());
-			if (org.getSen().getName().equals("var") || org.getSen().getName().equals("get")) {
+			if (org.getSen() != null && (org.getSen().getName().equals("var") || org.getSen().getName().equals("get"))) {
 				org.setOut("("+sb.toString()+")");
 				this.out.append(tar).append(" = ");
 				this.out.append(sb);
 				this.mgr.setVar(org);
 				this.type = TYPE_NOT_LINE;
+			}else{
+				//p1,p2之类的参数处理
+				org.setOut("("+sb.toString()+")");
+				this.out.append(tar).append(" = ");
+				this.out.append(sb);
+				this.mgr.setVar(org);
 			}
 			
 		}else if(this.comTag.indexOf("neg-") > -1){
@@ -139,6 +145,7 @@ public class ComputSentence extends Sentence {
 				org = new Var(this);
 				org.setName(target);
 				org.setKey(this.comTag);
+				org.setClassName("");
 				orgSave = true;
 				this.type = Sentence.TYPE_NOT_LINE;
 			}else{

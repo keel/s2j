@@ -136,7 +136,7 @@ public class Methods extends Context {
 			
 		} catch (Exception e) {
 			this.err = "//ERR: parse method failed! mline:"+l;
-			log.error(this.name+" [E]:"+e.getStackTrace()[0]+" "+e.toString());
+			log.error(this.name+" [E]:"+e.getStackTrace()[0]+" "+e.toString()+" mline:"+l);
 			e.printStackTrace();
 			return false;
 		}
@@ -172,8 +172,9 @@ public class Methods extends Context {
 			}
 
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error(this.name+" [E]:"+e.getStackTrace()[0]+" "+e.toString()+" mline:"+l);
 			this.err = "//ERR: parse method failed! mline:" + l;
+			e.printStackTrace();
 			return false;
 		}
 		// log.debug(this.name+" - finished.");

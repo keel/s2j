@@ -3,6 +3,8 @@
  */
 package com.k99k.smali;
 
+import java.util.ArrayList;
+
 import org.apache.log4j.Logger;
 
 /**
@@ -67,6 +69,18 @@ public class InvokeSentence extends Sentence {
 		String methName = opStr.substring(p1+2,p2);
 		int p3 = opStr.indexOf(")");
 		String propStr = (p3-p2 == 1)?"":opStr.substring(p2,p3+1);
+		if (propStr.length()>2) {
+			ArrayList<String> propObjects = Tool.fetchObjects(propStr.substring(1,propStr.length()-1));
+			int len = propObjects.size() + 1;
+			if (len < rang.length) {
+				//TODO 实际变量少于rang的情况,注意这种情况原因不明，但实际存在，此时把多的rang去除
+				String[] tmp = new String[len];
+				for (int i = 0; i < tmp.length; i++) {
+					tmp[i] = rang[i];
+				}
+				rang = tmp;
+			}
+		}
 		String re = Tool.parseObject(opStr.substring(p3+1));
 		boolean isInit = methName.equals("<init>");
 		boolean isConstr = this.mgr.getMeth().isConstructor();
@@ -120,8 +134,12 @@ public class InvokeSentence extends Sentence {
 			StringBuilder sb2 = new StringBuilder();
 			int start = (key.indexOf("static") >= 0) ? 0 : 1;
 			for (int i = start; i < rang.length; i++) {
-				sb2.append(",");
 				Var v2 = this.mgr.getVar(rang[i]);
+				if (v2 == null) {
+					log.error(this.mgr.getMeth().getName()+ " InvokeSentence,rang[i]==null line:"+this.line);
+					continue;
+				}
+				sb2.append(",");
 				sb2.append(v2.getOut());
 			}
 			sb2.deleteCharAt(0);
@@ -146,7 +164,12 @@ public class InvokeSentence extends Sentence {
 		
 		if (!propStr.equals("")) {
 			for (int i = 1; i < rang.length; i++) {
-				Sentence s = this.mgr.getVar(rang[i]).getSen();
+				Var vs = this.mgr.getVar(rang[i]);
+				if (vs ==null) {
+					log.error(this.mgr.getMeth().getName()+ " InvokeSentence,rang[i]==null line:"+this.line);
+					continue;
+				}
+				Sentence s = vs.getSen();
 				if (s != null) {
 					if (s.getType() == Sentence.TYPE_NOT_LINE) {
 						s.over();
