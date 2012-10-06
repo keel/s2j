@@ -104,7 +104,7 @@ public class Var {
 	 * @return v2真正的输出String
 	 */
 	public static final String checkIout(Var v1,String v2Out){
-		if(v1.getClassName().equals("int") || v1.getClassName().equals("java.lang.Integer")){
+		if(v1.getClassName().equals("int") || v1.getClassName().equals("long")){
 			return v2Out;
 		}else if (v1.getClassName().equals("boolean")) {
 			return (v2Out.equals("0")) ? "false" : "true";
