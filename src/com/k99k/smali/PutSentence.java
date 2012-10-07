@@ -116,6 +116,7 @@ public class PutSentence extends Sentence {
 		
 		//不处理value
 		//v.setValue(value);
+//		v.setOutVar(true);
 		this.mgr.setVar(v);
 		this.over();
 		

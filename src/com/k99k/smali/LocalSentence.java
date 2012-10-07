@@ -49,7 +49,7 @@ public class LocalSentence extends Sentence {
 		v.setKey(KEY);
 		v.setName(ws[1]);
 		v.setOut(name);
-		
+//		v.setOutVar(true);
 		
 //		String val = "";
 		Var ov = this.mgr.getVar(ws[1]);

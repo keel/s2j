@@ -33,7 +33,7 @@ public class MoveSentence extends Sentence {
 		if (ws.length<2) {
 			this.out.append("exec move error. line:").append(this.line);
 			this.mgr.err(this);
-			log.error(this.out);
+			log.error(this.mgr.getMeth().getName()+" moveERR:"+this.line);
 			return false;
 		}
 		String key = ws[0];
@@ -45,7 +45,7 @@ public class MoveSentence extends Sentence {
 				if (last == null) {
 					this.out.append("exec move error. last sentence is null. line:").append(this.line);
 					this.mgr.err(this);
-					log.error(this.out);
+					log.error(this.mgr.getMeth().getName()+" moveERR:"+this.line);
 					return false;
 				}else if(last.getType() == Sentence.TYPE_STRUCT){
 					continue;
@@ -53,7 +53,7 @@ public class MoveSentence extends Sentence {
 				if (last.getVar()==null ) {
 					this.out.append("exec move error. last sentence's var is null. line:").append(this.line);
 					this.mgr.err(this);
-					log.error(this.out);
+					log.error(this.mgr.getMeth().getName()+" moveERR:"+this.line);
 					return false;
 				}else{
 					break;
@@ -64,6 +64,7 @@ public class MoveSentence extends Sentence {
 			Var v = last.getVar();
 			String name = ws[1];
 			v.setName(name);
+//			v.setOutVar(true);
 			this.mgr.setVar(v);
 			this.setOut(v.getOut());
 			//将last语句显示去掉

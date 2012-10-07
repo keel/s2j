@@ -7,6 +7,8 @@ import java.util.HashMap;
 
 import org.apache.log4j.Logger;
 
+import com.k99k.tools.StringUtil;
+
 
 /**
  * 声明语句,注意此类将作为静态类在mgr中使用,不可在内部访问mgr
@@ -22,8 +24,6 @@ public class VarSentence extends Sentence {
 	public VarSentence(SentenceMgr mgr, String line) {
 		super(mgr, line);
 		this.type = Sentence.TYPE_NOT_LINE;
-		//始终是结束状态,不需要再处理 
-		this.over();
 	}
 	static final Logger log = Logger.getLogger(VarSentence.class);
 	
@@ -83,7 +83,7 @@ public class VarSentence extends Sentence {
 			value = String.valueOf(v.getValue());
 		}else if(type.equals("float")){
 			StringBuilder sb = new StringBuilder(value);
-			//去掉0x,不足8位补到8位
+			//去掉0x,不足8位补到8位,注意负数保留负号
 			if (sb.charAt(0) == '-') {
 				sb.delete(1, 3);
 			}else{
@@ -92,9 +92,18 @@ public class VarSentence extends Sentence {
 			for (int i = sb.length(); i < 8; i++) {
 				sb.append("0");
 			}
-			float fv = Float.intBitsToFloat(Integer.parseInt(sb.toString(),16));
-			v.setValue(fv);
-			value = String.valueOf(v.getValue())+"F";
+			String flag = "F";
+			try {
+				float fv = Float.intBitsToFloat(Integer.parseInt(sb.toString(),16));
+				v.setValue(fv);
+			} catch (NumberFormatException e) {
+				log.error(this.mgr.getMeth().getName()+" float16to10 ERR,change to int:"+e.getCause()+" line:"+this.line);
+				e.printStackTrace();
+				int fv = Integer.parseInt(StringUtil.a16to10(value));
+				v.setValue(fv);
+				flag = "";
+			}
+			value = String.valueOf(v.getValue())+flag+" /*"+value+"*/";
 		}else if(type.equals("double")){
 			StringBuilder sb = new StringBuilder(value);
 			//去掉0x,不足8位补到8位
@@ -106,12 +115,18 @@ public class VarSentence extends Sentence {
 			for (int i = sb.length(); i < 16; i++) {
 				sb.append("0");
 			}
-			double lv = Double.longBitsToDouble(Long.parseLong(sb.toString(),16));
-			v.setValue(lv);
-			value = String.valueOf(v.getValue())+"D";
-			
-//			v.setValue(Double.valueOf(value.replace("D", "")));
-//			value = String.valueOf(v.getValue());
+			String flag = "D";
+			try {
+				double lv = Double.longBitsToDouble(Long.parseLong(sb.toString(),16));
+				v.setValue(lv);
+			} catch (NumberFormatException e) {
+				log.error(this.mgr.getMeth().getName()+" double16to10 ERR,change to int:"+e.getCause()+" line:"+this.line);
+				e.printStackTrace();
+				int fv = Integer.parseInt(StringUtil.a16to10(value));
+				v.setValue(fv);
+				flag = "";
+			}
+			value = String.valueOf(v.getValue())+flag+" /*"+value+"*/";
 		}else if(type.equals("Class")){
 			//TODO 无法确定Class值 ,暂存String
 			v.setValue(value);
@@ -119,8 +134,31 @@ public class VarSentence extends Sentence {
 		//仅输出value
 		v.setOut(value);
 		
-		//加入到SentenceMgr的Var集合
-		this.mgr.setVar(v);
+		//加入到SentenceMgr的Var集合,此时需要判断mgr中是否已存在及v的输出状态
+		if (this.mgr.getVar(v.getName()) == null) {
+//			v.setOutVar(false);
+			this.mgr.setVar(v);
+		}else{
+			//此时很可能是赋值,变为可输出状态
+			Var v1 = this.mgr.getVar(v.getName());
+			//是否输出的判断
+			boolean isSet = false;
+			if (v1.getSen()!=null) {
+				if (v1.getSen().getName().equals("invoke") || v1.getSen().getName().equals("compute")) {
+					isSet = true;
+				}else if(v1.getSen().getName().equals("var") && StringUtil.isDigits(v1.getOut())){
+					isSet = true;
+				}
+			}
+
+			if(isSet){
+				this.mgr.setVar(v);
+			}else{
+				this.out.append(v1.getOut()).append(" = ").append(v.getOut());
+				this.type = Sentence.TYPE_LINE;
+				v1.setValue(v.getValue());
+			}
+		}
 		this.over();
 		return true;
 	}

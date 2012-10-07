@@ -173,6 +173,9 @@ public class IFStructScan {
 							}
 							tag.setOut("do {");
 							ifs.setDoWhile();
+							//FIXME do while需要强制将ifs条件倒转
+							ifs.setReversed(false);
+							ifs.reverseCompare();
 						}
 						level = this.reCheckIfBlock(ifs, i, end,level,reallyDoWhile);
 					}else{
@@ -188,6 +191,9 @@ public class IFStructScan {
 							}
 							tag.setOut("do {");
 							ifs.setDoWhile();
+							//FIXME do while需要强制将ifs条件倒转
+							ifs.setReversed(false);
+							ifs.reverseCompare();
 							level = this.reCheckIfBlock(ifs, i, tagIndex,level,true);
 						}else{
 							level = this.reCheckIfBlock(ifs, i, tagIndex,level,false);

@@ -48,6 +48,11 @@ public class Var {
 	 */
 	private Sentence sen;
 	
+//	/**
+//	 * 是否是可以直接输出out的Var,LocalSentence,GetSentence,PutSentence,move,invoke生成的Var都为true,只有VarSentence,ComputeSentence生成的Var为false
+//	 */
+//	private boolean isOutVar = true;
+	
 	/**
 	 * 取反
 	 */
@@ -117,6 +122,22 @@ public class Var {
 		}
 	}
 	
+	
+	
+//	/**
+//	 * @return the isOutVar
+//	 */
+//	public final boolean isOutVar() {
+//		return isOutVar;
+//	}
+//
+//	/**
+//	 * @param isOutVar the isOutVar to set
+//	 */
+//	public final void setOutVar(boolean isOutVar) {
+//		this.isOutVar = isOutVar;
+//	}
+
 	/**
 	 * @return the name
 	 */

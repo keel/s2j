@@ -335,7 +335,7 @@ public final class StringUtil {
 	 */
 	public static final float float16to10(String f16){
 		f16 = clear16Data(f16);
-		return Float.intBitsToFloat( Integer.valueOf(f16,16));
+		return Float.intBitsToFloat( Integer.parseInt(f16,16));
 	}
 	/**
 	 * double的16进制转10进制,会自动去掉0x

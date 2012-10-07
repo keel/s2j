@@ -150,6 +150,7 @@ public class InvokeSentence extends Sentence {
 		this.var.setClassName(re);
 		this.var.setKey(key);
 		this.var.setOut(this.out.toString());
+//		this.var.setOutVar(true);
 		//this.var.setValue(re);
 		
 		

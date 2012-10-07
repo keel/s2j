@@ -116,8 +116,10 @@ public class ComputSentence extends Sentence {
 			sb.append(this.mgr.getVar(arr[2]).getOut());
 			if (org.getSen() != null && (org.getSen().getName().equals("var") || org.getSen().getName().equals("get"))) {
 				org.setOut("("+sb.toString()+")");
+//				org.setOutVar(false);
 				this.out.append(tar).append(" = ");
 				this.out.append(sb);
+				org.setSen(this);
 				this.mgr.setVar(org);
 				this.type = TYPE_NOT_LINE;
 			}else{
@@ -125,6 +127,7 @@ public class ComputSentence extends Sentence {
 				org.setOut("("+sb.toString()+")");
 				this.out.append(tar).append(" = ");
 				this.out.append(sb);
+				org.setSen(this);
 				this.mgr.setVar(org);
 			}
 			
@@ -140,6 +143,7 @@ public class ComputSentence extends Sentence {
 			//赋值计算
 			Var org = this.mgr.getVar(target);
 			boolean orgSave = false;
+			//org是新的或是非输出的Var时
 			if (org == null) {
 				//还未声明
 				org = new Var(this);
@@ -147,12 +151,14 @@ public class ComputSentence extends Sentence {
 				org.setKey(this.comTag);
 				org.setClassName("");
 				orgSave = true;
+//				org.setOutVar(false);
 				this.type = Sentence.TYPE_NOT_LINE;
 			}else{
 				this.out.append(org.getOut()).append(" = ");
 			}
+			Var v2 = this.mgr.getVar(arr[2]);
 			StringBuilder sb = new StringBuilder();
-			sb.append(this.mgr.getVar(arr[2]).getOut());
+			sb.append(v2.getOut());
 			sb.append(" ").append(coms.get(com)).append(" ");
 			String sec = null;
 			if (arr[3].startsWith("v")) {
@@ -162,6 +168,12 @@ public class ComputSentence extends Sentence {
 				sec = arr[3];
 			}
 			sb.append(sec);
+			//是否输出的判断
+			if (org.getSen()!=null && (org.getSen().getName().equals("invoke") || org.getSen().getName().equals("compute"))) {
+//				v2.setOutVar(false);
+				this.type = Sentence.TYPE_NOT_LINE;
+				org.setOut(sb.toString());
+			}
 			if (orgSave) {
 				org.setOut(sb.toString());
 				this.mgr.setVar(org);
