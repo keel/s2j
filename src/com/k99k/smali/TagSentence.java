@@ -107,6 +107,17 @@ public class TagSentence extends Sentence {
 	 * 是否为最后一个else块的开头
 	 */
 	private boolean isLastElseStart = false;
+	
+	/**
+	 * 用于mergeWhile时返回lineNum,根据IfSentence的不同返回值不同
+	 * @return
+	 */
+	public int getSpecialLineNum(IfSentence ifs){
+		if (ifs.isSpecial()) {
+			return this.lineNum+1;
+		}
+		return this.lineNum;
+	}
 
 	/**
 	 * 设置结构的结束符,可多次设置，每次增加一个}号

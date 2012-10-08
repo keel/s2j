@@ -106,6 +106,31 @@ public class IfSentence extends Sentence {
 	 */
 	private boolean isToReturn = false;
 	
+	/**
+	 * 是否是特定的，用于mergeWhile
+	 */
+	private boolean isSpecial = false;
+	
+	
+	
+	/**
+	 * @return the isSpecial
+	 */
+	public final boolean isSpecial() {
+		return isSpecial;
+	}
+
+
+
+	/**
+	 * @param isSpecial the isSpecial to set
+	 */
+	public final void setSpecial(boolean isSpecial) {
+		this.isSpecial = isSpecial;
+	}
+
+
+
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Sentence#exec()
 	 */
