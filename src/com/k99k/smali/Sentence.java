@@ -185,11 +185,21 @@ public abstract class Sentence {
 //		return null;
 //	}
 	
+	StringBuilder end = new StringBuilder("");
+	/**
+	 * 添加内容到out的最末尾,主要用于添加结构结束符}
+	 * @param end
+	 */
+	public Sentence appendToOutEnd(String end){
+		this.end.append(end);
+		return this;
+	}
+	
 	/**
 	 * 单行输出
 	 */
 	public String getOut(){
-		return this.out.toString();
+		return this.out.append(end).toString();
 	}
 	
 	/**

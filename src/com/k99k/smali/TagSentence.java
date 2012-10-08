@@ -149,14 +149,15 @@ public class TagSentence extends Sentence {
 //			this.out.append("}");
 //		}
 		if (isLastElseStart) {
-			StringBuilder sb = new StringBuilder();
+			StringBuilder sb = new StringBuilder(StaticUtil.NEWLINE).append(StaticUtil.TABS[this.level]);
 			if (this.endTimes == 0) {
 				sb.append("}");
 			}
 			sb.append(" else { //else made");
 			return this.out.toString()+sb.toString();
+		}else{
+			return this.out.toString();
 		}
-		return this.out.toString();
 	}
 
 

@@ -144,11 +144,18 @@ public class VarSentence extends Sentence {
 			//是否输出的判断
 			boolean isSet = false;
 			if (v1.getSen()!=null) {
-				if (v1.getSen().getName().equals("invoke") || v1.getSen().getName().equals("compute")) {
-					isSet = true;
-				}else if(v1.getSen().getName().equals("var") && StringUtil.isDigits(v1.getOut())){
+				if (!v1.getSen().getName().equals("local")) {
 					isSet = true;
 				}
+//				if (v1.getSen().getName().equals("invoke") || v1.getSen().getName().equals("compute")|| v1.getSen().getName().equals("put")|| v1.getSen().getName().equals("var")|| v1.getSen().getName().equals("get")) {
+//					isSet = true;
+//				}
+				
+//				else if(v1.getSen().getName().equals("var") && StringUtil.isDigits(v1.getOut())){
+//					isSet = true;
+//				}else if(v1.getKey().startsWith("aput")){
+//					isSet = true;
+//				}
 			}
 
 			if(isSet){

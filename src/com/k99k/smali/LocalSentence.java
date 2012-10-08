@@ -76,7 +76,7 @@ public class LocalSentence extends Sentence {
 				val = String.valueOf(Double.longBitsToDouble(Long.valueOf(val)))+"D";
 			}
 		}else if(obj.equals("boolean")){
-			if (val.equals(0)) {
+			if (val.equals("0")) {
 				val = "false";
 			}else{
 				val = "true";

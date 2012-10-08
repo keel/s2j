@@ -170,12 +170,14 @@ public class IFStructScan {
 							//误认的while变为if
 							if (this.senList.get(tagIndex+1).getName().equals("if")) {
 								((IfSentence)this.senList.get(tagIndex+1)).setAsIf();
+								//FIXME 需要重新mergeCond
+								
 							}
 							tag.setOut("do {");
 							ifs.setDoWhile();
 							//FIXME do while需要强制将ifs条件倒转
-							ifs.setReversed(false);
-							ifs.reverseCompare();
+//							ifs.setReversed(false);
+//							ifs.reverseCompare();
 						}
 						level = this.reCheckIfBlock(ifs, i, end,level,reallyDoWhile);
 					}else{
@@ -188,12 +190,14 @@ public class IFStructScan {
 							//真正的do while
 							if (this.senList.get(tagIndex+1).getName().equals("if")) {
 								((IfSentence)this.senList.get(tagIndex+1)).setAsIf();
+								//FIXME 误认的while变为if,需要重新mergeCond
+								
 							}
 							tag.setOut("do {");
 							ifs.setDoWhile();
 							//FIXME do while需要强制将ifs条件倒转
-							ifs.setReversed(false);
-							ifs.reverseCompare();
+//							ifs.setReversed(false);
+//							ifs.reverseCompare();
 							level = this.reCheckIfBlock(ifs, i, tagIndex,level,true);
 						}else{
 							level = this.reCheckIfBlock(ifs, i, tagIndex,level,false);
@@ -545,11 +549,12 @@ public class IFStructScan {
 						//处理直接的return,更多的由reCheck去处理
 						if (ifs.isToReturn()) {
 							TagSentence ifTag = ifs.getCondTag();
-							//FIXME 有待解决return 对象的情况,这里先直接return,需要看源码添加return对象;
-							if (this.mgr.getMeth().getReturnStr().equals("void")) {
-							}else{
-							}
-							ifTag.setOut(new StringBuilder("return;").append(StaticUtil.NEWLINE).append(StaticUtil.TABS[ifTag.level]).append(ifTag.getOut()).toString());
+							//直接复制return句的输出
+//							if (this.mgr.getMeth().getReturnStr().equals("void")) {
+//							}else{
+//								
+//							}
+							ifTag.setOut(new StringBuilder(this.returnSentence.getOut()).append(StaticUtil.NEWLINE).append(StaticUtil.TABS[ifTag.level]).append(ifTag.getOut()).toString());
 						}
 						//处理最后的else块
 						if (!ls.get(1).getName().equals("if")) {
@@ -601,13 +606,15 @@ public class IFStructScan {
 		}
 	}
 	
+	
+	
 	/**
 	 * 增加else处理部分
 	 */
 	private void addLastElse(Sentence startSen,Sentence endSen){
 		TagSentence eStart = (TagSentence)startSen;
 		eStart.setLastElseStart(true);
-		endSen.appendOut(StaticUtil.NEWLINE).appendOut(StaticUtil.TABS[endSen.level]).appendOut("} //else made");
+		endSen.appendToOutEnd(StaticUtil.NEWLINE).appendToOutEnd(StaticUtil.TABS[endSen.level]).appendToOutEnd("} //else made");
 	}
 	
 	/**
