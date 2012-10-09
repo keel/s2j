@@ -106,27 +106,32 @@ public class IfSentence extends Sentence {
 	 */
 	private boolean isToReturn = false;
 	
-	/**
-	 * 是否是特定的，用于mergeWhile
-	 */
-	private boolean isSpecial = false;
-	
-	
 	
 	/**
-	 * @return the isSpecial
+	 * 是否有特定的tag，用于mergeWhile
 	 */
-	public final boolean isSpecial() {
-		return isSpecial;
+	private TagSentence specialTag = null;
+	
+
+	/**
+	 * 有特定的tag则返回特定的tag，用于mergeWhile
+	 * @return the specialTag
+	 */
+	public final TagSentence getSpecialTag() {
+		if (specialTag == null) {
+			return this.condTag;
+		}
+		return specialTag;
 	}
 
 
 
 	/**
-	 * @param isSpecial the isSpecial to set
+	 * 设置特定的tag，用于mergeWhile
+	 * @param specialTag the specialTag to set
 	 */
-	public final void setSpecial(boolean isSpecial) {
-		this.isSpecial = isSpecial;
+	public final void setSpecialTag(TagSentence specialTag) {
+		this.specialTag = specialTag;
 	}
 
 
@@ -548,6 +553,7 @@ public class IfSentence extends Sentence {
 	public final TagSentence getCondTag() {
 		return condTag;
 	}
+	
 
 	/**
 	 * @param condTag the condTag to set

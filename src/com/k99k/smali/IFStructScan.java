@@ -644,14 +644,16 @@ public class IFStructScan {
 		int lastIfTagLn = lastIfTag.getLineNum();
 		int afterIfLn =  this.senList.get(endRE[0]).getLineNum();
 		float contentLn = afterIfLn-0.5F;
+		TagSentence tmp = new TagSentence(mgr, "");
 		//判断是否倒置cond形式的while
 		boolean isWhileTagReversed = this.senList.indexOf(lastIfTag) < startIndex;
 		if (!isWhileTagReversed) {
 			lastIf.reverseCompare();
 			lastIf.setReversed(false);
 			if (endRE[0] == endRE[1]) {
-				lastIf.setSpecial(true);
+				tmp.setLineNum(lastIfTagLn+1);
 				contentLn = lastIfTagLn + 0.5F;
+				lastIf.setSpecialTag(tmp);
 			}else{
 				lastIfTag.setLineNum(afterIfLn);
 			}
@@ -662,7 +664,9 @@ public class IFStructScan {
 		
 		IfSentence ifs =  this.mergeConds(startIndex, endRE, contentLn);
 		lastIfTag.setLineNum(lastIfTagLn);
-		lastIf.setSpecial(false);
+		lastIf.setSpecialTag(null);
+		lastIf.setCondTag(lastIfTag);
+		ifs.setCondTag(lastIfTag);
 		return ifs;
 	}
 	
@@ -700,7 +704,7 @@ public class IFStructScan {
 				if (s.getName().equals("if") && s.getState() == Sentence.STATE_DOING) {
 					ifCount++;
 					ifs = (IfSentence)s;
-					tag = ifs.getCondTag();
+					tag = ifs.getSpecialTag();
 					IfSentence ifs2 = null;
 					TagSentence tag2 = null; 
 					//在if和对应的tag之间查找第二个if
@@ -718,7 +722,7 @@ public class IFStructScan {
 							ifCount++;
 							innerIfCount++;
 							ifs2 = (IfSentence)sen;
-							tag2 = ifs2.getCondTag();
+							tag2 = ifs2.getSpecialTag();
 						}
 						if (innerIfCount > 1) {
 							ifCount = ifCount-2;
@@ -732,36 +736,42 @@ public class IFStructScan {
 					if (doMerge) {
 						//仅有一个if，无需要合并的情况下
 						if (ifs2 == null) {
-							if (tag.getSpecialLineNum(ifs)>contentLn) {
+							if (tag.getLineNum()>contentLn) {
 								ifs.reverseCompare();
 							}
 							continue;
 						}
-						//需要合并
+						//需要合并,先处理倒置的if2的情况
+						boolean ifs2Reversed = false;
+						int tag2Ln = tag2.getLineNum();
+						if (ifs2.getCondTag().getLineNum() < ifs2.getLineNum()) {
+							ifs2Reversed = true;
+							tag2.setLineNum(Math.round(contentLn+1));
+						}
 						boolean isAnd = true;
 						//如果外部if对应的tag指向内容块之前
-						if(tag.getSpecialLineNum(ifs) < contentLn){
+						if(tag.getLineNum() < contentLn){
 							isAnd = true;
-							if (tag.getSpecialLineNum(ifs)<ifs2.getLineNum()) {
+							if (tag.getLineNum()<ifs2.getLineNum()) {
 								isAnd = false;
 							}else{
-								if (tag2.getSpecialLineNum(ifs2) > contentLn) {
+								if (tag2.getLineNum() > contentLn) {
 									ifs2.reverseCompare();
 									isAnd = false;
-								}else if(tag2.getSpecialLineNum(ifs2) < contentLn){
+								}else if(tag2.getLineNum() < contentLn){
 									isAnd = true;
 								}
 							}
 						}
 						//外部if正指向内容块后
-						else if(tag.getSpecialLineNum(ifs) >  contentLn){
-							if (tag.getSpecialLineNum(ifs)<ifs2.getLineNum()) {
+						else if(tag.getLineNum() >  contentLn){
+							if (tag.getLineNum()<ifs2.getLineNum()) {
 								isAnd = false;
 							}else{
-								if (tag2.getSpecialLineNum(ifs2) > contentLn) {
+								if (tag2.getLineNum() > contentLn) {
 									ifs2.reverseCompare();
 									isAnd = true;
-								}else if(tag2.getSpecialLineNum(ifs2) < contentLn){
+								}else if(tag2.getLineNum() < contentLn){
 									isAnd = false;
 								}
 							}
@@ -772,7 +782,7 @@ public class IFStructScan {
 						}
 						ifs.mergeIf(isAnd, ifs2);
 						//是否要加括号保护
-						if (tag.getSpecialLineNum(ifs) != tag2.getSpecialLineNum(ifs2)) {
+						if (tag.getLineNum() != tag2.getLineNum()) {
 							ifs.addCondProtect();
 						}
 						tag.over();
@@ -782,6 +792,10 @@ public class IFStructScan {
 						tag2.over();
 						//合并后减少1
 						ifCount--;
+						//回复倒置的ifs2
+						if (ifs2Reversed) {
+							tag2.setLineNum(tag2Ln);
+						}
 						
 					}
 				}
