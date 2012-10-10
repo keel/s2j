@@ -157,6 +157,7 @@ public class IFStructScan {
 		return re;
 	}
 	
+	
 	private int reCheckIfBlock(IfSentence outIf,int outStart,int outEnd,int level,boolean isDoWhile){
 		for (int i = outStart+1; i < outEnd; i++) {
 			Sentence s = this.senList.get(i);
@@ -179,16 +180,13 @@ public class IFStructScan {
 							if (this.senList.get(tagIndex+1).getName().equals("if")) {
 								IfSentence iff = (IfSentence)this.senList.get(tagIndex+1);
 								iff.setAsIf();
-								//FIXME 需要重新mergeCond
+								//需要重新mergeCond
 								int[] re = this.reMergePrepare(tagIndex+1);
 								this.mergeConds(tagIndex+1, re, this.senList.get(re[0]).getLineNum()+1F);
 								iff.over();
 							}
 							tag.setOut("do {");
 							ifs.setDoWhile();
-							//do while需要强制将ifs条件倒转//不需要!
-//							ifs.setReversed(false);
-//							ifs.reverseCompare();
 						}
 						level = this.reCheckIfBlock(ifs, i, end,level,reallyDoWhile);
 					}else{
@@ -209,9 +207,7 @@ public class IFStructScan {
 							}
 							tag.setOut("do {");
 							ifs.setDoWhile();
-							//FIXME do while需要强制将ifs条件倒转
-//							ifs.setReversed(false);
-//							ifs.reverseCompare();
+							
 							level = this.reCheckIfBlock(ifs, i, tagIndex,level,true);
 						}else{
 							level = this.reCheckIfBlock(ifs, i, tagIndex,level,false);
@@ -241,7 +237,7 @@ public class IFStructScan {
 				int gtTagIndex = this.senList.indexOf(gtTag);
 				if (outIf.isWhile()) {
 					//while中的转向句
-					if (gtTag.getState() == Sentence.STATE_DOING && gtTag.isReturn()) {
+					if (gt.getState() == Sentence.STATE_DOING && gtTag.isReturn()) {
 						gt.setReturn(true);
 					}else{
 						if (!isDoWhile) {
@@ -266,7 +262,7 @@ public class IFStructScan {
 					
 				}else{
 					//if块内的goto
-					if (gtTag.getState() == Sentence.STATE_DOING && gtTag.isReturn()) {
+					if (gt.getState() == Sentence.STATE_DOING && gtTag.isReturn()) {
 						gt.setReturn(true);
 					}else{
 						//其他gt应该下方就是其gtTag，无需处理
@@ -642,30 +638,56 @@ public class IFStructScan {
 		IfSentence lastIf = (IfSentence) this.senList.get(endRE[1]);
 		TagSentence lastIfTag = lastIf.getCondTag();
 		int lastIfTagLn = lastIfTag.getLineNum();
-		int afterIfLn =  this.senList.get(endRE[0]).getLineNum();
-		float contentLn = afterIfLn-0.5F;
-		TagSentence tmp = new TagSentence(mgr, "");
-		//判断是否倒置cond形式的while
+		//if块下方紧接着的tag,如果没有则创建一个
+		TagSentence afterIfTag = null;
+		if (endRE[0] == endRE[1]) {
+			afterIfTag = new TagSentence(mgr, "");
+			afterIfTag.setLineNum(lastIf.getLineNum()+1);
+		}else{
+			afterIfTag = (TagSentence) this.senList.get(endRE[0]);
+		}
+		int afterIfTagLn = afterIfTag.getLineNum();
+		//if倒置的情况
 		boolean isWhileTagReversed = this.senList.indexOf(lastIfTag) < startIndex;
+		if (isWhileTagReversed) {
+			lastIfTag.setLineNum(afterIfTagLn+1);
+		}
+		//内容块位于afterIfTag和lastIfTag之间
+		float contentLn = afterIfTagLn+0.5F;
+		//交换afterIfTag与lastIfTag的lineNum
+		afterIfTag.setLineNum(lastIfTagLn);
+		lastIfTag.setLineNum(afterIfTagLn);
+		
+		//改变lastIf的指向，并进行反向
+		lastIf.reverseCompare();
+		lastIf.setReversed(false);
+		lastIf.setSpecialTag(afterIfTag);
+		/*
+		//判断是否倒置cond形式的while
 		if (!isWhileTagReversed) {
 			lastIf.reverseCompare();
 			lastIf.setReversed(false);
-			if (endRE[0] == endRE[1]) {
-				tmp.setLineNum(lastIfTagLn+1);
-				contentLn = lastIfTagLn + 0.5F;
-				lastIf.setSpecialTag(tmp);
-			}else{
-				lastIfTag.setLineNum(afterIfLn);
-			}
+			lastIf.setSpecialTag(afterIfTag);
+//			if (endRE[0] == endRE[1]) {
+//				tmp.setLineNum(lastIfTagLn+1);
+//				contentLn = lastIfTagLn + 0.5F;
+//				lastIf.setSpecialTag(tmp);
+//			}else{
+//				
+//				contentLn = lastIfTagLn + 0.5F;
+//				lastIfTag.setLineNum(afterIfLn);
+//			}
 		}else{
 			contentLn = contentLn+1F;
-			lastIfTag.setLineNum(afterIfLn+1);
-		}
+			lastIfTag.setLineNum(afterIfTagLn+1);
+		}*/
 		
 		IfSentence ifs =  this.mergeConds(startIndex, endRE, contentLn);
+		//恢复状态
 		lastIfTag.setLineNum(lastIfTagLn);
+		afterIfTag.setLineNum(afterIfTagLn);
 		lastIf.setSpecialTag(null);
-		lastIf.setCondTag(lastIfTag);
+		//将合并后的ifs指向lastIfTag
 		ifs.setCondTag(lastIfTag);
 		return ifs;
 	}
@@ -741,13 +763,13 @@ public class IFStructScan {
 							}
 							continue;
 						}
-						//需要合并,先处理倒置的if2的情况
-						boolean ifs2Reversed = false;
-						int tag2Ln = tag2.getLineNum();
-						if (ifs2.getCondTag().getLineNum() < ifs2.getLineNum()) {
-							ifs2Reversed = true;
-							tag2.setLineNum(Math.round(contentLn+1));
-						}
+//						//需要合并,先处理倒置的if2的情况//不处理,已在mergeWhile中处理
+//						boolean ifs2Reversed = false;
+//						int tag2Ln = tag2.getLineNum();
+//						if (ifs2.getCondTag().getLineNum() < ifs2.getLineNum()) {
+////							ifs2Reversed = true;
+////							tag2.setLineNum(Math.round(contentLn+1));
+//						}
 						boolean isAnd = true;
 						//如果外部if对应的tag指向内容块之前
 						if(tag.getLineNum() < contentLn){
@@ -792,10 +814,10 @@ public class IFStructScan {
 						tag2.over();
 						//合并后减少1
 						ifCount--;
-						//回复倒置的ifs2
-						if (ifs2Reversed) {
-							tag2.setLineNum(tag2Ln);
-						}
+//						//回复倒置的ifs2
+//						if (ifs2Reversed) {
+//							tag2.setLineNum(tag2Ln);
+//						}
 						
 					}
 				}

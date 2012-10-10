@@ -161,6 +161,18 @@ public class VarSentence extends Sentence {
 			if(isSet){
 				this.mgr.setVar(v);
 			}else{
+				if (type.equals("int")) {
+					String right = null;
+					if (String.valueOf(value).equals("0")){
+						right = Var.checkIout(v1, "0") +" /* " + value +" */";
+					}else{
+						right = Var.checkIout(v1, value);
+					}
+					if (v1.getClassName().equals("int") && (!v1.getClassName().equals("int")) && StringUtil.isDigits(v1.getValue())) {
+						right = String.valueOf(value);
+					}
+					v.setOut(right);
+				}
 				this.out.append(v1.getOut()).append(" = ").append(v.getOut());
 				this.type = Sentence.TYPE_LINE;
 				v1.setValue(v.getValue());

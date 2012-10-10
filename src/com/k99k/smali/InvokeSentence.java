@@ -71,7 +71,7 @@ public class InvokeSentence extends Sentence {
 		String propStr = (p3-p2 == 1)?"":opStr.substring(p2,p3+1);
 		if (propStr.length()>2) {
 			ArrayList<String> propObjects = Tool.fetchObjects(propStr.substring(1,propStr.length()-1));
-			int len = propObjects.size() + 1;
+			int len = (key.indexOf("static")>0) ? propObjects.size() : propObjects.size() + 1;
 			if (len < rang.length) {
 				//TODO 实际变量少于rang的情况,注意这种情况原因不明，但实际存在，此时把多的rang去除
 				String[] tmp = new String[len];
