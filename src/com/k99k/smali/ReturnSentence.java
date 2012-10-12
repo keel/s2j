@@ -21,6 +21,11 @@ public class ReturnSentence extends Sentence {
 	}
 	static final Logger log = Logger.getLogger(ReturnSentence.class);
 	
+	/**
+	 * 如果有返回值
+	 */
+	private String returnKey = "";
+	
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Sentence#exec()
 	 */
@@ -31,11 +36,12 @@ public class ReturnSentence extends Sentence {
 		if (ws[0].equals("return-void")) {
 			this.out.append("return;");
 		}else if(ws.length == 2){
-			Var v = this.mgr.getVar(ws[1]);
-			if (v.getSen() != null) {
-				v.getSen().over();
-			}
-			this.out.append("return ").append(v.getOut()).append(";");
+			this.returnKey = ws[1];
+//			Var v = this.mgr.getVar(ws[1]);
+//			if (v.getSen() != null) {
+//				v.getSen().over();
+//			}
+//			this.out.append("return ").append(v.getOut()).append(";");
 		}else{
 			this.out.append("exec return error. line:").append(this.line);
 			this.mgr.err(this);
@@ -68,5 +74,12 @@ public class ReturnSentence extends Sentence {
 		"return-wide",
 		"return-object"
 	};
+
+	/**
+	 * @return the returnKey
+	 */
+	public final String getReturnKey() {
+		return returnKey;
+	}
 
 }

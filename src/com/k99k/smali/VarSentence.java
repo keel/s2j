@@ -42,7 +42,7 @@ public class VarSentence extends Sentence {
 		varMap.put("const-string-jumbo", "String");
 		varMap.put("const-class", "Class");
 	}
-
+	private Var v = new Var(this);
 	/** 
 	 * 处理变量声明
 	 * @see com.k99k.smali.Sentence#exec()
@@ -66,7 +66,7 @@ public class VarSentence extends Sentence {
 		ws[2] = this.line.substring(p2+2).trim();
 		
 		//生成Var
-		Var v = new Var(this);
+//		Var v = new Var(this);
 		v.setKey(ws[0]);
 		String type = varMap.get(ws[0]);
 		v.setClassName(type);
@@ -181,8 +181,13 @@ public class VarSentence extends Sentence {
 		this.over();
 		return true;
 	}
-	
-	
+	/* (non-Javadoc)
+	 * @see com.k99k.smali.Sentence#getVar()
+	 */
+	@Override
+	public Var getVar() {
+		return this.v;
+	}
 
 	/** 
 	 * 返回SentenceMgr内static的VarSentence,注意本类中this.mgr为null

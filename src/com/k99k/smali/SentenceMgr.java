@@ -317,6 +317,8 @@ public class SentenceMgr {
 	public void parse(){
 		maxNum = this.srcLines.size();
 		int javaLine = -1;
+		//包含所有语句的allSenList
+		ArrayList<Sentence> allSenList = new ArrayList<Sentence>();
 		while (cNum < maxNum) {
 			String l = this.srcLines.get(cNum);
 			int jaLine = this.javaLineNum(l);
@@ -332,6 +334,7 @@ public class SentenceMgr {
 				Sentence e = new CommSentence(this, "#ERR: unknown sententce. line:"+l);
 				e.exec();
 				this.sentenceList.add(e);
+				allSenList.add(e);
 				cNum++;
 				continue;
 			}
@@ -379,8 +382,14 @@ public class SentenceMgr {
 				//后面语句不处理了
 				break;
 			}
+			allSenList.add(s);
 			cNum++;
 		}
+		//处理return
+		if(!this.doReturn(allSenList)){
+			return;
+		}
+		
 		//处理switch
 		if (hasSwitch) {
 			SwitchScan ss = new SwitchScan(this, this.sentenceList);
@@ -396,6 +405,112 @@ public class SentenceMgr {
 			TryCatchScan ts = new TryCatchScan(this, this.sentenceList);
 			ts.scan();
 		}
+	}
+	
+	/**
+	 * 处理return语句
+	 * @param allSenList
+	 */
+	private boolean doReturn(ArrayList<Sentence> allSenList){
+		ReturnSentence returnSen = null;
+		int returnIndex = -1;
+		
+		for (int i = 0; i < allSenList.size(); i++) {
+			Sentence s = allSenList.get(i);
+			if (s.getName().equals("return")) {
+				returnSen = (ReturnSentence) s;
+				returnIndex = i;
+				break;
+			}
+		}
+		//处理return 的对象语句
+		if (!this.getMeth().getReturnStr().equals("void")) {
+			GotoTagSentence gtReturnTag = null;
+			int lastBeforeReturnIndex = -1;
+			//先定位return句之 上的gotoTag
+			for (int i = returnIndex-1; i >= 0; i--) {
+				Sentence s = allSenList.get(i);
+				if (s.getName().equals("gotoTag")) {
+					gtReturnTag = (GotoTagSentence) s;
+				}else if(s.getName().equals("tag") || s.getName().equals("switch")){
+					continue;
+				}else{
+					lastBeforeReturnIndex = i;
+					break;
+				}
+			}
+			String returnKey = returnSen.getReturnKey();
+			if (gtReturnTag != null) {
+				String gotoReturnTag = gtReturnTag.getTag();
+				for (int i = 0; i < allSenList.size(); i++) {
+					Sentence s = allSenList.get(i);
+					if (s.getName().equals("goto")) {
+						GotoSentence gt = (GotoSentence) s;
+						if (gt.getTarget().equals(gotoReturnTag)) {
+							//处理goto之前的赋值语句，使之变成return
+							Sentence rs = allSenList.get(i-1);
+							if (!this.defineReturn(rs, returnKey, gt)) {
+								return false;
+							}
+							gt.setReturn(true);
+						}
+	
+					}
+				}
+			}
+			//处理return之前的语句
+			Sentence ls = allSenList.get(lastBeforeReturnIndex);
+			Sentence gt = ls;
+			if (ls.type == Sentence.TYPE_NOT_LINE) {
+				for (int i = lastBeforeReturnIndex; i > 0; i--) {
+					Sentence s = allSenList.get(i);
+					if (!s.getName().equals("tag") && !s.getName().equals("gotoTag") && !s.getName().equals("switch")) {
+						gt = allSenList.get(i+1);
+						break;
+					}
+				}
+			}
+			if (!this.defineReturn(ls, returnKey, gt)) {
+				return false;
+			}
+			//原return语句可不显示
+			returnSen.setOut("");
+		}
+		return true;
+	}
+	
+	/**
+	 * 处理goto之前的赋值语句，使之变成return
+	 * @param rs
+	 * @param returnKey
+	 * @param gt
+	 * @return
+	 */
+	private boolean defineReturn(Sentence rs,String returnKey,Sentence gt){
+		Var v = rs.getVar();
+		if (v == null) {
+			log.error(this.getMeth().getName()+" goto return pre sen can't getVar.!!!!!!!!!!!!");
+			return false;
+		}
+		if (!v.getName().equals(returnKey)) {
+			log.error(this.getMeth().getName()+" goto return pre sen getVar() can't match returnKey.!!!!!!!!!!!!");
+			return false;
+		}
+		rs.appendOut(StaticUtil.NEWLINE+StaticUtil.TABS[rs.level]+"return "+v.getOut());
+		if (rs.getName().equals("get")) {
+			rs.over();
+		}
+		if (rs.getType() == Sentence.TYPE_NOT_LINE) {
+			rs.over();
+			rs.type = Sentence.TYPE_LINE;
+			int po = this.sentenceList.indexOf(gt);
+			if (po<0) {
+				log.error(this.getMeth().getName()+" pre return sen can't find insert po.!!!!!!!!!!!!");
+				return false;
+			}
+			this.sentenceList.add(po, rs);
+		}
+		return true;
 	}
 	
 	/**

@@ -146,15 +146,15 @@ public class GotoSentence extends Sentence {
 	
 	public final void setReturn(boolean isReturn) {
 		this.isReturn = isReturn;
-		if (isReturn) {
-			this.out.append(StaticUtil.NEWLINE).append(StaticUtil.TABS[this.level]);
-			this.out.append("return ");
-			if (this.mgr.getMeth().getReturnStr().equals("void")) {
-				this.out.append(";");
-			}else{
-				this.out.append(this.preSen.getOut()).append(";");
-			}
-		}
+//		if (isReturn) {
+//			this.out.append(StaticUtil.NEWLINE).append(StaticUtil.TABS[this.level]);
+//			this.out.append("return ");
+//			if (this.mgr.getMeth().getReturnStr().equals("void")) {
+//				this.out.append(";");
+//			}else{
+//				this.out.append(this.preSen.getOut()).append(";");
+//			}
+//		}
 	}
 	
 	

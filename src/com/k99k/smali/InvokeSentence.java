@@ -178,6 +178,9 @@ public class InvokeSentence extends Sentence {
 						s.over();
 						//是方法的直接从SentenceList中去除
 						this.mgr.removeSentence(s);
+					}else if(s.getName().equals("get") || s.getName().equals("var")){
+						s.type = Sentence.TYPE_NOT_LINE;
+						s.over();
 					}
 				}
 				

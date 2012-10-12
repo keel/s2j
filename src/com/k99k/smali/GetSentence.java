@@ -19,9 +19,11 @@ public class GetSentence extends Sentence {
 	 */
 	public GetSentence(SentenceMgr mgr, String line) {
 		super(mgr, line);
-		this.type = Sentence.TYPE_NOT_LINE;
+		this.type = Sentence.TYPE_LINE;
 	}
 	static final Logger log = Logger.getLogger(GetSentence.class);
+	
+	private Var v = new Var(this);
 	
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Sentence#exec()
@@ -42,7 +44,7 @@ public class GetSentence extends Sentence {
 		String key = ws[0];
 		//第一个表示其类型:array,instance,static
 		char type = key.charAt(0);
-		Var v = new Var(this);
+//		Var v = new Var(this);
 		v.setKey(key);
 		if (type == 'i') {
 			Var v1 = this.mgr.getVar(ws[2]);
@@ -55,11 +57,19 @@ public class GetSentence extends Sentence {
 			
 			//对于v1引用的语句，如果不成行则可去除
 			Sentence s = v1.getSen();
-			if (s != null && s.getState()>=Sentence.STATE_DONE && s.getType() == Sentence.TYPE_NOT_LINE) {
+			if (s != null) {
+				if (s.getState()>=Sentence.STATE_DONE && s.getType() == Sentence.TYPE_NOT_LINE) {
+					//暂时先使用removeSentence
+//					this.mgr.removeSentence(s);
+					s.type = Sentence.TYPE_NOT_LINE;
+					s.over();
+				}else if (s.getName().equals("var") || s.getName().equals("get")) {
+					s.type = Sentence.TYPE_NOT_LINE;
+					s.over();
+				}
 				s.over();
-				//TODO 暂时先使用removeSentence
-				this.mgr.removeSentence(s);
 			}
+			
 		}else if(type == 's'){
 			int p = ws[2].indexOf(':');
 			int p2 = ws[2].indexOf('>');
@@ -79,8 +89,11 @@ public class GetSentence extends Sentence {
 			//TODO 对于数组中的索引对象,如果是VarSentence,暂时先不removeSentence,仅标为over,可能会有其他地方用到
 			//其他情况不进行处理
 			Sentence s = v2.getSen();
-			if (s != null && s.getName().equals("var")) {
-				s.over();
+			if (s != null) {
+				if (s.getName().equals("var") || s.getName().equals("get")) {
+					s.type = Sentence.TYPE_NOT_LINE;
+					s.over();
+				}
 			}
 		}
 		//不处理value
@@ -90,6 +103,16 @@ public class GetSentence extends Sentence {
 		this.done();
 		return true;
 	}
+	
+
+	/* (non-Javadoc)
+	 * @see com.k99k.smali.Sentence#getVar()
+	 */
+	@Override
+	public Var getVar() {
+		return this.v;
+	}
+
 
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Sentence#newOne()

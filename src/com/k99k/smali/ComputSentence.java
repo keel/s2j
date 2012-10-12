@@ -130,7 +130,7 @@ public class ComputSentence extends Sentence {
 				org.setSen(this);
 				this.mgr.setVar(org);
 			}
-			
+			this.var = org;
 		}else if(this.comTag.indexOf("neg-") > -1){
 			//取反
 			Var tov = this.mgr.getVar(arr[1]);
@@ -179,6 +179,7 @@ public class ComputSentence extends Sentence {
 				this.mgr.setVar(org);
 			}
 			this.out.append(sb);
+			this.var = org;
 		}else if(this.comTag.indexOf("cmp") == 0){
 			//比较语句
 			this.type = Sentence.TYPE_NOT_LINE;
@@ -197,7 +198,14 @@ public class ComputSentence extends Sentence {
 		this.over();
 		return true;
 	}
-
+	private Var var = new Var(this);
+	/* (non-Javadoc)
+	 * @see com.k99k.smali.Sentence#getVar()
+	 */
+	@Override
+	public Var getVar() {
+		return this.var;
+	}
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Sentence#newOne(com.k99k.smali.SentenceMgr, java.lang.String)
 	 */

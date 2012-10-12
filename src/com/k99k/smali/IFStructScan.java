@@ -236,10 +236,8 @@ public class IFStructScan {
 				GotoTagSentence gtTag = (GotoTagSentence) gt.getTargetSen();
 				int gtTagIndex = this.senList.indexOf(gtTag);
 				if (outIf.isWhile()) {
-					//while中的转向句
-					if (gt.getState() == Sentence.STATE_DOING && gtTag.isReturn()) {
-						gt.setReturn(true);
-					}else{
+					//while中的转向句,return 已经处理过
+					if (!gt.isReturn() && gt.state == Sentence.STATE_DOING) {
 						if (!isDoWhile) {
 							if (gtTagIndex == outStart) {
 								gt.setContinue(null, "");
@@ -262,9 +260,7 @@ public class IFStructScan {
 					
 				}else{
 					//if块内的goto
-					if (gt.getState() == Sentence.STATE_DOING && gtTag.isReturn()) {
-						gt.setReturn(true);
-					}else{
+					if (gt.getState() == Sentence.STATE_DOING && !gt.isReturn()) {
 						//其他gt应该下方就是其gtTag，无需处理
 					}
 				}
@@ -556,16 +552,16 @@ public class IFStructScan {
 					}else{
 						ifs = this.mergeConds(i, re,this.senList.get(re[0]).getLineNum()+1F);
 						
-						//处理直接的return,更多的由reCheck去处理
-						if (ifs.isToReturn()) {
-							TagSentence ifTag = ifs.getCondTag();
-							//直接复制return句的输出
-//							if (this.mgr.getMeth().getReturnStr().equals("void")) {
-//							}else{
-//								
-//							}
-							ifTag.setOut(new StringBuilder(this.returnSentence.getOut()).append(StaticUtil.NEWLINE).append(StaticUtil.TABS[ifTag.level]).append(ifTag.getOut()).toString());
-						}
+//						//处理直接的return,更多的由reCheck去处理
+//						if (ifs.isToReturn()) {
+//							TagSentence ifTag = ifs.getCondTag();
+//							//直接复制return句的输出
+////							if (this.mgr.getMeth().getReturnStr().equals("void")) {
+////							}else{
+////								
+////							}
+//							ifTag.setOut(new StringBuilder(this.returnSentence.getOut()).append(StaticUtil.NEWLINE).append(StaticUtil.TABS[ifTag.level]).append(ifTag.getOut()).toString());
+//						}
 						//处理最后的else块
 						if (!ls.get(1).getName().equals("if")) {
 							this.addLastElse(ls.get(0),ls.get(ls.size()-1));
@@ -991,8 +987,6 @@ public class IFStructScan {
 		}
 		return ln;
 	}
-	
-	
 	/**
 	 * 初始化cond和ifsen以及goto的对应关系
 	 */
@@ -1062,6 +1056,10 @@ public class IFStructScan {
 			}
 		}
 //		lastSenLineNum = this.senList.get(this.len-1).getLineNum();
+		
+		
+		
+		
 		return true;
 	}
 	

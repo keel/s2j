@@ -66,6 +66,7 @@ public class MoveSentence extends Sentence {
 			v.setName(name);
 //			v.setOutVar(true);
 			this.mgr.setVar(v);
+			this.var = v;
 			this.setOut(v.getOut());
 			//将last语句显示去掉
 			last.setType(Sentence.TYPE_NOT_LINE);
@@ -77,11 +78,21 @@ public class MoveSentence extends Sentence {
 			Var v1 =  this.mgr.getVar(ws[2]).cloneVar();
 			v1.setName(ws[1]);
 			this.mgr.setVar(v1);
+			this.var = v1;
 			this.setOut(v1.getOut());
 		}
 		
 		this.over();
 		return true;
+	}
+	
+	private Var var = new Var(this);
+	/* (non-Javadoc)
+	 * @see com.k99k.smali.Sentence#getVar()
+	 */
+	@Override
+	public Var getVar() {
+		return this.var;
 	}
 
 	/* (non-Javadoc)

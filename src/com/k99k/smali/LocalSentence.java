@@ -96,6 +96,12 @@ public class LocalSentence extends Sentence {
 		
 		this.out.append(obj).append(" ").append(name).append(" = ").append(val);
 		this.mgr.setVar(v);
+		if (ov.getSen() != null) {
+			Sentence s1 = ov.getSen();
+			if (s1.getName().equals("get") || s1.getName().equals("var")) {
+				s1.type = Sentence.TYPE_NOT_LINE;
+			}
+		}
 		
 		//数组的处理
 		if (obj.indexOf("[]")>0) {

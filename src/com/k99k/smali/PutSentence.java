@@ -52,7 +52,7 @@ public class PutSentence extends Sentence {
 		String key = ws[0];
 		//第一个表示其类型:array,instance,static
 		char type = key.charAt(0);
-		Var v = new Var(this);
+//		Var v = new Var(this);
 		v.setKey(key);
 		if (type == 'i') {
 			Var v1 = this.mgr.getVar(ws[2]);
@@ -106,7 +106,18 @@ public class PutSentence extends Sentence {
 			//TODO 对于数组中的索引对象,如果是VarSentence,暂时先不removeSentence,仅标为over,可能会有其他地方用到
 			//其他情况不进行处理
 			Sentence s = v2.getSen();
-			if (s != null && s.getName().equals("var")) {
+			if (s != null && (s.getName().equals("var") || s.getName().equals("get"))) {
+				s.type = Sentence.TYPE_NOT_LINE;
+				s.over();
+			}
+			s = v1.getSen();
+			if (s != null && (s.getName().equals("var") || s.getName().equals("get"))) {
+				s.type = Sentence.TYPE_NOT_LINE;
+				s.over();
+			}
+			s = v3.getSen();
+			if (s != null && (s.getName().equals("var") || s.getName().equals("get"))) {
+				s.type = Sentence.TYPE_NOT_LINE;
 				s.over();
 			}
 			this.arrVal = v3.getOut();
@@ -122,6 +133,16 @@ public class PutSentence extends Sentence {
 		
 		return true;
 	}
+	
+	private Var v = new Var(this);
+	/* (non-Javadoc)
+	 * @see com.k99k.smali.Sentence#getVar()
+	 */
+	@Override
+	public Var getVar() {
+		return this.v;
+	}
+
 
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Sentence#newOne(com.k99k.smali.SentenceMgr, java.lang.String)

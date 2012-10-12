@@ -213,13 +213,15 @@ public class Methods extends Context {
 	 * @param l
 	 */
 	private void parseFn(String l){
+		this.returnStr = Tool
+				.parseObject(l.substring(l.lastIndexOf(")") + 1));
 		// static方法
 		if (l.indexOf(StaticUtil.SCOPE_STATIC) > -1
 				&& l.indexOf(StaticUtil.SCOPE_CONSTRUCTOR) > -1) {
 			this.isStaticConstructor = true;
 			this.name = StaticUtil.SCOPE_STATIC;
 			this.scope = "";
-			this.returnStr = "";
+//			this.returnStr = "void";
 			l = l.replaceAll(" " + StaticUtil.SCOPE_STATIC, "").replaceAll(
 					" " + StaticUtil.SCOPE_CONSTRUCTOR, "");
 		}
@@ -227,13 +229,12 @@ public class Methods extends Context {
 		else if (l.indexOf(StaticUtil.SCOPE_CONSTRUCTOR) > -1) {
 			this.isConstructor = true;
 			this.name = this.s2j.className;
-			this.returnStr = "";
+//			this.returnStr = "void";
 			l = l.replaceAll(" " + StaticUtil.SCOPE_CONSTRUCTOR, "");
 		}
 		// 普通方法
 		else {
-			this.returnStr = Tool
-					.parseObject(l.substring(l.lastIndexOf(")") + 1));
+			
 			this.name = l.substring(l.lastIndexOf(" ") + 1, l.lastIndexOf("("));
 		}
 		// 处理scope
