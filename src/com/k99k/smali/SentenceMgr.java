@@ -306,7 +306,7 @@ public class SentenceMgr {
 					this.outLines.add(ostr);
 				}
 			}else{
-				log.error(this.getMeth().getName()+" - [Sentence not over] ["+s.getLineNum()+"] "+s.getLine());
+				log.warn(this.getMeth().getName()+" - [Sentence not over] ["+s.getLineNum()+"] "+s.getLine());
 			}
 		}
 	}
@@ -473,8 +473,8 @@ public class SentenceMgr {
 			if (!this.defineReturn(ls, returnKey, gt)) {
 				return false;
 			}
-			//原return语句可不显示
-			returnSen.setOut("");
+			//原return语句可不显示,//已在return语句中处理
+//			returnSen.setOut("//"+returnSen.getVar().getOut());
 		}
 		return true;
 	}
@@ -496,7 +496,11 @@ public class SentenceMgr {
 			log.error(this.getMeth().getName()+" goto return pre sen getVar() can't match returnKey.!!!!!!!!!!!!");
 			return false;
 		}
-		rs.appendOut(StaticUtil.NEWLINE+StaticUtil.TABS[rs.level]+"return "+v.getOut());
+		if (rs.getName().equals("invoke") || rs.getLine().startsWith("move-result")) {
+			rs.setOut("return "+v.getOut());
+		}else{
+			rs.appendOut(";"+StaticUtil.NEWLINE+StaticUtil.TABS[rs.level]+"return "+v.getOut());
+		}
 		if (rs.getName().equals("get")) {
 			rs.over();
 		}

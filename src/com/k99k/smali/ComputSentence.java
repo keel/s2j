@@ -161,7 +161,7 @@ public class ComputSentence extends Sentence {
 			sb.append(v2.getOut());
 			sb.append(" ").append(coms.get(com)).append(" ");
 			String sec = null;
-			if (arr[3].startsWith("v")) {
+			if (arr[3].startsWith("v") || arr[3].startsWith("p")) {
 				//FIXME 需要处理16进制转换
 				sec = this.mgr.getVar(arr[3]).getOut();
 			}else{

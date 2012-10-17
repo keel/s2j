@@ -78,6 +78,11 @@ public class IfSentence extends Sentence {
 	private boolean customOut = false;
 	
 	/**
+	 * 当while的merge需要与if相同方式处理时为true
+	 */
+	private boolean mergeAsIf = false;
+	
+	/**
 	 * if 指向的cond_x的Sentence
 	 */
 	private TagSentence condTag;
@@ -479,6 +484,24 @@ public class IfSentence extends Sentence {
 	}
 
 	
+	/**
+	 * @return the mergeAsIf
+	 */
+	public final boolean isMergeAsIf() {
+		return mergeAsIf;
+	}
+
+
+
+	/**
+	 * @param mergeAsIf the mergeAsIf to set
+	 */
+	public final void setMergeAsIf(boolean mergeAsIf) {
+		this.mergeAsIf = mergeAsIf;
+	}
+
+
+
 	/**
 	 * @return the customOut
 	 */

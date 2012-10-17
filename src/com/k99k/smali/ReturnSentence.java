@@ -26,6 +26,8 @@ public class ReturnSentence extends Sentence {
 	 */
 	private String returnKey = "";
 	
+	private Var var;
+	
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Sentence#exec()
 	 */
@@ -37,11 +39,14 @@ public class ReturnSentence extends Sentence {
 			this.out.append("return;");
 		}else if(ws.length == 2){
 			this.returnKey = ws[1];
-//			Var v = this.mgr.getVar(ws[1]);
-//			if (v.getSen() != null) {
-//				v.getSen().over();
-//			}
+			Var v = this.mgr.getVar(ws[1]);
+			String s = ws[1];
+			if (v != null) {
+				s = v.getOut();
+				this.var = v;
+			}
 //			this.out.append("return ").append(v.getOut()).append(";");
+			this.out.append("//return "+ s + ";");
 		}else{
 			this.out.append("exec return error. line:").append(this.line);
 			this.mgr.err(this);
@@ -58,6 +63,17 @@ public class ReturnSentence extends Sentence {
 	@Override
 	public Sentence newOne(SentenceMgr mgr, String line) {
 		return new ReturnSentence(mgr, line);
+	}
+	
+	
+	
+
+	/* (non-Javadoc)
+	 * @see com.k99k.smali.Sentence#getVar()
+	 */
+	@Override
+	public Var getVar() {
+		return this.var;
 	}
 
 	/* (non-Javadoc)

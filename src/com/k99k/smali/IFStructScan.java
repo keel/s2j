@@ -162,6 +162,8 @@ public class IFStructScan {
 		for (int i = outStart+1; i < outEnd; i++) {
 			Sentence s = this.senList.get(i);
 			s.setLevel(level);
+//			//保存外部if的endSenLineNum,以便内部的if做修改
+//			int outIfEndLn = (outIf.getLineNum() > -1) ? outIf.getEndSenLineNum() : -1;
 			if (s.getName().equals("if") && s.getState() == Sentence.STATE_DOING) {
 				//内部,level++
 				level++;
@@ -207,7 +209,6 @@ public class IFStructScan {
 							}
 							tag.setOut("do {");
 							ifs.setDoWhile();
-							
 							level = this.reCheckIfBlock(ifs, i, tagIndex,level,true);
 						}else{
 							level = this.reCheckIfBlock(ifs, i, tagIndex,level,false);
@@ -221,23 +222,28 @@ public class IFStructScan {
 							log.error(this.mgr.getMeth().getName()+" Can't setEndStruct in the end of senList. ");
 						}
 					}
-					//判断是否else
-					if (!ifs.isWhile()) {
-						if (this.ifEndMap.containsKey(level+"#"+ifs.getEndSenLineNum())) {
-							ifs.setElse(true);
-						}else{
-							this.ifEndMap.put(level+"#"+ifs.getEndSenLineNum(), ifs);
-						}
+				}
+				//判断是否else
+				if (!ifs.isWhile()) {
+					if (this.ifEndMap.containsKey(level+"#"+ifs.getEndSenLineNum())) {
+						ifs.setElse(true);
+					}else{
+						this.ifEndMap.put(level+"#"+ifs.getEndSenLineNum(), ifs);
 					}
-					
+					//更新外部if的endSenLn
+					if (outIf.getLineNum() > -1 && ifs.getEndSenLineNum() > outIf.getEndSenLineNum()) {
+						//FIXME 内部if中包含continue与break时不应该这样处理 
+						outIf.setEndSenLineNum(ifs.getEndSenLineNum());
+					}
 				}
 			}else if(s.getName().equals("goto")){
 				GotoSentence gt = (GotoSentence)s;
 				GotoTagSentence gtTag = (GotoTagSentence) gt.getTargetSen();
 				int gtTagIndex = this.senList.indexOf(gtTag);
+				//FIXME 如果是嵌套多层if外部才是while的情况呢？
 				if (outIf.isWhile()) {
 					//while中的转向句,return 已经处理过
-					if (!gt.isReturn() && gt.state == Sentence.STATE_DOING) {
+					if (!gt.isReturn()) {
 						if (!isDoWhile) {
 							if (gtTagIndex == outStart) {
 								gt.setContinue(null, "");
@@ -260,7 +266,7 @@ public class IFStructScan {
 					
 				}else{
 					//if块内的goto
-					if (gt.getState() == Sentence.STATE_DOING && !gt.isReturn()) {
+					if (!gt.isReturn()) {
 						//其他gt应该下方就是其gtTag，无需处理
 					}
 				}
@@ -338,8 +344,34 @@ public class IFStructScan {
 						}
 					}
 				}
-				
+				/*
+				int ifTagLn = ifs.getCondTag().getLineNum();
+				boolean isReversedWhile = false;
+				if (i > this.senList.indexOf(this.returnSentence)) {
+					//对于倒置tag的if，但tag仍在return之后的if，且中间没有goto语句的if,先设置成while
+					if (ifTagLn< ifs.getLineNum() && ifTagLn > this.returnSentence.getLineNum()) {
+						isReversedWhile = true;
+						for (int j = this.senList.indexOf(ifs.getCondTag()); j < i; j++) {
+							Sentence s3 = this.senList.get(j);
+							if (s3.getName().equals("goto")) {
+								isReversedWhile = false;
+								break;
+							}
+						}
+					}
+					if (isReversedWhile) {
+						ifs.setWhile();
+						for (int j = i; j <= re[1]; j++) {
+							Sentence s1 = this.senList.get(j);
+							if (s1.getName().equals("if")) {
+								IfSentence if2 = (IfSentence)s1;
+								if2.setMergeAsIf(true);
+							}
+						}
+					}
+				}*/
 				//预处理所有可能的while,即if上方为gotoTag
+				//!isReversedWhile && 
 				if (i>1 && this.senList.get(i-1).getName().equals("gotoTag")) {
 					ifs.setWhile();
 				}
@@ -479,7 +511,7 @@ public class IFStructScan {
 							if(afterGotoTag == null){
 								po = this.senList.indexOf(this.returnSentence);
 							}else{
-								//正常if语句插入位置在ifs下方的第一个gotoTag处  //TODO 为什么不直接是gotoTag
+								//正常if语句插入位置在ifs下方的第一个gotoTag处  ,注意不能直接是gotoTag
 								po = this.senList.indexOf(afterGotoTag);
 							}
 						}
@@ -632,6 +664,10 @@ public class IFStructScan {
 	private IfSentence mergeWhileConds(int startIndex,int[] endRE){
 		
 		IfSentence lastIf = (IfSentence) this.senList.get(endRE[1]);
+		//特定的同if处理情况
+//		if (lastIf.isMergeAsIf()) {
+//			return this.mergeConds(startIndex, endRE, this.senList.get(endRE[0]).getLineNum()+1F);
+//		}
 		TagSentence lastIfTag = lastIf.getCondTag();
 		int lastIfTagLn = lastIfTag.getLineNum();
 		//if块下方紧接着的tag,如果没有则创建一个
@@ -759,13 +795,14 @@ public class IFStructScan {
 							}
 							continue;
 						}
-//						//需要合并,先处理倒置的if2的情况//不处理,已在mergeWhile中处理
-//						boolean ifs2Reversed = false;
-//						int tag2Ln = tag2.getLineNum();
-//						if (ifs2.getCondTag().getLineNum() < ifs2.getLineNum()) {
-////							ifs2Reversed = true;
-////							tag2.setLineNum(Math.round(contentLn+1));
-//						}
+						//需要合并,先处理倒置的if2的情况//不处理,已在mergeWhile中处理
+						boolean ifs2Reversed = false;
+						int tag2Ln = tag2.getLineNum();
+						if (ifs2.getCondTag().getLineNum() < ifs2.getLineNum() && this.senList.indexOf(ifs2) < this.senList.indexOf(tag2) && !ifs.isWhile()) {
+							System.out.println(this.mgr.getMeth().getName());
+							ifs2Reversed = true;
+							tag2.setLineNum(Math.round(contentLn+1));
+						}
 						boolean isAnd = true;
 						//如果外部if对应的tag指向内容块之前
 						if(tag.getLineNum() < contentLn){
@@ -810,10 +847,10 @@ public class IFStructScan {
 						tag2.over();
 						//合并后减少1
 						ifCount--;
-//						//回复倒置的ifs2
-//						if (ifs2Reversed) {
-//							tag2.setLineNum(tag2Ln);
-//						}
+						//回复倒置的ifs2
+						if (ifs2Reversed) {
+							tag2.setLineNum(tag2Ln);
+						}
 						
 					}
 				}
@@ -961,7 +998,7 @@ public class IFStructScan {
 	 * @return 内容块结束的lineNum
 	 */
 	private int findIfEndLineNum(IfSentence ifs,int start){
-		int ln = -1;
+		int ln = start;
 		for (int i = start; i < this.len; i++) {
 			Sentence s = this.senList.get(i);
 			if (s.getName().equals("return")) {
@@ -974,7 +1011,7 @@ public class IFStructScan {
 				return this.findIfEndLineNum(ifs, n+1);
 			} 
 //			if (s.getType() == Sentence.TYPE_LINE || s.getName().equals("if")|| s.getName().equals("return")) {
-			else if(s.getName().equals("tag") || s.getName().equals("gotoTag")){
+			else if(s.getName().equals("tag") || s.getName().equals("gotoTag") || s.getName().equals("switch")){
 				ln = s.getLineNum();
 				continue;
 			}
@@ -982,6 +1019,7 @@ public class IFStructScan {
 				ln = s.getLineNum();
 				continue;
 			} else{
+				ln = s.getLineNum();
 				break;
 			}
 		}

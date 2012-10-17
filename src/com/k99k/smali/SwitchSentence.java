@@ -56,9 +56,15 @@ public class SwitchSentence extends Sentence {
 			this.dataTag = ws[2];
 			this.mgr.setVar(v);
 			this.out.append("switch(");
-			this.out.append(this.mgr.getVar(ws[1]).getOut());
+			Var v1 = this.mgr.getVar(ws[1]);
+			this.out.append(v1.getOut());
 			this.out.append("){");
 			this.over();
+			//将引用的key所在的sen进行over
+			Sentence s = v1.getSen();
+			if (s != null && (s.getName().equals("get") || s.getName().equals("var"))) {
+				v1.getSen().over();
+			}
 		}else if(key.startsWith(":pswitch_data") || key.startsWith(":sswitch_data")){
 			//data
 			this.over();
@@ -79,24 +85,39 @@ public class SwitchSentence extends Sentence {
 			}
 			//计算caseNum
 			if (key.startsWith(".packed-switch")) {
+				//顺序型的case条件集
 				int start = Integer.parseInt(StringUtil.a16to10(ws[1]));
 				int slen = this.switchKey.size();
 				
-				for (int i = 0; i < slen; i++) {
-					String caseStr = this.switchKey.get(i);
-					String add = StringUtil.a16to10(caseStr.substring(caseStr.indexOf("_")+1));
-					String caseval = "case " + (Integer.parseInt(add)+start);
-					cases.add(caseStr+","+caseval);
+				//由第一项决定case中间是否有需要跳过的空项
+				String caseStr = this.switchKey.get(0);
+				String add = StringUtil.a16to10(caseStr.substring(caseStr.indexOf("_")+1));
+				int ci = Integer.parseInt(add);
+				String caseval = "case " + (0+start);
+				cases.add(caseStr+","+caseval+","+ci);
+				for (int i = 1; i < slen; i++) {
+					caseStr = this.switchKey.get(i);
+					add = StringUtil.a16to10(caseStr.substring(caseStr.indexOf("_")+1));
+					int cii = Integer.parseInt(add);
+					if (cii < ci) {
+						//case中间的空项，跳过
+						continue;
+					}
+//					else if(cii == ci){
+//						//相同case,仍然加入
+//					}
+					caseval = "case " + (i+start);
+					cases.add(caseStr+","+caseval+","+cii);
 				}
 				
 			}else{
-				//.sparse-switch
+				//.sparse-switch ,非顺序型的case条件集
 				int slen = this.switchKey.size();
 				cases = new ArrayList<String>();
 				for (int i = 0; i < slen; i++) {
 					String[] ss = this.switchKey.get(i).split(" -> ");
 					String caseval = "case " + StringUtil.a16to10(ss[0]);
-					cases.add(ss[1]+","+caseval);
+					cases.add(ss[1]+","+caseval+","+StringUtil.a16to10(ss[1].substring(ss[1].indexOf("_")+1)));
 				}
 			}
 			String tag = this.mgr.getLastSentence().getLine();
