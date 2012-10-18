@@ -70,6 +70,7 @@ public class MoveSentence extends Sentence {
 			this.setOut(v.getOut());
 			//将last语句显示去掉
 			last.setType(Sentence.TYPE_NOT_LINE);
+			last.over();
 		}else if(key.equals("move-exception")){
 			//不处理,已由try catch处理
 			

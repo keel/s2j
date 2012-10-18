@@ -164,7 +164,8 @@ public class InvokeSentence extends Sentence {
 		}
 		
 		if (!propStr.equals("")) {
-			for (int i = 1; i < rang.length; i++) {
+			int start = (key.indexOf("static") >= 0) ? 0 : 1;
+			for (int i = start; i < rang.length; i++) {
 				Var vs = this.mgr.getVar(rang[i]);
 				if (vs ==null) {
 					log.error(this.mgr.getMeth().getName()+ " InvokeSentence,rang[i]==null line:"+this.line);

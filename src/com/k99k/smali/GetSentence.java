@@ -95,6 +95,13 @@ public class GetSentence extends Sentence {
 					s.over();
 				}
 			}
+			s = v1.getSen();
+			if (s != null) {
+				if (s.getName().equals("var") || s.getName().equals("get")) {
+					s.type = Sentence.TYPE_NOT_LINE;
+					s.over();
+				}
+			}
 		}
 		//不处理value
 		//v.setValue(value);
