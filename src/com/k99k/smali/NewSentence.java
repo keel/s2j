@@ -72,11 +72,15 @@ public class NewSentence extends Sentence {
 			this.arrRang = new String[rang.length];
 			obj = Tool.parseObject(ws[ws.length-1]);
 			StringBuilder sb = new StringBuilder(obj);
-			sb.delete(sb.indexOf("["), sb.length());
+			//sb.delete(sb.indexOf("["), sb.length());
+			sb.append("{");
+			int delPo = sb.length();
 			for (int i = 0; i < rang.length; i++) {
 				String sout = this.mgr.getVar(rang[i]).getOut();
 				this.arrRang[i] = sout;
+				sb.append(",").append(sout);
 			}
+			sb.deleteCharAt(delPo).append("}");
 			obj = sb.toString();
 			
 			v.setClassName(obj);
@@ -104,11 +108,15 @@ public class NewSentence extends Sentence {
 			this.arrRang = new String[rang.length];
 			obj = Tool.parseObject(ws[ws.length-1]);
 			StringBuilder sb = new StringBuilder(obj);
-			sb.delete(sb.indexOf("["), sb.length());
+			//sb.delete(sb.indexOf("["), sb.length());
+			sb.append("{");
+			int delPo = sb.length();
 			for (int i = 0; i < rang.length; i++) {
 				String sout = this.mgr.getVar(rang[i]).getOut();
 				this.arrRang[i] = sout;
+				sb.append(",").append(sout);
 			}
+			sb.deleteCharAt(delPo).append("}");
 			obj = sb.toString();
 			v.setClassName(obj);
 			v.setName(ws[1]);

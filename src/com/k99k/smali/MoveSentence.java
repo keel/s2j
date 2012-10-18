@@ -76,12 +76,19 @@ public class MoveSentence extends Sentence {
 		}else{
 			//move变量,判断是否需要clone
 //			Var v1 =  this.mgr.getVar(ws[2]).cloneVar();
-			Var v1 =  this.mgr.getVar(ws[2]);
-			Var v2 =  this.mgr.getVar(ws[1]);
+			Var v1 =  this.mgr.getVar(ws[1]);
+			Var v2 =  this.mgr.getVar(ws[2]);
+			if (v1 == null) {
+				v1 = new Var(this);
+				v1.setOut(ws[2]);
+				v1.setKey(ws[0]);
+				v1.setClassName(v2.getClassName());
+				v1.setValue(v2.getValue());
+			}
 			v2.setName(ws[1]);
 			this.mgr.setVar(v2);
-			this.var = v2;
-			this.setOut(v2.getOut()+" = "+ v1.getOut());
+			this.var = v1;
+			this.setOut(v1.getOut()+" = "+ v2.getOut());
 			this.type = Sentence.TYPE_LINE;
 		}
 		

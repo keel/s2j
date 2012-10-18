@@ -59,12 +59,12 @@ public class SwitchSentence extends Sentence {
 			Var v1 = this.mgr.getVar(ws[1]);
 			this.out.append(v1.getOut());
 			this.out.append("){");
-			this.over();
 			//将引用的key所在的sen进行over
 			Sentence s = v1.getSen();
 			if (s != null && (s.getName().equals("get") || s.getName().equals("var"))) {
 				v1.getSen().over();
 			}
+			this.state = Sentence.STATE_DOING;
 		}else if(key.startsWith(":pswitch_data") || key.startsWith(":sswitch_data")){
 			//data
 			this.over();

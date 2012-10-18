@@ -167,15 +167,20 @@ public class GotoSentence extends Sentence {
 	public Sentence newOne(SentenceMgr mgr, String line) {
 		return new GotoSentence(mgr, line);
 	}
+	
+	private String name = "goto";
 
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Sentence#getName()
 	 */
 	@Override
 	public String getName() {
-		return "goto";
+		return this.name;
 	}
 	
+	public void setSwitch(){
+		this.name = "switch_goto";
+	}
 	
 	
 	/**
