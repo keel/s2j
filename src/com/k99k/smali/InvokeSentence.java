@@ -69,17 +69,19 @@ public class InvokeSentence extends Sentence {
 		String methName = opStr.substring(p1+2,p2);
 		int p3 = opStr.indexOf(")");
 		String propStr = (p3-p2 == 1)?"":opStr.substring(p2,p3+1);
+		//实际参数,用于处理参数中有long和double的情况
+		ArrayList<String> propObjects = new ArrayList<String>();
 		if (propStr.length()>2) {
-			ArrayList<String> propObjects = Tool.fetchObjects(propStr.substring(1,propStr.length()-1));
-			int len = (key.indexOf("static")>0) ? propObjects.size() : propObjects.size() + 1;
-			if (len < rang.length) {
-				//TODO 实际变量少于rang的情况,注意这种情况原因不明，但实际存在，此时把多的rang去除
-				String[] tmp = new String[len];
-				for (int i = 0; i < tmp.length; i++) {
-					tmp[i] = rang[i];
-				}
-				rang = tmp;
-			}
+			propObjects = Tool.fetchObjects(propStr.substring(1,propStr.length()-1));
+//			int len = (key.indexOf("static")>0) ? propObjects.size() : propObjects.size() + 1;
+//实际变量少于rang的情况,原因是long和double类型会占据两个参数位置，取第一个即可
+//			if (len < rang.length) {
+//				String[] tmp = new String[len];
+//				for (int i = 0; i < tmp.length; i++) {
+//					tmp[i] = rang[i];
+//				}
+//				rang = tmp;
+//			}
 		}
 		String re = Tool.parseObject(opStr.substring(p3+1));
 		boolean isInit = methName.equals("<init>");
@@ -141,6 +143,11 @@ public class InvokeSentence extends Sentence {
 				}
 				sb2.append(",");
 				sb2.append(v2.getOut());
+				//long和double占据两个参数位置,跳过后一个
+				if (propObjects.get(i-start).equals("J") || propObjects.get(i-start).equals("D") ) {
+					i++;
+					start++;
+				}
 			}
 			sb2.deleteCharAt(0);
 			this.out.append(sb2);
@@ -184,7 +191,11 @@ public class InvokeSentence extends Sentence {
 						s.over();
 					}
 				}
-				
+				//long和double占据两个参数位置,跳过后一个
+				if (propObjects.get(i-start).equals("J") || propObjects.get(i-start).equals("D") ) {
+					i++;
+					start++;
+				}
 			}
 		}
 		this.over();

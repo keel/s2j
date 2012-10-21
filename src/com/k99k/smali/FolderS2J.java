@@ -41,7 +41,7 @@ public class FolderS2J implements IOInterface {
 	public boolean doFilter(String fileName) {
 		String last = fileName.substring(fileName.lastIndexOf("."));
 		if (last.equals(".smali")) {
-			log.info("-----------["+fileName+"]----------");
+			log.error("-----------["+fileName+"]----------");
 			return true;
 		}
 		return false;

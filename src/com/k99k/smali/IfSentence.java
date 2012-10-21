@@ -530,11 +530,25 @@ public class IfSentence extends Sentence {
 
 
 	/**
-	 * 
+	 * 设置为倒置cond形成的while
 	 */
-	public final void setReversedWhile() {
+	public final void setReversedWhile(IfSentence rifs) {
 		this.isReversedWhile = true;
 		this.ifCond = "while";
+		this.reversedWhileLinkIfs = rifs;
+	}
+
+	/**
+	 * 倒置cond形成的while时,倒置cond对应的ifs
+	 */
+	private IfSentence reversedWhileLinkIfs = null;
+	
+
+	/**
+	 * @return the reversedWhileLinkIfs
+	 */
+	public final IfSentence getReversedWhileLinkIfs() {
+		return reversedWhileLinkIfs;
 	}
 
 

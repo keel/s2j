@@ -68,7 +68,7 @@ public class SwitchScan {
 							end = gt.getTarget();
 							break;
 						}else if(se.getName().equals("return")){
-							log.error(this.mgr.getMeth().getName()+" - switch end not found:"+se.getLine());
+							//log.error(this.mgr.getMeth().getName()+" - switch end not found:"+se.getLine());
 							break;
 						}else if(se.getName().equals("tag")){
 							continue;
@@ -78,8 +78,7 @@ public class SwitchScan {
 							continue;
 						}
 					}
-					
-					se.setOut("} //end of switch");
+					se.appendOut(StaticUtil.NEWLINE+StaticUtil.TABS[se.level]+"} //end of switch");
 					se.over();
 					//加入位置
 					int startIndex = insertPo;
@@ -123,6 +122,11 @@ public class SwitchScan {
 			for (int i = startIndex; i < this.senList.size(); i++) {
 				Sentence s = this.senList.get(i);
 				if (s.getName().equals("gotoTag") || s.getName().equals("goto")) {
+					break;
+				}else if(s.getName().equals("return")){
+					//FIXME 此外会造成多一个return
+					dls.add(s);
+//					this.senList.remove(i);
 					break;
 				}else{
 					if (fs == null) {

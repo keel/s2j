@@ -335,8 +335,7 @@ public class IFStructScan {
 							Sentence afterCondSen = this.senList.get(this.senList.indexOf(if2.getCondTag())+1);
 							if (afterCondSen.getName().equals("if")) {
 								//先通通算做while
-								((IfSentence)afterCondSen).setReversedWhile();
-								
+								((IfSentence)afterCondSen).setReversedWhile(if2);
 							}else{
 								//TODO 倒置if的cond后面不是if
 								log.info(this.mgr.getMeth().getName()+" reverse if's cond ,but after it is not if sen."+ifs.getOut());
@@ -344,36 +343,17 @@ public class IFStructScan {
 						}
 					}
 				}
-				/*
-				int ifTagLn = ifs.getCondTag().getLineNum();
-				boolean isReversedWhile = false;
-				if (i > this.senList.indexOf(this.returnSentence)) {
-					//对于倒置tag的if，但tag仍在return之后的if，且中间没有goto语句的if,先设置成while
-					if (ifTagLn< ifs.getLineNum() && ifTagLn > this.returnSentence.getLineNum()) {
-						isReversedWhile = true;
-						for (int j = this.senList.indexOf(ifs.getCondTag()); j < i; j++) {
-							Sentence s3 = this.senList.get(j);
-							if (s3.getName().equals("goto")) {
-								isReversedWhile = false;
-								break;
-							}
-						}
-					}
-					if (isReversedWhile) {
-						ifs.setWhile();
-						for (int j = i; j <= re[1]; j++) {
-							Sentence s1 = this.senList.get(j);
-							if (s1.getName().equals("if")) {
-								IfSentence if2 = (IfSentence)s1;
-								if2.setMergeAsIf(true);
-							}
-						}
-					}
-				}*/
 				//预处理所有可能的while,即if上方为gotoTag
 				//!isReversedWhile && 
-				if (i>1 && this.senList.get(i-1).getName().equals("gotoTag")) {
+				if (i>=1 && this.senList.get(i-1).getName().equals("gotoTag")) {
 					ifs.setWhile();
+				}
+				else if (i>=2 && this.senList.get(i-2).getName().equals("gotoTag")) {
+					//中间夹有赋值语句的for
+					String centerSenName = this.senList.get(i-1).getName();
+					if (centerSenName.equals("move") || centerSenName.equals("get") || centerSenName.equals("var")) {
+						ifs.setWhile();
+					}
 				}
 				i = re[0];
 			}
@@ -559,7 +539,7 @@ public class IFStructScan {
 					}
 					//保存本次移动的po位置sen
 					if (gotoTag == null) {
-						System.out.println("-------??????--------"+this.mgr.getMeth().getName());
+						log.error(this.mgr.getMeth().getName()+" -------??????-------- gotoTag is null in shiftIfBlock");
 					}
 					if (ifs.isWhile()) {
 						//while语句将移动块的最后一句保存为insertPoSen
@@ -625,8 +605,17 @@ public class IFStructScan {
 	 */
 	private void checkWhileAgain(IfSentence ifs,int index){
 		boolean checkWhile = false;
-		if (!ifs.isReversedWhile() && this.senList.get(index-1).getName().equals("gotoTag")) {
-			GotoTagSentence gtTa = (GotoTagSentence) this.senList.get(index-1);
+		if (!ifs.isReversedWhile()) {
+			GotoTagSentence gtTa = null;
+			if (this.senList.get(index-1).getName().equals("gotoTag")) {
+				gtTa = (GotoTagSentence) this.senList.get(index-1);
+			}else if(this.senList.get(index-2).getName().equals("gotoTag")){
+				gtTa = (GotoTagSentence) this.senList.get(index-2);
+			}else{
+				log.error(this.mgr.getMeth().getName()+" checkWhileAgain error: can't find gotoTag.");
+				ifs.setAsIf();
+				return;
+			}
 			String wTag = gtTa.getTag();
 			for (int j = index+1; j < this.senList.size(); j++) {
 				Sentence s5 = this.senList.get(j);
@@ -638,9 +627,21 @@ public class IFStructScan {
 					}
 				}
 			}
-			if (!checkWhile) {
-				ifs.setAsIf();
+			
+		}else if(ifs.isReversedWhile()){
+			//倒置的while需要判断倒置cond对应的if是否还在本ifs后面
+			if (ifs.getReversedWhileLinkIfs() != null){
+				int rifIndex = this.senList.indexOf(ifs.getReversedWhileLinkIfs());
+				if (rifIndex < 0) {
+					checkWhile = true;
+				}
+				else if (rifIndex > this.senList.indexOf(ifs)) {
+					checkWhile = true;
+				}
 			}
+		}
+		if (!checkWhile) {
+			ifs.setAsIf();
 		}
 	}
 	
@@ -799,7 +800,7 @@ public class IFStructScan {
 						boolean ifs2Reversed = false;
 						int tag2Ln = tag2.getLineNum();
 						if (ifs2.getCondTag().getLineNum() < ifs2.getLineNum() && this.senList.indexOf(ifs2) < this.senList.indexOf(tag2) && !ifs.isWhile()) {
-							System.out.println(this.mgr.getMeth().getName());
+//							System.out.println(this.mgr.getMeth().getName());
 							ifs2Reversed = true;
 							tag2.setLineNum(Math.round(contentLn+1));
 						}

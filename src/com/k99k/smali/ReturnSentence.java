@@ -46,7 +46,7 @@ public class ReturnSentence extends Sentence {
 				this.var = v;
 			}
 //			this.out.append("return ").append(v.getOut()).append(";");
-			this.out.append("//return "+ s + ";");
+			this.out.append("return "+ s + ";");
 		}else{
 			this.out.append("exec return error. line:").append(this.line);
 			this.mgr.err(this);

@@ -52,6 +52,10 @@ public class Methods extends Context {
 	private boolean isInited = false;
 	
 	/**
+	 * 是否是抽象方法
+	 */
+	private boolean isAbstract = false;
+	/**
 	 * 准备输出的行
 	 */
 	private ArrayList<String> outLines = new ArrayList<String>();
@@ -102,7 +106,9 @@ public class Methods extends Context {
 				String s = it.next();
 				this.out.append(s).append(StaticUtil.NEWLINE);
 			}
-			this.out.append("}").append(StaticUtil.NEWLINE);
+			if (!isAbstract) {
+				this.out.append("}").append(StaticUtil.NEWLINE);
+			}
 			return true;
 		}else{
 			this.err = "//ERR: Method,some prop missed. props:"+this.returnStr+","+this.name;
@@ -264,7 +270,8 @@ public class Methods extends Context {
 		// 读取接下来几行，处理参数
 		String ss = "";
 		int prCount = 0;
-		while ((ss = this.mLines.remove(0)).indexOf(StaticUtil.TYPE_PROLOGUE) < 0 && ss.indexOf(StaticUtil.TYPE_END_METHOD)==-1) {
+		this.isAbstract = (this.mLines.isEmpty() && sb.indexOf("abstract")>0);
+		while ((!isAbstract) && (ss = this.mLines.remove(0)).indexOf(StaticUtil.TYPE_PROLOGUE) < 0 && ss.indexOf(StaticUtil.TYPE_END_METHOD)==-1) {
 			ss = this.doComm(ss);
 			String key = Tool.getKey(ss);
 			if (key.equals(StaticUtil.TYPE_PARAMETER)) {
@@ -301,7 +308,11 @@ public class Methods extends Context {
 		if (!isStaticConstructor) {
 			sb.append(")");
 		}
-		sb.append("{");
+		if (this.isAbstract) {
+			sb.append(";");
+		}else{
+			sb.append("{");
+		}
 		// 方法首行第一次完成
 		this.outLines.add(sb.toString());
 	}

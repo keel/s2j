@@ -85,6 +85,9 @@ public class GetSentence extends Sentence {
 			String name = ws[1];
 			v.setName(name);
 			v.setClassName(v1.getClassName());
+			if (v2 == null) {
+				v2 = this.mgr.getVarFromEndVars(ws[3]);
+			}
 			v.setOut(v1.getOut()+"["+v2.getOut()+"]");
 			//TODO 对于数组中的索引对象,如果是VarSentence,暂时先不removeSentence,仅标为over,可能会有其他地方用到
 			//其他情况不进行处理

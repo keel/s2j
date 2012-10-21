@@ -60,7 +60,15 @@ public class LocalSentence extends Sentence {
 				this.over();
 				return true;
 			}else{
-				log.error(this.out);
+				//判断是否是参数p0之类的因为end local从vars中去掉了,此时可以找回来
+				if (ws[1].startsWith("p")) {
+					ov = this.mgr.getVarFromEndVars(ws[1]);
+					this.v = ov;
+					this.mgr.setVar(v);
+					this.type = Sentence.TYPE_NOT_LINE;
+					return true;
+				}
+				log.error(this.mgr.getMeth().getName()+" local can't find:"+ws[1]+ " mLine:"+this.line);
 				return false;
 			}
 		}

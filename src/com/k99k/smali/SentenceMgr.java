@@ -22,6 +22,7 @@ public class SentenceMgr {
 		this.srcLines = srcLines;
 		outLines = new ArrayList<String>();
 		vars = new HashMap<String, Var>();
+		endVars = new HashMap<String, Var>();
 		sentenceList = new ArrayList<Sentence>();
 		this.meth = meth;
 	}
@@ -177,6 +178,11 @@ public class SentenceMgr {
 	 * 变量
 	 */
 	private HashMap<String,Var> vars;
+	
+	/**
+	 * 保存结束的变量以便restart取出
+	 */
+	private HashMap<String,Var> endVars;
 	
 	/**
 	 * 匹配上的Sentence集合,按顺序排
@@ -471,10 +477,12 @@ public class SentenceMgr {
 				}
 			}
 			if (!this.defineReturn(ls, returnKey, gt)) {
-				return false;
+				//这里不返回false
+//				return false;
+			}else{
+				//原return语句可不显示
+				returnSen.setOut("//"+returnSen.getVar().getOut());
 			}
-			//原return语句可不显示,//已在return语句中处理
-//			returnSen.setOut("//"+returnSen.getVar().getOut());
 		}
 		return true;
 	}
@@ -492,9 +500,10 @@ public class SentenceMgr {
 			log.error(this.getMeth().getName()+" goto return pre sen can't getVar.!!!!!!!!!!!!");
 			return false;
 		}
-		if (!v.getName().equals(returnKey)) {
+		if (v.getName()==null || !v.getName().equals(returnKey)) {
+			//这表示goto仅起到转向的作用，并不影响return
 			log.error(this.getMeth().getName()+" goto return pre sen getVar() can't match returnKey.!!!!!!!!!!!!");
-			return false;
+			return true;
 		}
 		if (rs.getName().equals("invoke") || rs.getLine().startsWith("move-result")) {
 			rs.setOut("return "+v.getOut());
@@ -755,6 +764,42 @@ public class SentenceMgr {
 	}
 	
 	/**
+	 * 结束某个变量
+	 * @param varName
+	 */
+	public final void endVar(String varName){
+		Var v = this.vars.get(varName);
+		if (v != null && v.getSen()!= null && v.getSen().getName().equals("local")) {
+			this.vars.remove(varName);
+			this.endVars.put(varName, v.cloneVar());
+		}
+	}
+	
+	/**
+	 * 从结束的变量集中查找var,主要用于方法参数p0,p1...
+	 * @param varName
+	 * @return
+	 */
+	public final Var getVarFromEndVars(String varName){
+		return this.endVars.get(varName);
+	}
+	
+	/**
+	 * 重新开始某个变量
+	 * @param varName
+	 * @return
+	 */
+	public final Var restartVar(String varName){
+		Var v = this.endVars.get(varName);
+		if (v != null) {
+			this.vars.put(varName, v.cloneVar());
+		}else{
+			log.error(this.getMeth().getName()+" restartVar can't find "+varName);
+		}
+		return v;
+	}
+	
+	/**
 	 * 移除某个已处理的Sentence
 	 * @param sen
 	 */
@@ -793,7 +838,16 @@ public class SentenceMgr {
 			v.setName("p"+start);
 			v.setValue(ws[1]);
 			v.setOut(ws[1]);
-			vars.put("p"+start, v);
+			vars.put(v.getName(), v);
+			this.endVars.put(v.getName(), v.cloneVar());
+			if (ws[0].equals("long") || ws[0].equals("double")) {
+				//这两种需要占据两个参数
+				start++;
+				Var nv = v.cloneVar();
+				nv.setName("p"+start);
+				vars.put(nv.getName(), nv);
+				this.endVars.put(v.getName(), v.cloneVar());
+			}
 			start++;
 		}
 		

@@ -16,6 +16,7 @@ public class OtherSentence extends TagSentence {
 	 */
 	public OtherSentence(SentenceMgr mgr, String line) {
 		super(mgr, line);
+		this.type = Sentence.TYPE_NOT_LINE;
 	}
 	private String name = "other";
 	
@@ -30,18 +31,25 @@ public class OtherSentence extends TagSentence {
 		this.line = this.line.replaceAll(",", "");
 		String[] ws = this.line.split(" ");
 		if (ws[0].equals(".restart")) {
-			this.var = this.mgr.getVar(ws[2]);
-			
+			if (ws[1].equals("local")) {
+				this.var = this.mgr.restartVar(ws[2]);
+			}else{
+				this.var = this.mgr.getVar(ws[2]);
+			}
 //		}else if(ws[0].equals(".end")){
 //			if (ws[1].equals("local")) {
 //				this.mgr.removeVar(ws[2]);
 //			}
-		}else{
+		}else if(ws[0].equals(".end")){
+			if (ws[1].equals("local")) {
+				this.mgr.endVar(ws[2]);
+			}
 			this.out.append("//[OTHER] ").append(this.line.substring(1));
 		}
 		this.over();
 		return true;
 	}
+
 
 
 	/**

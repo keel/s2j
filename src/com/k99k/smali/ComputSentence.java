@@ -26,9 +26,17 @@ public class ComputSentence extends Sentence {
 	private String comTag = null;
 	
 	/**
+	 * 可用于计算的基本数字类型，用于判断是否需要显示出计算语句
+	 */
+	private static HashMap<String,String> nums = new HashMap<String, String>();
+	
+	
+	
+	/**
 	 * 计算符
 	 */
 	private static HashMap<String,String> coms = new HashMap<String, String>();
+	
 	
 	private static String[] coma = new String[]{
 		"add-",
@@ -55,6 +63,14 @@ public class ComputSentence extends Sentence {
 		coms.put("shl-", "<<");
 		coms.put("shr-", ">>");
 		coms.put("ushr-", ">>>");
+		
+		nums.put("int", "I");
+		nums.put("short", "S");
+		nums.put("byte", "B");
+		nums.put("long", "J");
+		nums.put("float", "F");
+		nums.put("double", "D");
+		
 	}
 	
 	private static String checkCom(String tag){
@@ -101,6 +117,7 @@ public class ComputSentence extends Sentence {
 			tar.setValue(org.getValue());
 			this.mgr.setVar(tar);
 			this.type = Sentence.TYPE_NOT_LINE;
+			this.var = tar;
 		}else if(this.comTag.indexOf("/2addr") > -1){
 			//存值 
 			com=checkCom(this.comTag);
@@ -109,14 +126,27 @@ public class ComputSentence extends Sentence {
 				return false;
 			}
 			Var org = this.mgr.getVar(target);
+			if (org == null) {
+				org = new Var(this);
+				org.setClassName("newMade");
+				org.setName(target);
+				org.setKey(this.comTag);
+				org.setOut(target);
+			}
 			String tar = org.getOut();
 			StringBuilder sb = new StringBuilder();
 			sb.append(tar);
 			sb.append(" ").append(coms.get(com)).append(" ");
-			sb.append(this.mgr.getVar(arr[2]).getOut());
-			if (org.getSen() != null && (org.getSen().getName().equals("var") || org.getSen().getName().equals("get"))) {
+			Var v2 = this.mgr.getVar(arr[2]);//.getOut();
+			sb.append(v2.getOut());
+			if (org.getClassName() != null && org.getClassName().equals("newMade") ) {
+				org.setOut(v2.getOut());
+				org.setClassName(v2.getClassName());
+				org.setValue(v2.getValue());
+				this.mgr.setVar(org);
+				this.type = TYPE_NOT_LINE;
+			}else if (org.getName().startsWith("p") || (org.getSen() != null && (org.getSen().getName().equals("var") || org.getSen().getName().equals("get") || org.getSen().getName().equals("compute")))) {
 				org.setOut("("+sb.toString()+")");
-//				org.setOutVar(false);
 				this.out.append(tar).append(" = ");
 				this.out.append(sb);
 				org.setSen(this);
@@ -139,6 +169,7 @@ public class ComputSentence extends Sentence {
 			this.out.append(org).append(" = ").append("-").append(to);
 			tov.negVal();
 			this.mgr.setVar(tov);
+			this.var = tov;
 		}else if((com=checkCom(this.comTag)) != null){
 			//赋值计算
 			Var org = this.mgr.getVar(target);
@@ -157,22 +188,46 @@ public class ComputSentence extends Sentence {
 				this.out.append(org.getOut()).append(" = ");
 			}
 			Var v2 = this.mgr.getVar(arr[2]);
-			StringBuilder sb = new StringBuilder();
+			StringBuilder sb = new StringBuilder("(");
+			if (v2 == null) {
+				v2 = this.mgr.getVarFromEndVars(arr[2]);
+			}
 			sb.append(v2.getOut());
 			sb.append(" ").append(coms.get(com)).append(" ");
 			String sec = null;
 			if (arr[3].startsWith("v") || arr[3].startsWith("p")) {
 				//FIXME 需要处理16进制转换
-				sec = this.mgr.getVar(arr[3]).getOut();
+				Var v3 = this.mgr.getVar(arr[3]);
+				if (v3 == null) {
+					v3 = new Var(this);
+					v3.setClassName(v2.getClassName());
+					v3.setName(arr[3]);
+					v3.setKey(arr[0]);
+					log.error(this.mgr.getMeth().getName()+ " compute right var can't be found:"+this.line);
+				}
+				sec = v3.getOut();
 			}else{
 				sec = arr[3];
 			}
-			sb.append(sec);
+			sb.append(sec).append(")");
 			//是否输出的判断
-			if (org.getSen()!=null && (org.getSen().getName().equals("invoke") || org.getSen().getName().equals("compute"))) {
+			if (org.getSen()!=null){
+				boolean isSet = false;
+				if (org.getSen().getName().equals("invoke") || org.getSen().getName().equals("compute") || org.getSen().getName().equals("var")) {
+					isSet = true;
+				}else if(org.getSen().getName().equals("get")){
+					if (nums.containsKey(org.getClassName())) {
+						isSet = false;
+					}else{
+						isSet = true;
+					}
+				}
+				if (isSet) {
 //				v2.setOutVar(false);
-				this.type = Sentence.TYPE_NOT_LINE;
-				org.setOut(sb.toString());
+					this.type = Sentence.TYPE_NOT_LINE;
+					org.setOut(sb.toString());
+					orgSave = true;
+				}
 			}
 			if (orgSave) {
 				org.setOut(sb.toString());
@@ -193,7 +248,8 @@ public class ComputSentence extends Sentence {
 //			}else if(this.comTag.equals("cmp-long")){
 //				tar.setOut(a1.getOut()+" - "+a2.getOut());
 //			}
-			tar.setOut(a1.getOut()+" - "+a2.getOut());
+			tar.setOut("("+a1.getOut()+" - "+a2.getOut()+")");
+			this.var = tar;
 		}
 		this.over();
 		return true;

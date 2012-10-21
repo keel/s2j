@@ -75,22 +75,25 @@ public class MoveSentence extends Sentence {
 			//不处理,已由try catch处理
 			
 		}else{
-			//move变量,判断是否需要clone
-//			Var v1 =  this.mgr.getVar(ws[2]).cloneVar();
+			//move变量
 			Var v1 =  this.mgr.getVar(ws[1]);
 			Var v2 =  this.mgr.getVar(ws[2]);
+			boolean show = true;
 			if (v1 == null) {
 				v1 = new Var(this);
 				v1.setOut(ws[2]);
 				v1.setKey(ws[0]);
 				v1.setClassName(v2.getClassName());
 				v1.setValue(v2.getValue());
+				show = false;
 			}
 			v2.setName(ws[1]);
 			this.mgr.setVar(v2);
 			this.var = v1;
 			this.setOut(v1.getOut()+" = "+ v2.getOut());
-			this.type = Sentence.TYPE_LINE;
+			if (show) {
+				this.type = Sentence.TYPE_LINE;
+			}
 		}
 		
 		this.over();
