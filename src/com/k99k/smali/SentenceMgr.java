@@ -430,7 +430,9 @@ public class SentenceMgr {
 			}
 		}
 		//处理return 的对象语句
-		if (!this.getMeth().getReturnStr().equals("void")) {
+		String reStr = this.getMeth().getReturnStr();
+		reStr = (reStr.equals("")) ? "void" : reStr;
+		if (!reStr.equals("void")) {
 			GotoTagSentence gtReturnTag = null;
 			int lastBeforeReturnIndex = -1;
 			//先定位return句之 上的gotoTag
@@ -481,7 +483,12 @@ public class SentenceMgr {
 //				return false;
 			}else{
 				//原return语句可不显示
-				returnSen.setOut("//"+returnSen.getVar().getOut());
+				Var rv = returnSen.getVar();
+				if (rv == null) {
+					returnSen.setOut("//"+returnSen.getOut());
+				}else{
+					returnSen.setOut("//"+rv.getOut());
+				}
 			}
 		}
 		return true;
@@ -495,6 +502,7 @@ public class SentenceMgr {
 	 * @return
 	 */
 	private boolean defineReturn(Sentence rs,String returnKey,Sentence gt){
+//		String returnKey = (reKey.equals("")) ? "void" : reKey;
 		Var v = rs.getVar();
 		if (v == null) {
 			log.error(this.getMeth().getName()+" goto return pre sen can't getVar.!!!!!!!!!!!!");

@@ -227,7 +227,7 @@ public class Methods extends Context {
 			this.isStaticConstructor = true;
 			this.name = StaticUtil.SCOPE_STATIC;
 			this.scope = "";
-//			this.returnStr = "void";
+			this.returnStr = "";
 			l = l.replaceAll(" " + StaticUtil.SCOPE_STATIC, "").replaceAll(
 					" " + StaticUtil.SCOPE_CONSTRUCTOR, "");
 		}
@@ -235,7 +235,7 @@ public class Methods extends Context {
 		else if (l.indexOf(StaticUtil.SCOPE_CONSTRUCTOR) > -1) {
 			this.isConstructor = true;
 			this.name = this.s2j.className;
-//			this.returnStr = "void";
+			this.returnStr = "";
 			l = l.replaceAll(" " + StaticUtil.SCOPE_CONSTRUCTOR, "");
 		}
 		// 普通方法
