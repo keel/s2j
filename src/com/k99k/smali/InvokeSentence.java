@@ -138,7 +138,10 @@ public class InvokeSentence extends Sentence {
 			for (int i = start; i < rang.length; i++) {
 				Var v2 = this.mgr.getVar(rang[i]);
 				if (v2 == null) {
-					log.error(this.mgr.getMeth().getName()+ " InvokeSentence,rang[i]==null line:"+this.line);
+					v2 = this.mgr.getVarFromEndVars(rang[i]);
+					if (v2 == null) {
+						log.error(this.mgr.getMeth().getName()+ " InvokeSentence,rang[i]==null line:"+this.line);
+					}
 					continue;
 				}
 				sb2.append(",");

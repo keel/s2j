@@ -165,24 +165,24 @@ public class S2J {
 		S2J s = new S2J();
 		//String re = s.exec("h:/SMSTest.smali", "utf-8");
 		
-		
+		/*
 		String tar = "f:/android/apk_manager/projects/SmaliTest.apk/smali/com/smlon/tools/Structs.smali";
 		//String tar = "F:/android/apk_manager/projects/ud.apk/smali/net/gatools/SpriteManager.smali";
-		//tar = "F:/android/apk_manager/projects/com.game.UnicornDash.apk/smali/com/game/UnicornDash/C_EVTGameBTN.smali";
-		tar = "F:/android/apk_manager/projects/com.game.UnicornDash.apk/smali/oms/GameEngine/C_MultiTouch.smali";
+		tar = "F:/android/apk_manager/projects/com.game.UnicornDash.apk/smali/com/game/UnicornDash/C_SceneNormal.smali";
+		//tar = "F:/android/apk_manager/projects/com.game.UnicornDash.apk/smali/oms/GameEngine/C_MultiTouch.smali";
 		String re = s.exec(tar, "utf-8");
 		
 		System.out.println(re);
+		*/
 		
 		
 		
-		/*
 		String from  = "F:/android/apk_manager/projects/com.game.UnicornDash.apk/smali";
 		String to = "g:/UnicornDash";
 		doFolder(from, to);
 		log.error("=========================== END =======================================================================\r\n\r\n====================================================================================");
 		System.out.println("--------- END ----------");
-		*/
+		
 		
 		/*
 		//转换整个目录

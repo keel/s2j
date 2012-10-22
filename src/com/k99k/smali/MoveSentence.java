@@ -73,7 +73,16 @@ public class MoveSentence extends Sentence {
 			last.over();
 		}else if(key.equals("move-exception")){
 			//不处理,已由try catch处理
-			
+			Var v1 =  this.mgr.getVar(ws[1]);
+			if (v1 == null) {
+				v1 = new Var(this);
+			}
+			v1.setOut("[exception]");
+			v1.setClassName(ws[0]);
+			v1.setKey("move-exception");
+			v1.setSen(this);
+			v1.setValue("[exception]");
+			this.mgr.setVar(v1);
 		}else{
 			//move变量
 			Var v1 =  this.mgr.getVar(ws[1]);
@@ -81,18 +90,20 @@ public class MoveSentence extends Sentence {
 			boolean show = true;
 			if (v1 == null) {
 				v1 = new Var(this);
-				v1.setOut(ws[2]);
+				v1.setName(ws[1]);
 				v1.setKey(ws[0]);
 				v1.setClassName(v2.getClassName());
 				v1.setValue(v2.getValue());
 				show = false;
 			}else{
 				v1.setValue(v2.getValue());
+				v1.setSen(this);
 			}
 			//v2.setName(ws[1]);
-			//this.mgr.setVar(v2);
+			this.mgr.setVar(v1);
 			this.var = v1;
 			this.setOut(v1.getOut()+" = "+ v2.getOut());
+			v1.setOut(v2.getOut());
 			if (show) {
 				this.type = Sentence.TYPE_LINE;
 			}
