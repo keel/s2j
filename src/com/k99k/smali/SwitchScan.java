@@ -171,25 +171,6 @@ public class SwitchScan {
 			}
 		}
 		
-		/*for (int i = 0; i < caseData.size(); i++) {
-			String[] ss = caseData.get(i).split(",");
-			String cond = ss[0];
-			for (int j = startIndex; j < this.senList.size(); ) {
-				Sentence s = this.senList.get(j);
-				if (s.getLine().equals(cond)) {
-					//case 句
-					s.setOut(ss[1]+":");
-					s.over();
-					ls.add(s);
-					this.senList.remove(j);
-					//case块
-					ls.addAll(this.caseOne(endGoto, j,cases));
-				}else{
-					j++;
-				}
-			}
-		}*/
-		
 		ArrayList<Sentence> ls = new ArrayList<Sentence>();
 		for (int i = 0; i < caseData.size(); i++) {
 			String[] ss = caseData.get(i).split(",");

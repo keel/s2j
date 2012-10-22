@@ -485,9 +485,9 @@ public class SentenceMgr {
 				//原return语句可不显示
 				Var rv = returnSen.getVar();
 				if (rv == null) {
-					returnSen.setOut("//"+returnSen.getOut());
+					returnSen.setOut("//"+returnSen.getOut()+";");
 				}else{
-					returnSen.setOut("//"+rv.getOut());
+					returnSen.setOut("//return "+rv.getOut()+";");
 				}
 			}
 		}

@@ -86,9 +86,11 @@ public class MoveSentence extends Sentence {
 				v1.setClassName(v2.getClassName());
 				v1.setValue(v2.getValue());
 				show = false;
+			}else{
+				v1.setValue(v2.getValue());
 			}
-			v2.setName(ws[1]);
-			this.mgr.setVar(v2);
+			//v2.setName(ws[1]);
+			//this.mgr.setVar(v2);
 			this.var = v1;
 			this.setOut(v1.getOut()+" = "+ v2.getOut());
 			if (show) {
