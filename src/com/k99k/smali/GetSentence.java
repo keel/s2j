@@ -60,7 +60,7 @@ public class GetSentence extends Sentence {
 			if (s != null) {
 				if (s.getState()>=Sentence.STATE_DONE && s.getType() == Sentence.TYPE_NOT_LINE) {
 					//暂时先使用removeSentence
-//					this.mgr.removeSentence(s);
+					this.mgr.removeSentence(s);
 					s.type = Sentence.TYPE_NOT_LINE;
 					s.over();
 				}else if (s.getName().equals("var") || s.getName().equals("get")) {

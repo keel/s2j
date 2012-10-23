@@ -73,6 +73,15 @@ public class ComputSentence extends Sentence {
 		
 	}
 	
+	/**
+	 * 判断是否是数字类型
+	 * @param varName
+	 * @return
+	 */
+	public static boolean isNum(String varName){
+		return nums.containsKey(varName);
+	}
+	
 	private static String checkCom(String tag){
 		for (int i = 0; i < coma.length; i++) {
 			if (tag.indexOf(coma[i]) > -1) {

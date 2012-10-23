@@ -98,7 +98,7 @@ public class VarSentence extends Sentence {
 				v.setValue(fv);
 			} catch (NumberFormatException e) {
 				log.error(this.mgr.getMeth().getName()+" float16to10 ERR,change to int:"+e.getCause()+" line:"+this.line);
-				e.printStackTrace();
+//				e.printStackTrace();
 				int fv = Integer.parseInt(StringUtil.a16to10(value));
 				v.setValue(fv);
 				flag = "";
@@ -121,7 +121,7 @@ public class VarSentence extends Sentence {
 				v.setValue(lv);
 			} catch (NumberFormatException e) {
 				log.error(this.mgr.getMeth().getName()+" double16to10 ERR,change to int:"+e.getCause()+" line:"+this.line);
-				e.printStackTrace();
+//				e.printStackTrace();
 				int fv = Integer.parseInt(StringUtil.a16to10(value));
 				v.setValue(fv);
 				flag = "";

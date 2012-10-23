@@ -3,6 +3,8 @@
  */
 package com.k99k.smali;
 
+import com.k99k.tools.StringUtil;
+
 /**
  * 表示某方法体中的变量
  * @author keel
@@ -42,6 +44,11 @@ public class Var {
 	 */
 	private String out = "";
 	
+	
+	/**
+	 * 是否在用过状态，随时会被新Var替换
+	 */
+	private boolean isUsed = false;
 	
 	/**
 	 * 创建本Var的Sentence
@@ -109,9 +116,9 @@ public class Var {
 	 * @return v2真正的输出String
 	 */
 	public static final String checkIout(Var v1,String v2Out){
-		if(v1.getClassName().equals("int") || v1.getClassName().equals("long") || v1.getClassName().equals("float")|| v1.getClassName().equals("double")|| v1.getClassName().equals("short")){
+		if(ComputSentence.isNum(v1.getClassName())){
 			return v2Out;
-		}else if (v1.getClassName().equals("boolean")) {
+		}else if (v1.getClassName().equals("boolean") && StringUtil.isDigits(v2Out)) {
 			return (v2Out.equals("0")) ? "false" : "true";
 		}else {
 			if (v2Out.equals("0")) {
@@ -137,12 +144,28 @@ public class Var {
 //	public final void setOutVar(boolean isOutVar) {
 //		this.isOutVar = isOutVar;
 //	}
+	
+	
 
 	/**
 	 * @return the name
 	 */
 	public final String getName() {
 		return name;
+	}
+
+	/**
+	 * @return the isUsed
+	 */
+	public final boolean isUsed() {
+		return isUsed;
+	}
+
+	/**
+	 * @param isUsed the isUsed to set
+	 */
+	public final void setUsed(boolean isUsed) {
+		this.isUsed = isUsed;
 	}
 
 	/**
