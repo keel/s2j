@@ -115,10 +115,10 @@ public class Var {
 	 * @param v2Out 可能getOut=="0"的被比较Var的输出
 	 * @return v2真正的输出String
 	 */
-	public static final String checkIout(Var v1,String v2Out){
-		if(ComputSentence.isNum(v1.getClassName())){
+	public static final String checkIout(String v1ClassName,String v2Out){
+		if(ComputSentence.isNum(v1ClassName)){
 			return v2Out;
-		}else if (v1.getClassName().equals("boolean") && StringUtil.isDigits(v2Out)) {
+		}else if (v1ClassName.equals("boolean") && StringUtil.isDigits(v2Out)) {
 			return (v2Out.equals("0")) ? "false" : "true";
 		}else {
 			if (v2Out.equals("0")) {

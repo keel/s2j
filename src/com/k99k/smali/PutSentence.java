@@ -66,9 +66,9 @@ public class PutSentence extends Sentence {
 			//需要确认右边的输出
 			String right = null;
 			if (String.valueOf(v2.getValue()).equals("0")){
-				right = Var.checkIout(v, "0") +" /* " + v2.getOut() +" */";
+				right = Var.checkIout(v.getClassName(), "0") +" /* " + v2.getOut() +" */";
 			}else{
-				right = Var.checkIout(v, v2.getOut());
+				right = Var.checkIout(v.getClassName(), v2.getOut());
 			}
 			if (v.getClassName().equals("int") && (!v2.getClassName().equals("int")) && StringUtil.isDigits(v2.getValue())) {
 				right = String.valueOf(v2.getValue());

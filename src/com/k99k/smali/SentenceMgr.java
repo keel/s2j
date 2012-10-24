@@ -513,10 +513,11 @@ public class SentenceMgr {
 			log.error(this.getMeth().getName()+" goto return pre sen getVar() can't match returnKey.!!!!!!!!!!!!");
 			return true;
 		}
+		String outs = ((v.getOut().equals("0") || v.getOut().equals("1")) ? (Var.checkIout(this.meth.getReturnStr(), v.getOut()) +" /* " + v.getOut() +" */") : v.getOut());
 		if (rs.getName().equals("invoke") || rs.getLine().startsWith("move-result")) {
-			rs.setOut("return "+v.getOut());
+			rs.setOut("return "+ outs);
 		}else{
-			rs.appendOut(";"+StaticUtil.NEWLINE+StaticUtil.TABS[rs.level]+"return "+v.getOut());
+			rs.appendOut(";"+StaticUtil.NEWLINE+StaticUtil.TABS[rs.level]+"return "+outs);
 		}
 		if (rs.getName().equals("get")) {
 			rs.over();

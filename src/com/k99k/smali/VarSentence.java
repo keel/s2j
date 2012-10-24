@@ -164,9 +164,9 @@ public class VarSentence extends Sentence {
 				if (type.equals("int")) {
 					String right = null;
 					if (String.valueOf(value).equals("0")){
-						right = Var.checkIout(v1, "0") +" /* " + value +" */";
+						right = Var.checkIout(v1.getClassName(), "0") +" /* " + value +" */";
 					}else{
-						right = Var.checkIout(v1, value);
+						right = Var.checkIout(v1.getClassName(), value);
 					}
 					if (v1.getClassName().equals("int") && (!v1.getClassName().equals("int")) && StringUtil.isDigits(v1.getValue())) {
 						right = String.valueOf(value);
