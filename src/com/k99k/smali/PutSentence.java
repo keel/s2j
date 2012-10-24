@@ -73,7 +73,7 @@ public class PutSentence extends Sentence {
 			if (v.getClassName().equals("int") && (!v2.getClassName().equals("int")) && StringUtil.isDigits(v2.getValue())) {
 				right = String.valueOf(v2.getValue());
 			}
-			if (v.getOut().equals(arrVal)) {
+			if (v.getOut().equals(right)) {
 				this.out.append("//");
 			}
 			this.out.append(v.getOut()).append(" = ").append(right);
