@@ -224,14 +224,19 @@ public class ComputSentence extends Sentence {
 			}
 			sb.append(sec).append(")");
 			//是否输出的判断
-			if (org.getSen()!=null){
+			Sentence osen = org.getSen();
+			if (osen!=null && osen != this){
 				boolean isSet = false;
-				if (org.getSen().getName().equals("invoke")  || org.getSen().getName().equals("var")) {
+				if (osen.getName().equals("invoke")  || osen.getName().equals("var")) {
 					isSet = true;
-				}else if(org.getSen().getName().equals("get")){
+				}else if(osen.getName().equals("get")){
 					if (nums.containsKey(org.getClassName())) {
 						isSet = false;
 					}else{
+						isSet = true;
+					}
+				}else if(osen.getName().equals("compute")){
+					if (osen.getType() == TYPE_NOT_LINE) {
 						isSet = true;
 					}
 				}
