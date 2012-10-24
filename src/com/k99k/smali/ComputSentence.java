@@ -121,9 +121,12 @@ public class ComputSentence extends Sentence {
 				tar.setClassName(org.getClassName());
 				tar.setKey(org.getKey());
 				tar.setName(arr[1]);
+			}else{
+				tar.setSen(this);
 			}
 			tar.setOut("("+toa[1]+")"+org.getOut());
 			tar.setValue(org.getValue());
+			
 			this.mgr.setVar(tar);
 			this.type = Sentence.TYPE_NOT_LINE;
 			this.var = tar;
@@ -177,6 +180,7 @@ public class ComputSentence extends Sentence {
 			String to = this.mgr.getVar(arr[2]).getOut();
 			this.out.append(org).append(" = ").append("-").append(to);
 			tov.negVal();
+			tov.setSen(this);
 			this.mgr.setVar(tov);
 			this.var = tov;
 		}else if((com=checkCom(this.comTag)) != null){
@@ -222,7 +226,7 @@ public class ComputSentence extends Sentence {
 			//是否输出的判断
 			if (org.getSen()!=null){
 				boolean isSet = false;
-				if (org.getSen().getName().equals("invoke") || org.getSen().getName().equals("compute") || org.getSen().getName().equals("var")) {
+				if (org.getSen().getName().equals("invoke")  || org.getSen().getName().equals("var")) {
 					isSet = true;
 				}else if(org.getSen().getName().equals("get")){
 					if (nums.containsKey(org.getClassName())) {
@@ -238,6 +242,7 @@ public class ComputSentence extends Sentence {
 					orgSave = true;
 				}
 			}
+			org.setSen(this);
 			if (orgSave) {
 				org.setOut(sb.toString());
 				this.mgr.setVar(org);
@@ -258,6 +263,7 @@ public class ComputSentence extends Sentence {
 //				tar.setOut(a1.getOut()+" - "+a2.getOut());
 //			}
 			tar.setOut("("+a1.getOut()+" - "+a2.getOut()+")");
+			tar.setSen(this);
 			this.var = tar;
 		}
 		this.over();

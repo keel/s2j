@@ -185,11 +185,12 @@ public class IfSentence extends Sentence {
 			this.cond = ws[3];
 			Sentence s1 = v1.getSen();
 			Sentence s2 = v2.getSen();
-			if (s1 != null && !s1.getName().equals("local")) {
-				this.mgr.removeSentence(s1);
+			//FIXME 注意这些语句不能直接去掉
+			if (s1 != null && !s1.getName().equals("local") && s1.getType() == Sentence.TYPE_NOT_LINE) {
+				//this.mgr.removeSentence(s1);
 			}
-			if (s2 != null && !s2.getName().equals("local")) {
-				this.mgr.removeSentence(s2);
+			if (s2 != null && !s2.getName().equals("local") && s2.getType() == Sentence.TYPE_NOT_LINE) {
+				//this.mgr.removeSentence(s2);
 			}
 		}
 		

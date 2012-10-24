@@ -101,7 +101,7 @@ public class MoveSentence extends Sentence {
 			}else{
 				v1.setValue(v2.getValue());
 				v1.setSen(this);
-				if (ws[0].startsWith("move-object") || v1.isUsed() || StringUtil.isDigits(v1.getOut())) {
+				if (ws[0].startsWith("move-object") || v1.isUsed() || StringUtil.isDigits(v1.getOut())|| v1.getOut().equals(v2.getOut())) {
 					//引用的变化导致需要输出也要变动,另外move用过的v1,out为数字的v1也需要变动
 					//FIXME move-object引用变化可能有风险
 					v1.setOut(v2.getOut());

@@ -73,6 +73,9 @@ public class PutSentence extends Sentence {
 			if (v.getClassName().equals("int") && (!v2.getClassName().equals("int")) && StringUtil.isDigits(v2.getValue())) {
 				right = String.valueOf(v2.getValue());
 			}
+			if (v.getOut().equals(arrVal)) {
+				this.out.append("//");
+			}
 			this.out.append(v.getOut()).append(" = ").append(right);
 			v.setValue(v2.getValue());
 			//对于v1引用的语句，如果不成行则可去除
@@ -111,15 +114,15 @@ public class PutSentence extends Sentence {
 				s.over();
 			}
 			s = v1.getSen();
-			if (s != null && (s.getName().equals("var") || s.getName().equals("get"))) {
+			if (s != null && (s.getName().equals("var"))) {
 				s.type = Sentence.TYPE_NOT_LINE;
 				s.over();
 			}
-			s = v3.getSen();
-			if (s != null && (s.getName().equals("var") || s.getName().equals("get"))) {
-				s.type = Sentence.TYPE_NOT_LINE;
-				s.over();
-			}
+//			s = v3.getSen();
+//			if (s != null && (s.getName().equals("var") || s.getName().equals("get"))) {
+//				s.type = Sentence.TYPE_NOT_LINE;
+//				s.over();
+//			}
 			this.arrVal = v3.getOut();
 			this.out.append(v.getOut()).append(" = ").append(arrVal);
 		}
