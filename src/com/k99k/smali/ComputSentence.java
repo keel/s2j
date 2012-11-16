@@ -137,6 +137,8 @@ public class ComputSentence extends Sentence {
 				log.error(this.mgr.getMeth().getName()+" - /2addr error:"+this.line);
 				return false;
 			}
+			//是否显示本计算语句,只有目标变量为方法本地变量才显示
+			boolean isShow = false;
 			Var org = this.mgr.getVar(target);
 			if (org == null) {
 				org = new Var(this);
@@ -144,6 +146,22 @@ public class ComputSentence extends Sentence {
 				org.setName(target);
 				org.setKey(this.comTag);
 				org.setOut(target);
+				isShow = false;
+			}else{
+				if (org.getSen() != null) {
+					String senName = org.getSen().getName();
+					if (senName.equals("local")) {
+						isShow = true;
+					}
+				}
+				if(org.getName().startsWith("p")){
+					if ((!this.mgr.isStatic()) && org.getName().equals("p0")) {
+						//this引用，非本地变量
+						isShow = false;
+					}else{
+						isShow = true;
+					}
+				}
 			}
 			String tar = org.getOut();
 			StringBuilder sb = new StringBuilder();
@@ -151,34 +169,73 @@ public class ComputSentence extends Sentence {
 			sb.append(" ").append(coms.get(com)).append(" ");
 			Var v2 = this.mgr.getVar(arr[2]);//.getOut();
 			sb.append(v2.getOut());
+			
 			if (org.getClassName() != null && org.getClassName().equals("newMade") ) {
 				org.setOut(v2.getOut());
 				org.setClassName(v2.getClassName());
 				org.setValue(v2.getValue());
 				this.mgr.setVar(org);
 				this.type = TYPE_NOT_LINE;
-			}else if (org.getName().startsWith("p") || (org.getSen() != null && (org.getSen().getName().equals("var") || org.getSen().getName().equals("get") || org.getSen().getName().equals("compute")))) {
-				org.setOut("("+sb.toString()+")");
-				this.out.append(tar).append(" = ");
-				this.out.append(sb);
-				org.setSen(this);
-				this.mgr.setVar(org);
-				this.type = TYPE_NOT_LINE;
 			}else{
-				//p1,p2之类的参数处理
-				org.setOut("("+sb.toString()+")");
-				this.out.append(tar).append(" = ");
-				this.out.append(sb);
-				org.setSen(this);
-				this.mgr.setVar(org);
+				if (isShow) {
+					this.out.append(org.getOut()).append(" = ");
+					this.out.append(sb);
+				}else{
+					org.setOut(sb.toString());
+					this.type = TYPE_NOT_LINE;
+				}
 			}
+			
+//			if (org.getClassName() != null && org.getClassName().equals("newMade") ) {
+//				org.setOut(v2.getOut());
+//				org.setClassName(v2.getClassName());
+//				org.setValue(v2.getValue());
+//				this.mgr.setVar(org);
+//				this.type = TYPE_NOT_LINE;
+//			}else if (org.getName().startsWith("p") || (org.getSen() != null && (org.getSen().getName().equals("var") || org.getSen().getName().equals("get") || org.getSen().getName().equals("compute")))) {
+//				org.setOut("("+sb.toString()+")");
+//				this.out.append(tar).append(" = ");
+//				this.out.append(sb);
+//				org.setSen(this);
+//				this.mgr.setVar(org);
+//				this.type = TYPE_NOT_LINE;
+//			}else{
+//				//p1,p2之类的参数处理
+//				org.setOut("("+sb.toString()+")");
+//				this.out.append(tar).append(" = ");
+//				this.out.append(sb);
+//				org.setSen(this);
+//				this.mgr.setVar(org);
+//			}
+			org.setSen(this);
+			this.mgr.setVar(org);
 			this.var = org;
 		}else if(this.comTag.indexOf("neg-") > -1){
 			//取反
 			Var tov = this.mgr.getVar(arr[1]);
+			boolean isShow = false;
+			if (tov.getSen() != null) {
+				String senName = tov.getSen().getName();
+				if (senName.equals("local")) {
+					isShow = true;
+				} 
+			}
+			if(tov.getName().startsWith("p")){
+				if ((!this.mgr.isStatic()) && tov.getName().equals("p0")) {
+					//this引用，非本地变量
+					isShow = false;
+				}else{
+					isShow = true;
+				}
+			}
 			String org = tov.getOut();
 			String to = this.mgr.getVar(arr[2]).getOut();
-			this.out.append(org).append(" = ").append("-").append(to);
+			if (isShow) {
+				this.out.append(org).append(" = ").append("-").append(to);
+			}else{
+				tov.setOut("-"+tov.getOut());
+				this.out.append("//").append(org).append(" = ").append("-").append(to);
+			}
 			tov.negVal();
 			tov.setSen(this);
 			this.mgr.setVar(tov);
@@ -186,20 +243,48 @@ public class ComputSentence extends Sentence {
 		}else if((com=checkCom(this.comTag)) != null){
 			//赋值计算
 			Var org = this.mgr.getVar(target);
-			boolean orgSave = false;
-			//org是新的或是非输出的Var时
+			//是否显示本计算语句,只有目标变量为方法本地变量才显示
+//			boolean orgSave = false;
+			boolean isShow = false;
 			if (org == null) {
-				//还未声明
 				org = new Var(this);
+				org.setClassName("newMade");
 				org.setName(target);
 				org.setKey(this.comTag);
-				org.setClassName("");
-				orgSave = true;
-//				org.setOutVar(false);
-				this.type = Sentence.TYPE_NOT_LINE;
+				org.setOut(target);
+//				orgSave = true;
+				isShow = false;
 			}else{
-				this.out.append(org.getOut()).append(" = ");
+				if (org.getSen() != null) {
+					String senName = org.getSen().getName();
+					if (senName.equals("local")) {
+						isShow = true;
+					}
+				}
+				if(org.getName().startsWith("p")){
+					if ((!this.mgr.isStatic()) && org.getName().equals("p0")) {
+						//this引用，非本地变量
+						isShow = false;
+					}else{
+						isShow = true;
+					}
+				}
 			}
+			
+			
+//			//org是新的或是非输出的Var时
+//			if (org == null) {
+//				//还未声明
+//				org = new Var(this);
+//				org.setName(target);
+//				org.setKey(this.comTag);
+//				org.setClassName("");
+//				orgSave = true;
+////				org.setOutVar(false);
+//				this.type = Sentence.TYPE_NOT_LINE;
+//			}else{
+//				this.out.append(org.getOut()).append(" = ");
+//			}
 			Var v2 = this.mgr.getVar(arr[2]);
 			StringBuilder sb = new StringBuilder("(");
 			if (v2 == null) {
@@ -223,36 +308,50 @@ public class ComputSentence extends Sentence {
 				sec = arr[3];
 			}
 			sb.append(sec).append(")");
-			//是否输出的判断
-			Sentence osen = org.getSen();
-			if (osen!=null && osen != this){
-				boolean isSet = false;
-				if (osen.getName().equals("invoke")  || osen.getName().equals("var")) {
-					isSet = true;
-				}else if(osen.getName().equals("get")){
-					if (nums.containsKey(org.getClassName())) {
-						isSet = false;
-					}else{
-						isSet = true;
-					}
-				}else if(osen.getName().equals("compute")){
-					if (osen.getType() == TYPE_NOT_LINE) {
-						isSet = true;
-					}
-				}
-				if (isSet) {
-//				v2.setOutVar(false);
-					this.type = Sentence.TYPE_NOT_LINE;
+//			//是否输出的判断
+//			Sentence osen = org.getSen();
+//			if (osen!=null && osen != this){
+//				boolean isSet = false;
+//				if (osen.getName().equals("invoke")  || osen.getName().equals("var")) {
+//					isSet = true;
+//				}else if(osen.getName().equals("get")){
+//					if (nums.containsKey(org.getClassName())) {
+//						isSet = false;
+//					}else{
+//						isSet = true;
+//					}
+//				}else if(osen.getName().equals("compute")){
+//					if (osen.getType() == TYPE_NOT_LINE) {
+//						isSet = true;
+//					}
+//				}
+//				if (isSet) {
+////				v2.setOutVar(false);
+//					this.type = Sentence.TYPE_NOT_LINE;
+//					org.setOut(sb.toString());
+//					orgSave = true;
+//				}
+//			}
+			if (org.getClassName() != null && org.getClassName().equals("newMade") ) {
+				org.setOut(sb.toString());
+				org.setValue(sb.toString());
+				this.type = TYPE_NOT_LINE;
+			}else{
+				if (isShow) {
+					this.out.append(org.getOut()).append(" = ");
+					this.out.append(sb);
+				}else{
 					org.setOut(sb.toString());
-					orgSave = true;
+					this.type = TYPE_NOT_LINE;
 				}
 			}
 			org.setSen(this);
-			if (orgSave) {
-				org.setOut(sb.toString());
-				this.mgr.setVar(org);
-			}
-			this.out.append(sb);
+			this.mgr.setVar(org);
+//			if (orgSave) {
+//				org.setOut(sb.toString());
+//				this.mgr.setVar(org);
+//			}
+//			this.out.append(sb);
 			this.var = org;
 		}else if(this.comTag.indexOf("cmp") == 0){
 			//比较语句

@@ -68,31 +68,31 @@ public class Var {
 			return;
 		}
 		String type = this.getClassName();
-		boolean isNum = false;
+//		boolean isNum = false;
 		if(type.equals("int")){
 			int v = (Integer)this.value;
 			this.value = -v;
-			isNum = true;
+//			isNum = true;
 		}else if(type.equals("long")){
 			long v = (Long)this.value;
 			this.value = -v;
-			isNum = true;
+//			isNum = true;
 		}else if(type.equals("float")){
 			float v = (Float)this.value;
 			this.value = -v;
-			isNum = true;
+//			isNum = true;
 		}else if(type.equals("double")){
 			double v = (Double)this.value;
 			this.value = -v;
-			isNum = true;
+//			isNum = true;
 		}
-		if (isNum) {
-			if (this.out.startsWith("-")) {
-				this.out = this.out.substring(1);
-			}else{
-				this.out = "-"+this.out;
-			}
-		}
+//		if (isNum) {
+//			if (this.out.startsWith("-")) {
+//				this.out = this.out.substring(1);
+//			}else{
+//				this.out = "-"+this.out;
+//			}
+//		}
 	}
 
 	/**

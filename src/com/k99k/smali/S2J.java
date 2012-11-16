@@ -169,7 +169,7 @@ public class S2J {
 		String tar = "f:/android/apk_manager/projects/SmaliTest.apk/smali/com/smlon/tools/Structs.smali";
 		//String tar = "F:/android/apk_manager/projects/ud.apk/smali/net/gatools/SpriteManager.smali";
 		//tar = "F:/android/apk_manager/projects/com.game.UnicornDash.apk/smali/com/game/UnicornDash/C_SceneNormal.smali";
-		tar = "F:/android/apk_manager/projects/com.game.UnicornDash.apk/smali/oms/GameEngine/C_MultiTouch.smali";
+		//tar = "F:/android/apk_manager/projects/com.game.UnicornDash.apk/smali/oms/GameEngine/C_MultiTouch.smali";
 		String re = s.exec(tar, "utf-8");
 		
 		System.out.println(re);
@@ -183,6 +183,24 @@ public class S2J {
 		log.error("=========================== END =======================================================================\r\n\r\n====================================================================================");
 		System.out.println("--------- END ----------");
 		*/
+		
+//			int key = 1;
+//			switch (key) {
+//			case 1:
+//				System.out.println("1");
+//			case 2:
+//				System.out.println("ok");
+////				break;
+//
+//			default:
+//				System.out.println("no");
+//				break;
+//			}
+		
+//		do{
+//			int i = 0;
+//			
+//		}while(i<5);
 		
 		/*
 		//转换整个目录
