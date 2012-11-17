@@ -11,17 +11,17 @@ import org.apache.log4j.Logger;
  * @author keel
  *
  */
-public class ComputSentence extends Sentence {
+public class ComputeSentence extends Sentence {
 
 	/**
 	 * @param mgr
 	 * @param line
 	 */
-	public ComputSentence(SentenceMgr mgr, String line) {
+	public ComputeSentence(SentenceMgr mgr, String line) {
 		super(mgr, line);
 		this.type = Sentence.TYPE_LINE;
 	}
-	static final Logger log = Logger.getLogger(ComputSentence.class);
+	static final Logger log = Logger.getLogger(ComputeSentence.class);
 	
 	private String comTag = null;
 	
@@ -148,27 +148,14 @@ public class ComputSentence extends Sentence {
 				org.setOut(target);
 				isShow = false;
 			}else{
-				if (org.getSen() != null) {
-					String senName = org.getSen().getName();
-					if (senName.equals("local")) {
-						isShow = true;
-					}
-				}
-				if(org.getName().startsWith("p")){
-					if ((!this.mgr.isStatic()) && org.getName().equals("p0")) {
-						//this引用，非本地变量
-						isShow = false;
-					}else{
-						isShow = true;
-					}
-				}
+				isShow = isLocalVar(org,this.mgr.isStatic());
 			}
 			String tar = org.getOut();
-			StringBuilder sb = new StringBuilder();
+			StringBuilder sb = new StringBuilder("(");
 			sb.append(tar);
 			sb.append(" ").append(coms.get(com)).append(" ");
 			Var v2 = this.mgr.getVar(arr[2]);//.getOut();
-			sb.append(v2.getOut());
+			sb.append(v2.getOut()).append(")");
 			
 			if (org.getClassName() != null && org.getClassName().equals("newMade") ) {
 				org.setOut(v2.getOut());
@@ -176,6 +163,7 @@ public class ComputSentence extends Sentence {
 				org.setValue(v2.getValue());
 				this.mgr.setVar(org);
 				this.type = TYPE_NOT_LINE;
+				
 			}else{
 				if (isShow) {
 					this.out.append(org.getOut()).append(" = ");
@@ -207,27 +195,16 @@ public class ComputSentence extends Sentence {
 //				org.setSen(this);
 //				this.mgr.setVar(org);
 //			}
-			org.setSen(this);
+			if (org.getClassName().equals("newMade")) {
+				org.setClassName("");
+				org.setSen(this);
+			}
 			this.mgr.setVar(org);
 			this.var = org;
 		}else if(this.comTag.indexOf("neg-") > -1){
 			//取反
 			Var tov = this.mgr.getVar(arr[1]);
-			boolean isShow = false;
-			if (tov.getSen() != null) {
-				String senName = tov.getSen().getName();
-				if (senName.equals("local")) {
-					isShow = true;
-				} 
-			}
-			if(tov.getName().startsWith("p")){
-				if ((!this.mgr.isStatic()) && tov.getName().equals("p0")) {
-					//this引用，非本地变量
-					isShow = false;
-				}else{
-					isShow = true;
-				}
-			}
+			boolean isShow = isLocalVar(tov,this.mgr.isStatic());
 			String org = tov.getOut();
 			String to = this.mgr.getVar(arr[2]).getOut();
 			if (isShow) {
@@ -237,7 +214,7 @@ public class ComputSentence extends Sentence {
 				this.out.append("//").append(org).append(" = ").append("-").append(to);
 			}
 			tov.negVal();
-			tov.setSen(this);
+//			tov.setSen(this);
 			this.mgr.setVar(tov);
 			this.var = tov;
 		}else if((com=checkCom(this.comTag)) != null){
@@ -255,20 +232,7 @@ public class ComputSentence extends Sentence {
 //				orgSave = true;
 				isShow = false;
 			}else{
-				if (org.getSen() != null) {
-					String senName = org.getSen().getName();
-					if (senName.equals("local")) {
-						isShow = true;
-					}
-				}
-				if(org.getName().startsWith("p")){
-					if ((!this.mgr.isStatic()) && org.getName().equals("p0")) {
-						//this引用，非本地变量
-						isShow = false;
-					}else{
-						isShow = true;
-					}
-				}
+				isShow = isLocalVar(org,this.mgr.isStatic());
 			}
 			
 			
@@ -345,7 +309,10 @@ public class ComputSentence extends Sentence {
 					this.type = TYPE_NOT_LINE;
 				}
 			}
-			org.setSen(this);
+			if (org.getClassName().equals("newMade")) {
+				org.setClassName("");
+				org.setSen(this);
+			}
 			this.mgr.setVar(org);
 //			if (orgSave) {
 //				org.setOut(sb.toString());
@@ -373,6 +340,34 @@ public class ComputSentence extends Sentence {
 		this.over();
 		return true;
 	}
+	
+	/**
+	 * 确定是否输出，主要是判断目标变量是否是本地变量
+	 * @param org 目标变量
+	 * @param isStatic 此方法是否是静态方法
+	 * @return
+	 */
+	public static boolean isLocalVar(Var org,boolean isStatic){
+		boolean isLocal = false;
+		if (org.getSen() != null) {
+			String senName = org.getSen().getName();
+			// 由local产生的变量是本地变量,注意：var和compute产生的虽然是理论上的本地变量，但不是真正的变量引用，只是一个数值或结果，所以不输出
+			if (senName.equals("local")) {
+				isLocal = true;
+			}
+		}
+		//方法的参数也是本地变量 
+		if(org.getName().startsWith("p")){
+			if ((!isStatic) && org.getName().equals("p0")) {
+				//this引用，非本地变量
+				isLocal = false;
+			}else{
+				isLocal = true;
+			}
+		}
+		return isLocal;
+	}
+	
 	private Var var = new Var(this);
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Sentence#getVar()
@@ -386,7 +381,7 @@ public class ComputSentence extends Sentence {
 	 */
 	@Override
 	public Sentence newOne(SentenceMgr mgr, String line) {
-		return new ComputSentence(mgr, line);
+		return new ComputeSentence(mgr, line);
 	}
 
 	/* (non-Javadoc)

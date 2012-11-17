@@ -48,6 +48,7 @@ public class ArraySentence extends Sentence {
 			v.setName(ws[2]);//以ws[2]为key
 			v.setValue(ws[1]);//value为变量，如：v0
 			this.mgr.setVar(v);
+//			this.type = Sentence.TYPE_NOT_LINE;
 		}else if(key.equals(".array-data")){
 			if (this.arrMatrix == null) {
 				this.out.append("arrMatrix is null. line:").append(this.line);

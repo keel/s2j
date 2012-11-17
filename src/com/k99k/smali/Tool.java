@@ -26,8 +26,13 @@ public class Tool {
 	 */
 	public static final ArrayList<String> fetchObjects(String propStr){
 		ArrayList<String> ls = new ArrayList<String>();
+		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < propStr.length(); i++) {
 			char c = propStr.charAt(i);
+			if (c == '[') {
+				sb.append(c);
+				continue;
+			}
 			if (Character.isUpperCase(c)) {
 				String s = String.valueOf(c);
 				if (c == 'L') {
@@ -35,8 +40,9 @@ public class Tool {
 					s = propStr.substring(i,end+1);
 					i = end;
 				}
-				ls.add(s);
+				ls.add(sb.append(s).toString());
 			}
+			sb = new StringBuilder();
 		}
 		return ls;
 	}

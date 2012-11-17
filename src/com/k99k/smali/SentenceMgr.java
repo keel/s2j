@@ -75,9 +75,9 @@ public class SentenceMgr {
 		for (int i = 0; i < PutSentence.KEYS.length; i++) {
 			sentenceMap.put(PutSentence.KEYS[i], p);
 		}
-		ComputSentence com = new ComputSentence(null,null);
-		for (int i = 0; i < ComputSentence.KEYS.length; i++) {
-			sentenceMap.put(ComputSentence.KEYS[i], com);
+		ComputeSentence com = new ComputeSentence(null,null);
+		for (int i = 0; i < ComputeSentence.KEYS.length; i++) {
+			sentenceMap.put(ComputeSentence.KEYS[i], com);
 		}
 		NewSentence n = new NewSentence(null,null);
 		for (int i = 0; i < NewSentence.KEYS.length; i++) {
@@ -210,6 +210,25 @@ public class SentenceMgr {
 		this.setProps();
 		
 		this.parse();
+		
+		//FIXME 构造方法，处理final的数组赋值 
+		if(this.meth.isStaticConstructor() || this.meth.isConstructor()){
+			for (int i = 0; i < this.sentenceList.size(); i++) {
+				Sentence s = this.sentenceList.get(i);
+				if (s.getLine().startsWith("fill-array-data")) {
+					i++;
+					s = this.sentenceList.get(i);
+					if (s.getName().equals("put")) {
+						String vsout = s.getVar().getOut();
+						String vs = vsout.substring(vsout.lastIndexOf(".")+1);
+						Field f = this.meth.s2j.getField(vs);
+						if (f != null && f.isFinal()) {
+							f.appendOut(s.getOut());
+						}
+					}
+				}
+			}
+		}
 		
 		this.render();
 		
@@ -764,12 +783,16 @@ public class SentenceMgr {
 	}
 
 	/**
-	 * 获取变量 
+	 * 获取变量 ,如果vars中没有，就到endVars中获取
 	 * @param key
 	 * @return
 	 */
 	public final Var getVar(String key){
-		return vars.get(key);
+		Var v = vars.get(key);
+		if (v == null) {
+			v = this.getVarFromEndVars(key);
+		}
+		return v;
 	}
 	
 	/**

@@ -28,7 +28,7 @@ public class S2J {
 		contextMap.put(h.getKey(), h);
 		Comm c = new Comm(this,null,null);
 		contextMap.put(c.getKey(), c);
-		Fields f = new Fields(this, null,null);
+		Field f = new Field(this, null,null);
 		contextMap.put(f.getKey(), f);
 		Methods m = new Methods(this, null,null);
 		contextMap.put(m.getKey(), m);
@@ -55,6 +55,19 @@ public class S2J {
 	 * 包名
 	 */
 	String packageName;
+	
+	/**
+	 * 成员变量集合
+	 */
+	private HashMap<String,Field> fields = new HashMap<String, Field>();
+	
+	public void addField(String fName,Field field){
+		this.fields.put(fName, field);
+	}
+	
+	public Field getField(String fName){
+		return this.fields.get(fName);
+	}
 	
 	private static S2J s2j = new S2J();
 	
@@ -169,7 +182,7 @@ public class S2J {
 		String tar = "f:/android/apk_manager/projects/SmaliTest.apk/smali/com/smlon/tools/Structs.smali";
 		//String tar = "F:/android/apk_manager/projects/ud.apk/smali/net/gatools/SpriteManager.smali";
 		//tar = "F:/android/apk_manager/projects/com.game.UnicornDash.apk/smali/com/game/UnicornDash/C_SceneNormal.smali";
-		//tar = "F:/android/apk_manager/projects/com.game.UnicornDash.apk/smali/oms/GameEngine/C_MultiTouch.smali";
+		//tar = "F:/android/apk_manager/projects/com.game.UnicornDash.apk/smali/oms/GameEngine/GameMath.smali";
 		String re = s.exec(tar, "utf-8");
 		
 		System.out.println(re);

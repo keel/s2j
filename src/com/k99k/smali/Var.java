@@ -116,7 +116,7 @@ public class Var {
 	 * @return v2真正的输出String
 	 */
 	public static final String checkIout(String v1ClassName,String v2Out){
-		if(ComputSentence.isNum(v1ClassName)){
+		if(ComputeSentence.isNum(v1ClassName)){
 			return v2Out;
 		}else if (v1ClassName.equals("boolean") && StringUtil.isDigits(v2Out)) {
 			return (v2Out.equals("0")) ? "false" : "true";

@@ -142,21 +142,7 @@ public class VarSentence extends Sentence {
 			//此时很可能是赋值,变为可输出状态
 			Var v1 = this.mgr.getVar(v.getName());
 			//是否输出的判断
-			boolean isSet = false;
-			if (v1.getSen()!=null) {
-				if (!v1.getSen().getName().equals("local")) {
-					isSet = true;
-				}
-//				if (v1.getSen().getName().equals("invoke") || v1.getSen().getName().equals("compute")|| v1.getSen().getName().equals("put")|| v1.getSen().getName().equals("var")|| v1.getSen().getName().equals("get")) {
-//					isSet = true;
-//				}
-				
-//				else if(v1.getSen().getName().equals("var") && StringUtil.isDigits(v1.getOut())){
-//					isSet = true;
-//				}else if(v1.getKey().startsWith("aput")){
-//					isSet = true;
-//				}
-			}
+			boolean isSet = !ComputeSentence.isLocalVar(v1, this.mgr.isStatic());
 
 			if(isSet){
 				this.mgr.setVar(v);

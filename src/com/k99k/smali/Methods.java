@@ -73,6 +73,13 @@ public class Methods extends Context {
 	
 	
 	/**
+	 * @return the isStaticConstructor
+	 */
+	public final boolean isStaticConstructor() {
+		return isStaticConstructor;
+	}
+
+	/**
 	 * @return the isInited
 	 */
 	public final boolean isInited() {
@@ -210,6 +217,7 @@ public class Methods extends Context {
 				sMgr.setStatic(true);
 			}
 			sMgr.execLines();
+			
 			this.outLines.addAll(sMgr.getOutLines());
 		}
 	}
@@ -221,7 +229,7 @@ public class Methods extends Context {
 	private void parseFn(String l){
 		this.returnStr = Tool
 				.parseObject(l.substring(l.lastIndexOf(")") + 1));
-		// static方法
+		// StaticConstructor方法
 		if (l.indexOf(StaticUtil.SCOPE_STATIC) > -1
 				&& l.indexOf(StaticUtil.SCOPE_CONSTRUCTOR) > -1) {
 			this.isStaticConstructor = true;

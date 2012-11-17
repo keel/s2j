@@ -89,37 +89,39 @@ public class MoveSentence extends Sentence {
 			//move变量
 			Var v1 =  this.mgr.getVar(ws[1]);
 			Var v2 =  this.mgr.getVar(ws[2]);
-			boolean show = true;
+			boolean show = false;
 			if (v1 == null) {
 				v1 = new Var(this);
 				v1.setName(ws[1]);
 				v1.setKey(ws[0]);
 				v1.setClassName(v2.getClassName());
-				v1.setValue(v2.getValue());
 				v1.setOut(v2.getOut());
 				show = false;
 			}else{
-				v1.setValue(v2.getValue());
-				v1.setSen(this);
-				if (ws[0].startsWith("move-object") || v1.isUsed() || StringUtil.isDigits(v1.getOut())|| v1.getOut().equals(v2.getOut())) {
-					//引用的变化导致需要输出也要变动,另外move用过的v1,out为数字的v1也需要变动
-					//FIXME move-object引用变化可能有风险
-					v1.setOut(v2.getOut());
-					show = false;
-				}
+				show = ComputeSentence.isLocalVar(v1, this.mgr.isStatic());
+//				v1.setSen(this);
+//				if (ws[0].startsWith("move-object") || v1.isUsed() || StringUtil.isDigits(v1.getOut())|| v1.getOut().equals(v2.getOut())) {
+//					//引用的变化导致需要输出也要变动,另外move用过的v1,out为数字的v1也需要变动
+//					//FIXME move-object引用变化可能有风险
+//					v1.setOut(v2.getOut());
+//					show = false;
+//				}
 			}
 			//v2.setName(ws[1]);
+			v1.setValue(v2.getValue());
 			this.mgr.setVar(v1);
 			this.var = v1;
-			this.setOut(v1.getOut()+" = "+ v2.getOut());
 			if (show) {
+				this.setOut(v1.getOut()+" = "+ v2.getOut());
 				this.type = Sentence.TYPE_LINE;
+			}else{
+				v1.setOut(v2.getOut());
 			}
-			//FIXME 用过了,目前仅在move中使用,还有get,put,cast,compute(compute应该不能用),未使用,如果使用需要注意v1==v2的情况,另注意p0,p1的情况
-			if (v2.getSen() != null) {
-				//非参数的设置成used
-				v2.setUsed(true);
-			}
+//			//FIXME 用过了,目前仅在move中使用,还有get,put,cast,compute(compute应该不能用),未使用,如果使用需要注意v1==v2的情况,另注意p0,p1的情况
+//			if (v2.getSen() != null) {
+//				//非参数的设置成used
+//				v2.setUsed(true);
+//			}
 		}
 		
 		this.over();

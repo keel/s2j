@@ -11,10 +11,10 @@ import com.k99k.tools.StringUtil;
  * @author keel
  *
  */
-public class Fields extends Context {
+public class Field extends Context {
 
 
-	public Fields(S2J s2j, ArrayList<String> lines, StringBuilder out) {
+	public Field(S2J s2j, ArrayList<String> lines, StringBuilder out) {
 		super(s2j, lines, out);
 	}
 
@@ -29,6 +29,10 @@ public class Fields extends Context {
 	private String objType;
 	
 	private String name;
+	
+	private boolean isStatic = false;
+	
+	private boolean isFinal = false;
 	
 	private String scope = "";
 	
@@ -79,6 +83,11 @@ public class Fields extends Context {
 		for (int i = 1; i < len; i++) {
 			if (words[i].indexOf(":") < 0) {
 				this.scope += words[i]+" ";
+				if (words[i].equals("static")) {
+					this.isStatic = true;
+				}else if(words[i].equals("final")){
+					this.isFinal = true;
+				}
 			}else{
 				vpo = i;
 				break;
@@ -94,6 +103,8 @@ public class Fields extends Context {
 		if (l.indexOf("=")>0) {
 			this.defaultValue = words[words.length-1];
 		}
+		//加入到s2j
+		this.s2j.addField(this.name, this);
 		
 		//判断下一个是不是.annotation
 		l = this.lines.get(0);
@@ -108,9 +119,34 @@ public class Fields extends Context {
 	}
 
 
+	public void appendOut(String aout){
+		this.out.append(aout);
+	}
+	
+	public String getOut(){
+		return this.out.toString();
+	}
+	
+	/**
+	 * @return the isStatic
+	 */
+	public final boolean isStatic() {
+		return isStatic;
+	}
+
+	/**
+	 * @return the isFinal
+	 */
+	public final boolean isFinal() {
+		return isFinal;
+	}
+
+	
+	
+	
 	@Override
 	public Context newOne(S2J s2j, ArrayList<String> lines, StringBuilder out) {
-		return new Fields(s2j, lines, out);
+		return new Field(s2j, lines, out);
 	}
 
 }
