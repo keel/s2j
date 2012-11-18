@@ -540,6 +540,9 @@ public class SentenceMgr {
 				}
 			}
 		}
+		if (this.meth.isConstructor() || this.meth.isStaticConstructor()) {
+			returnSen.setType(Sentence.TYPE_NOT_LINE);
+		}
 		return true;
 	}
 	

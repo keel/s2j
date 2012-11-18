@@ -223,7 +223,7 @@ public class TryCatchScan {
 	 */
 	private void doCatch(int start,TrySentence ts){
 		ArrayList<Sentence> ls = new ArrayList<Sentence>();
-		String vs = "_E_";
+		String vs = "e/* */";
 		for (int j = start+1; j < this.senList.size(); j++) {
 			Sentence s1 = this.senList.get(j);
 			if (s1.getName().equals("local") || s1.getLine().startsWith(".restart")) {
@@ -261,7 +261,7 @@ public class TryCatchScan {
 					return;
 				}
 				s3 = (TrySentence) this.senList.get(addP);
-				s3.setOut(s3.getOut().replace("_E_", vs));
+				s3.setOut(s3.getOut().replace("e/* */", vs));
 				gt.setOut("} //end of catch: "+gt.getLine());
 				gt.setEndOfCatch(true);
 				this.senList.remove(j);

@@ -69,7 +69,7 @@ public class TrySentence extends Sentence {
 		}else if(this.key.equals(".catch")){
 			String ex = Tool.parseObject(ws[1]);
 			this.catchTag = ws[ws.length-1];
-			this.out.append("} catch ("+ex+" _E_) {");
+			this.out.append("} catch ("+ex+" e/* */) {");
 			int p = this.line.indexOf(":try_start_")+11;
 			String s = this.line.substring(p,p+1);
 			this.tryStartNum = Integer.parseInt(s);

@@ -124,7 +124,8 @@ public class PutSentence extends Sentence {
 //			v.setName(name);
 //			v.setClassName(v1.getClassName());
 //			v.setOut(v1.getOut()+"["+v2.getValue()+"]");
-			this.left = "["+v2.getValue()+"]";
+			String index = (v2.getValue() == null) ? v2.getOut() :v2.getValue().toString();
+			this.left = "["+index+"]";
 			this.arrLeft = v1.getOut();
 			this.rightValue = v3.getOut();
 //			if (this.mgr.getMeth().isConstructor() || this.mgr.getMeth().isStaticConstructor()) {
