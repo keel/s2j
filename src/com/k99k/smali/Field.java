@@ -14,8 +14,8 @@ import com.k99k.tools.StringUtil;
 public class Field extends Context {
 
 
-	public Field(S2J s2j, ArrayList<String> lines, StringBuilder out) {
-		super(s2j, lines, out);
+	public Field(S2J s2j, ArrayList<String> lines) {
+		super(s2j, lines);
 	}
 
 	/* (non-Javadoc)
@@ -119,14 +119,21 @@ public class Field extends Context {
 	}
 
 
-	public void appendOut(String aout){
-		this.out.append(aout);
-	}
 	
-	public String getOut(){
-		return this.out.toString();
+	/**
+	 * @return the defaultValue
+	 */
+	public final String getDefaultValue() {
+		return defaultValue;
 	}
-	
+
+	/**
+	 * @param defaultValue the defaultValue to set
+	 */
+	public final void setDefaultValue(String defaultValue) {
+		this.defaultValue = defaultValue;
+	}
+
 	/**
 	 * @return the isStatic
 	 */
@@ -145,8 +152,8 @@ public class Field extends Context {
 	
 	
 	@Override
-	public Context newOne(S2J s2j, ArrayList<String> lines, StringBuilder out) {
-		return new Field(s2j, lines, out);
+	public Context newOne(S2J s2j, ArrayList<String> lines) {
+		return new Field(s2j, lines);
 	}
 
 }

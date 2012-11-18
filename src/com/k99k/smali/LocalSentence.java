@@ -177,7 +177,7 @@ public class LocalSentence extends Sentence {
 								PutSentence put = (PutSentence)s;
 								put.setType(Sentence.TYPE_NOT_LINE);
 								if (put.getArrSourceVar().equals(ws[1])) {
-									sb.append(",").append(put.getArrVal());
+									sb.append(",").append(put.getRightValue());
 								}
 							}
 						}

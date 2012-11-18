@@ -211,7 +211,7 @@ public class SentenceMgr {
 		
 		this.parse();
 		
-		//FIXME 构造方法，处理final的数组赋值 
+		// 构造方法，处理final的数组赋值 
 		if(this.meth.isStaticConstructor() || this.meth.isConstructor()){
 			for (int i = 0; i < this.sentenceList.size(); i++) {
 				Sentence s = this.sentenceList.get(i);
@@ -219,12 +219,42 @@ public class SentenceMgr {
 					i++;
 					s = this.sentenceList.get(i);
 					if (s.getName().equals("put")) {
-						String vsout = s.getVar().getOut();
+						PutSentence ps = (PutSentence)s;
+						String vsout = ps.getLeft();
 						String vs = vsout.substring(vsout.lastIndexOf(".")+1);
 						Field f = this.meth.s2j.getField(vs);
 						if (f != null && f.isFinal()) {
-							f.appendOut(s.getOut());
+							f.setDefaultValue(ps.getRightValue());
+							s.setType(Sentence.TYPE_NOT_LINE);
 						}
+					}
+				}else if(s.getName().equals("put") && (s.getLine().startsWith("iput")||s.getLine().startsWith("sput"))){
+					PutSentence put = (PutSentence)s;
+					if (put.getLine().indexOf("[[")>=0) {
+						//两维以上的数组
+						String vsout = put.getLeft();
+						String vs = vsout.substring(vsout.lastIndexOf(".")+1);
+						Field f = this.meth.s2j.getField(vs);
+						if (f != null && f.isFinal()) {
+							//向上查找所有相关的aput语句
+							for (int j = i-1; j >=0 ; j--) {
+								Sentence ss = this.sentenceList.get(j);
+								if (ss.getLine().startsWith("aput")) {
+									String sline = ss.getLine();
+									String vn = sline.replaceAll(",", "").split(" ")[2];
+									if (vn.equals(put.getVar().getName())) {
+										PutSentence pss = (PutSentence)ss;
+										if (f.getDefaultValue().equals("")) {
+											f.setDefaultValue(pss.getArrLeft());
+										}
+										pss.setArrLeft(put.getLeft());
+									}
+								}
+							}
+							put.setType(Sentence.TYPE_NOT_LINE);
+						}
+						
+						
 					}
 				}
 			}

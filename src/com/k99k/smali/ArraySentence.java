@@ -48,7 +48,14 @@ public class ArraySentence extends Sentence {
 			v.setName(ws[2]);//以ws[2]为key
 			v.setValue(ws[1]);//value为变量，如：v0
 			this.mgr.setVar(v);
-//			this.type = Sentence.TYPE_NOT_LINE;
+			Var v1 = this.mgr.getVar(ws[1]);
+			if (v1 != null) {
+				Sentence newArrSen = v1.getSen();
+				if (newArrSen != null && newArrSen.getLine().startsWith("new-array")) {
+					newArrSen.setOut("");
+					((NewSentence)newArrSen).setFilled(true);
+				}
+			}
 		}else if(key.equals(".array-data")){
 			if (this.arrMatrix == null) {
 				this.out.append("arrMatrix is null. line:").append(this.line);
@@ -57,7 +64,7 @@ public class ArraySentence extends Sentence {
 				return false;
 			}
 			//处理填入的数组数据
-			int arrLen = Integer.parseInt(StringUtil.a16to10(ws[1]))+1;
+//			int arrLen = Integer.parseInt(StringUtil.a16to10(ws[1]))+1;
 			int alen = this.arrMatrix.size();
 			String[] arrVals = new String[alen];
 			StringBuilder asb = new StringBuilder();
@@ -89,11 +96,21 @@ public class ArraySentence extends Sentence {
 			asb.append("}");
 			v.getSen().setType(Sentence.TYPE_NOT_LINE);
 			int ii = this.mgr.findSentenceIndexByLineNum(v.getSen().getLineNum())+1;
-			Sentence sarr = this.mgr.findSentenceByIndex(ii);
-			StringBuilder sb = new StringBuilder(sarr.getOut());
-			sb.delete(sb.indexOf("=")+1, sb.length());
-			sb.append(asb);
-			sarr.setOut(sb.toString());
+			Sentence sen = this.mgr.findSentenceByIndex(ii);
+			if (sen.getName().equals("put")) {
+				PutSentence sarr = (PutSentence)sen;
+				sarr.setRightValue(asb.toString());
+			}else{
+				String s = sen.getOut();
+				sen.setOut(s.split("=")[0]+" = "+asb.toString());
+			}
+			if (sen.getType() == Sentence.TYPE_NOT_LINE) {
+				sen.setType(TYPE_LINE);
+			}
+//			StringBuilder sb = new StringBuilder(sarr.getOut());
+//			sb.delete(sb.indexOf("=")+1, sb.length());
+//			sb.append(asb);
+//			sarr.setOut(sb.toString());
 			//this.type = Sentence.TYPE_NOT_LINE;
 		}else if(key.equals("array-length")){
 			log.debug(this.mgr.getMeth().getName()+" - array-length:"+this.line);

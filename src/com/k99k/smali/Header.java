@@ -17,8 +17,8 @@ public class Header extends Context {
 	
 
 
-	public Header(S2J s2j, ArrayList<String> lines, StringBuilder out) {
-		super(s2j, lines, out);
+	public Header(S2J s2j, ArrayList<String> lines) {
+		super(s2j, lines);
 	}
 
 	private String packageName;
@@ -162,8 +162,8 @@ public class Header extends Context {
 	}
 
 	@Override
-	public Context newOne(S2J s2j, ArrayList<String> lines, StringBuilder out) {
-		return new Header(s2j,lines,out);
+	public Context newOne(S2J s2j, ArrayList<String> lines) {
+		return new Header(s2j,lines);
 	}
 
 }

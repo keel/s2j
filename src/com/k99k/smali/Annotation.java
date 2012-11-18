@@ -16,8 +16,8 @@ public class Annotation extends Context {
 	 * @param lines
 	 * @param out
 	 */
-	public Annotation(S2J s2j, ArrayList<String> lines, StringBuilder out) {
-		super(s2j, lines, out);
+	public Annotation(S2J s2j, ArrayList<String> lines) {
+		super(s2j, lines);
 	}
 	
 	private ArrayList<String> mLines = new ArrayList<String>();
@@ -66,8 +66,8 @@ public class Annotation extends Context {
 	 * @see com.k99k.smali.Context#newOne(com.k99k.smali.S2J, java.util.ArrayList, java.lang.StringBuilder)
 	 */
 	@Override
-	public Context newOne(S2J s2j, ArrayList<String> lines, StringBuilder out) {
-		return new Annotation(s2j, lines, out);
+	public Context newOne(S2J s2j, ArrayList<String> lines) {
+		return new Annotation(s2j, lines);
 	}
 
 }

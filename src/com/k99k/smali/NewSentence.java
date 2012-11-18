@@ -3,7 +3,11 @@
  */
 package com.k99k.smali;
 
+import java.util.ArrayList;
+
 import org.apache.log4j.Logger;
+
+import com.k99k.tools.StringUtil;
 
 /**
  * @author keel
@@ -17,6 +21,7 @@ public class NewSentence extends Sentence {
 	 */
 	public NewSentence(SentenceMgr mgr, String line) {
 		super(mgr, line);
+		//可能会被其他语句需要，所以这里为可输出状态
 		this.type = Sentence.TYPE_LINE;
 	}
 	static final Logger log = Logger.getLogger(NewSentence.class);
@@ -24,7 +29,12 @@ public class NewSentence extends Sentence {
 	private Var v = new Var(this);
 	
 	private String[] arrRang = null;
-
+	
+	/**
+	 * 数组变量名
+	 */
+	private String arrName;
+	
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Sentence#exec()
 	 */
@@ -54,14 +64,23 @@ public class NewSentence extends Sentence {
 			//加入初始化数量
 			StringBuilder sb = new StringBuilder(obj);
 			int po = sb.indexOf("[");
-			sb.insert(po+1, this.mgr.getVar(ws[2]).getOut());
-//			sb.delete(slen-1, slen);
-//			sb.append(this.mgr.getVar(ws[2]).getOut()).append("]");
+			String size = this.mgr.getVar(ws[2]).getOut();
+			sb.insert(po+1, size);
+			String a = ws[3];
+//			String aa = a.substring(a.indexOf("["),a.lastIndexOf("[")+1);
+			String aa = a.substring(0,a.lastIndexOf("[")+1);
+			int w = aa.length();
+			v.setValue(obj);
 			obj = sb.toString();
 			v.setClassName(obj);
 			v.setName(ws[1]);
 			v.setKey("new-array");
 			v.setOut("new "+obj);
+//			//arrValue准备保存数组值
+//			if (StringUtil.isDigits(size)) {
+//				Object[] arrValue = new Object[Integer.parseInt(size)];
+//				v.setValue(arrValue);
+//			}
 		}else if(ws[0].equals("filled-new-array")){
 			int rangStart = this.line.indexOf("{")+1;
 			int rangEnd = this.line.indexOf("}");
@@ -128,7 +147,41 @@ public class NewSentence extends Sentence {
 		return true;
 	}
 	
+	/**
+	 * 是否被fill-array-data填充过
+	 */
+	private boolean isFilled = false;
 	
+	/**
+	 * @return the isFilled
+	 */
+	public final boolean isFilled() {
+		return isFilled;
+	}
+
+	/**
+	 * @param isFilled the isFilled to set
+	 */
+	public final void setFilled(boolean isFilled) {
+		this.isFilled = isFilled;
+	}
+
+	/**
+	 * @return the arrName
+	 */
+	public final String getArrName() {
+		return arrName;
+	}
+
+
+	/**
+	 * @param arrName the arrName to set
+	 */
+	public final void setArrName(String arrName) {
+		this.arrName = arrName;
+	}
+
+
 
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Sentence#getVar()

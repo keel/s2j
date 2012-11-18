@@ -3,6 +3,8 @@
  */
 package com.k99k.smali;
 
+import java.util.ArrayList;
+
 import org.apache.log4j.Logger;
 
 import com.k99k.tools.StringUtil;
@@ -29,10 +31,20 @@ public class PutSentence extends Sentence {
 	private String arrSourceVar = null;
 
 	/**
-	 * 如果是数组赋值,在此保存所赋的某一位置的值
+	 * 等号右边的值
 	 */
-	private String arrVal = null;
-
+	private String rightValue = null;
+	
+	/**
+	 * 等号左边的表达式
+	 */
+	private String left = "";
+	
+	/**
+	 * 对于数组，在left的左边还需要加上arrLeft
+	 */
+	private String arrLeft = "";
+	
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Sentence#exec()
 	 */
@@ -59,25 +71,29 @@ public class PutSentence extends Sentence {
 			Var v2 = this.mgr.getVar(ws[1]);
 			int p = ws[3].indexOf(':');
 			String name = ws[3].substring(ws[3].indexOf("->")+2,p);
-			v.setName(ws[1]);
+//			v.setName(ws[2]);
 			String obj = Tool.parseObject(ws[3].substring(p+1));
-			v.setClassName(obj);
-			v.setOut(v1.getOut()+"."+name);
+//			v.setClassName(obj);
+//			v.setOut(v1.getOut()+"."+name);
+			this.left = v1.getOut()+"."+name;
 			//需要确认右边的输出
 			String right = null;
 			if (String.valueOf(v2.getValue()).equals("0")){
-				right = Var.checkIout(v.getClassName(), "0") +" /* " + v2.getOut() +" */";
+				right = Var.checkIout(obj, "0") +" /* " + v2.getOut() +" */";
 			}else{
-				right = Var.checkIout(v.getClassName(), v2.getOut());
+				right = Var.checkIout(obj, v2.getOut());
 			}
-			if (v.getClassName().equals("int") && (!v2.getClassName().equals("int")) && StringUtil.isDigits(v2.getValue())) {
+			if (obj.equals("int") && (!v2.getClassName().equals("int")) && StringUtil.isDigits(v2.getValue())) {
 				right = String.valueOf(v2.getValue());
 			}
-			if (v.getOut().equals(right)) {
+			if (left.equals(right)) {
 				this.out.append("//");
 			}
-			this.out.append(v.getOut()).append(" = ").append(right);
-			v.setValue(v2.getValue());
+//			this.out.append(left).append(" = ").append(right);
+			this.rightValue = right;
+			
+//			v.setValue(right);
+			v = v2;
 			//对于v1引用的语句，如果不成行则可去除
 			Sentence s = v1.getSen();
 			if (s != null && s.getState()>=Sentence.STATE_DONE && s.getType() == Sentence.TYPE_NOT_LINE) {
@@ -89,23 +105,48 @@ public class PutSentence extends Sentence {
 			int p = ws[2].indexOf(':');
 			int p2 = ws[2].indexOf('>');
 			String name = ws[2].substring(p2+1,p);
-			v.setName(ws[1]);
-			String obj = Tool.parseObject(ws[2].substring(p+1));
-			v.setClassName(obj);
+//			v.setName(ws[1]);
+//			String obj = Tool.parseObject(ws[2].substring(p+1));
+//			v.setClassName(obj);
 			String v1 = Tool.parseObject(ws[2].substring(0,p2-1));
-			v.setOut(v1+"."+name);
-			v.setValue(v2.getValue());
-			this.out.append(v.getOut()).append(" = ").append(v2.getOut());
-			
+			this.left = v1+"."+name;
+//			v.setOut(v1+"."+name);
+//			v.setValue(v2.getValue());
+//			this.out.append(left).append(" = ").append(v2.getOut());
+			this.rightValue = v2.getOut();
+			v = v2;
 		}else if(type == 'a'){
 			Var v1 = this.mgr.getVar(ws[2]);
 			Var v2 = this.mgr.getVar(ws[3]);
 			Var v3 = this.mgr.getVar(ws[1]);
 			this.arrSourceVar = ws[2];
-			String name = ws[1];
-			v.setName(name);
-			v.setClassName(v1.getClassName());
-			v.setOut(v1.getOut()+"["+v2.getOut()+"]");
+//			String name = ws[1];
+//			v.setName(name);
+//			v.setClassName(v1.getClassName());
+//			v.setOut(v1.getOut()+"["+v2.getValue()+"]");
+			this.left = "["+v2.getValue()+"]";
+			this.arrLeft = v1.getOut();
+			this.rightValue = v3.getOut();
+//			if (this.mgr.getMeth().isConstructor() || this.mgr.getMeth().isStaticConstructor()) {
+				if (v3.getKey().equals("new-array")) {
+					//多维数组赋值 
+					NewSentence v3Sen = (NewSentence) v3.getSen();
+					String v3Out = v3.getOut();
+					if (v3Out.startsWith("new ")) {
+						String le = v3.getValue().toString();
+						String vv = v3.getName()+v2.getName();
+						if (!v3Sen.isFilled()) {
+							v3Sen.setOut(le.trim()+" "+vv+" = "+v3Out);
+						}
+						v3Sen.setArrName(vv);
+						this.setRightValue(vv);
+					}
+				}else if(v1.getKey().equals("new-array")){
+					NewSentence v3Sen = (NewSentence) v1.getSen();
+					this.arrNewSen = v3Sen;
+				}
+//			}
+			
 			//TODO 对于数组中的索引对象,如果是VarSentence,暂时先不removeSentence,仅标为over,可能会有其他地方用到
 			//其他情况不进行处理
 			Sentence s = v2.getSen();
@@ -113,30 +154,46 @@ public class PutSentence extends Sentence {
 				s.type = Sentence.TYPE_NOT_LINE;
 				s.over();
 			}
-			s = v1.getSen();
-			if (s != null && (s.getName().equals("var"))) {
-				s.type = Sentence.TYPE_NOT_LINE;
-				s.over();
-			}
-//			s = v3.getSen();
-//			if (s != null && (s.getName().equals("var") || s.getName().equals("get"))) {
+//			s = v1.getSen();
+//			if (s != null && (s.getName().equals("var"))) {
 //				s.type = Sentence.TYPE_NOT_LINE;
 //				s.over();
 //			}
-			this.arrVal = v3.getOut();
-			this.out.append(v.getOut()).append(" = ").append(arrVal);
+			
+			v = v1;
+//			this.out.append(left).append(" = ").append(rightValue);
 		}
 		
 		
-		//不处理value
-		//v.setValue(value);
-//		v.setOutVar(true);
-		this.mgr.setVar(v);
+//		this.mgr.setVar(v);
 		this.over();
 		
 		return true;
 	}
 	
+	
+	/**
+	 * aput所引用到的arrNewSen
+	 */
+	private NewSentence arrNewSen;
+	
+	
+	/**
+	 * @return the arrNewSen
+	 */
+	public final NewSentence getArrNewSen() {
+		return arrNewSen;
+	}
+
+
+
+
+	/**
+	 * @param arrNewSen the arrNewSen to set
+	 */
+	public final void setArrNewSen(NewSentence arrNewSen) {
+		this.arrNewSen = arrNewSen;
+	}
 	private Var v = new Var(this);
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Sentence#getVar()
@@ -145,6 +202,59 @@ public class PutSentence extends Sentence {
 	public Var getVar() {
 		return this.v;
 	}
+	
+	
+
+
+	/* (non-Javadoc)
+	 * @see com.k99k.smali.Sentence#getOut()
+	 */
+	@Override
+	public String getOut() {
+//		this.out = new StringBuilder();
+		if (this.arrNewSen != null) {
+			this.out.append(this.arrNewSen.getArrName());
+		}else{
+			this.out.append(this.arrLeft);
+		}
+		this.out.append(this.left).append(" = ").append(this.rightValue);
+		return super.getOut();
+	}
+
+
+	/**
+	 * @param rightValue the rightValue to set
+	 */
+	public final void setRightValue(String rightValue) {
+		this.rightValue = rightValue;
+	}
+
+
+	/**
+	 * @return the arrLeft
+	 */
+	public final String getArrLeft() {
+		return arrLeft;
+	}
+
+	/**
+	 * @param arrLeft the arrLeft to set
+	 */
+	public final void setArrLeft(String arrLeft) {
+		this.arrLeft = arrLeft;
+	}
+
+
+
+
+	/**
+	 * @param left the left to set
+	 */
+	public final void setLeft(String left) {
+		this.left = left;
+	}
+
+
 
 
 	/* (non-Javadoc)
@@ -174,10 +284,17 @@ public class PutSentence extends Sentence {
 	/**
 	 * @return the arrVal
 	 */
-	public final String getArrVal() {
-		return arrVal;
+	public final String getRightValue() {
+		return rightValue;
 	}
+	
 
+	/**
+	 * @return the left
+	 */
+	public final String getLeft() {
+		return left;
+	}
 	static final String[] KEYS = new String[]{
 		"aput",
 		"aput-wide",

@@ -6,25 +6,26 @@ package com.k99k.smali;
 import java.util.ArrayList;
 
 /**
+ * 输出错误消息的Context
  * @author keel
  *
  */
-public class Comm extends Context {
+public class ErrContext extends Context {
 
-
-
-	public Comm(S2J s2j, ArrayList<String> lines) {
+	/**
+	 * @param s2j
+	 * @param lines
+	 */
+	public ErrContext(S2J s2j, ArrayList<String> lines) {
 		super(s2j, lines);
 	}
-
-	private String comm;
 
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Context#getKey()
 	 */
 	@Override
 	public String getKey() {
-		return StaticUtil.COMM;
+		return "err";
 	}
 
 	/* (non-Javadoc)
@@ -32,7 +33,7 @@ public class Comm extends Context {
 	 */
 	@Override
 	public boolean out() {
-		this.out.append("//").append(this.comm).append(StaticUtil.NEWLINE);
+		this.out.append(this.err).append(StaticUtil.NEWLINE);
 		return true;
 	}
 
@@ -41,16 +42,15 @@ public class Comm extends Context {
 	 */
 	@Override
 	public boolean parse() {
-		String l = this.lines.remove(0);
-		this.comm = l.substring(l.indexOf("#")+1);
 		return true;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.k99k.smali.Context#newOne(com.k99k.smali.S2J, java.util.ArrayList)
+	 */
 	@Override
 	public Context newOne(S2J s2j, ArrayList<String> lines) {
-		return new Comm(s2j, lines);
+		return new ErrContext(s2j, lines);
 	}
-
-
 
 }

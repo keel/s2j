@@ -9,8 +9,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.apache.log4j.Logger;
-
-import com.k99k.smalimv.PubReplace;
 import com.k99k.tools.IO;
 
 /**
@@ -24,15 +22,15 @@ public class S2J {
 	 * 初始化Context
 	 */
 	public S2J() {
-		Header h = new Header(this,null,null);
+		Header h = new Header(this,null);
 		contextMap.put(h.getKey(), h);
-		Comm c = new Comm(this,null,null);
+		Comm c = new Comm(this,null);
 		contextMap.put(c.getKey(), c);
-		Field f = new Field(this, null,null);
+		Field f = new Field(this, null);
 		contextMap.put(f.getKey(), f);
-		Methods m = new Methods(this, null,null);
+		Methods m = new Methods(this, null);
 		contextMap.put(m.getKey(), m);
-		Annotation a = new Annotation(this, null,null);
+		Annotation a = new Annotation(this, null);
 		contextMap.put(a.getKey(), a);
 	}
 	
@@ -40,9 +38,9 @@ public class S2J {
 	
 	private final HashMap<String,Context> contextMap = new HashMap<String, Context>();
 	
-	public final Context createContext(String key,ArrayList<String> lines,StringBuilder out){
+	public final Context createContext(String key,ArrayList<String> lines){
 		if (key != null && this.contextMap.containsKey(key)) {
-			return this.contextMap.get(key).newOne(this,lines,out);
+			return this.contextMap.get(key).newOne(this,lines);
 		}
 		System.out.println("Key is not exist!! key:"+key);
 		return null;
@@ -92,19 +90,29 @@ public class S2J {
 			StringBuilder sb = new StringBuilder();
 			try {
 				ArrayList<String> lines = Tool.strToLine(t);
+				ArrayList<Context> contexts = new ArrayList<Context>();
 				while (!lines.isEmpty()) {
 					String nextLine = lines.get(0);
 					String key = Tool.getKey(nextLine);
 					if (key != null) {
-						Context con = this.createContext(key,lines,sb);
+						Context con = this.createContext(key,lines);
 						if (con!=null) {
 							con.debug();
 						}else{
-							sb.append("//FIXME context not found! key: "+key);
+							con = new ErrContext(this, null);
+							con.err = "//FIXME context not found! key: "+key;
 						}
+						contexts.add(con);
 					}else{
-						sb.append("//FIXME key is empty! line: "+nextLine);
+						Context con = new ErrContext(this, null);
+						con.err ="//FIXME key is empty! line: "+nextLine;
+						contexts.add(con);
 					}
+				}
+				//输出
+				for (int i = 0; i < contexts.size(); i++) {
+					Context con = contexts.get(i);
+					sb.append(con.render());
 				}
 				//结束
 				sb.append(StaticUtil.NEWLINE).append("}");
@@ -124,19 +132,34 @@ public class S2J {
 		StringBuilder sb = new StringBuilder();
 		try {
 			ArrayList<String> lines = Tool.strToLine(t);
+			ArrayList<Context> contexts = new ArrayList<Context>();
 			while (!lines.isEmpty()) {
 				String nextLine = lines.get(0);
 				String key = Tool.getKey(nextLine);
 				if (key != null) {
-					Context con = this.createContext(key,lines,sb);
+					Context con = this.createContext(key,lines);
 					if (con!=null) {
-						con.render();
+						if (!con.parse()) {
+							String err = con.err;
+							Context errc = new ErrContext(this, null);
+							errc.err = "//parse ERR"+err+StaticUtil.NEWLINE;
+							contexts.add(errc);
+						}
 					}else{
-						sb.append("//FIXME context not found! key: "+key);
+						con = new ErrContext(this, null);
+						con.err = "//FIXME context not found! key: "+key;
 					}
+					contexts.add(con);
 				}else{
-					sb.append("//FIXME key is empty! line: "+nextLine);
+					Context con = new ErrContext(this, null);
+					con.err ="//FIXME key is empty! line: "+nextLine;
+					contexts.add(con);
 				}
+			}
+			//输出
+			for (int i = 0; i < contexts.size(); i++) {
+				Context con = contexts.get(i);
+				sb.append(con.render());
 			}
 			//结束
 			sb.append(StaticUtil.NEWLINE).append("}");

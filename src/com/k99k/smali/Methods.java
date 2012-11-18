@@ -17,8 +17,8 @@ import com.k99k.tools.StringUtil;
  */
 public class Methods extends Context {
 
-	public Methods(S2J s2j, ArrayList<String> lines, StringBuilder out) {
-		super(s2j, lines, out);
+	public Methods(S2J s2j, ArrayList<String> lines) {
+		super(s2j, lines);
 	}
 	
 	static final Logger log = Logger.getLogger(Methods.class);
@@ -199,9 +199,7 @@ public class Methods extends Context {
 	 */
 	@Override
 	public void debug() {
-		
-		if (this.toDebug() && this.out()) {
-		} else {
+		if (!this.toDebug()) {
 			// 输出错误
 			this.out.append(this.getErr()).append(StaticUtil.NEWLINE);
 		}
@@ -382,8 +380,8 @@ public class Methods extends Context {
 	}
 
 	@Override
-	public Context newOne(S2J s2j, ArrayList<String> lines, StringBuilder out) {
-		return new Methods(s2j, lines, out);
+	public Context newOne(S2J s2j, ArrayList<String> lines) {
+		return new Methods(s2j, lines);
 	}
 
 	/**

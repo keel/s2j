@@ -11,15 +11,15 @@ import java.util.ArrayList;
  */
 public abstract class Context {
 
-	public Context(S2J s2j,ArrayList<String> lines,StringBuilder out) {
+	public Context(S2J s2j,ArrayList<String> lines) {
 		this.s2j = s2j;
 		this.lines = lines;
-		this.out = out;
+//		this.out = out;
 	}
 	
 	ArrayList<String> lines;
 	
-	StringBuilder out;
+	StringBuilder out = new StringBuilder();
 	
 	String err = "//ERR ";
 	
@@ -52,24 +52,20 @@ public abstract class Context {
 	}
 
 	/**
-	 * 处理过程
+	 * 处理输出,只由S2J调用,不继承不改写
 	 * @return
 	 */
-	public void render() {
-//		if (lines.size() > 0) {
-			if (this.parse() && this.out()) {
-//				this.next();
-//				this.outEnd();
-			} else {
-				// 输出错误
-				this.out.append(this.getErr()).append(StaticUtil.NEWLINE);
-//				this.next();
-			}
-//		}
+	public final String render() {
+		if (!this.out()) {
+			// 输出错误
+			this.out.append(this.getErr()).append(StaticUtil.NEWLINE);
+		}
+		return this.out.toString();
 	}
 	
+	
 	public void debug(){
-		this.render();
+		this.parse();
 	}
 	
 //	/**
@@ -100,7 +96,7 @@ public abstract class Context {
 //		//this.out.append(StaticUtil.NEWLINE);
 //	}
 	
-	public abstract Context newOne(S2J s2j,ArrayList<String> lines,StringBuilder out);
+	public abstract Context newOne(S2J s2j,ArrayList<String> lines);
 	
 	/**
 	 * 处理一行中的注释
