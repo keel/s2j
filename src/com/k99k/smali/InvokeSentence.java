@@ -163,7 +163,13 @@ public class InvokeSentence extends Sentence {
 		
 		//处理引用的相关Sentence
 		if (isInit && (!isConstr)) {
-			Sentence ns = this.mgr.findLastSentence("new");
+			Sentence ns;
+			if (key.indexOf("static") >= 0) {
+				//FIXME 这里有找错new语句的风险
+				ns = this.mgr.findLastSentence("new");
+			}else{
+				ns = this.mgr.findLastSentence("new",rang[0]);
+			}
 			if (ns != null) {
 				ns.getVar().setOut(this.out.toString());
 				this.type = Sentence.TYPE_NOT_LINE;

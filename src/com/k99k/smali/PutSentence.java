@@ -106,15 +106,23 @@ public class PutSentence extends Sentence {
 			int p = ws[2].indexOf(':');
 			int p2 = ws[2].indexOf('>');
 			String name = ws[2].substring(p2+1,p);
-//			v.setName(ws[1]);
-//			String obj = Tool.parseObject(ws[2].substring(p+1));
-//			v.setClassName(obj);
 			String v1 = Tool.parseObject(ws[2].substring(0,p2-1));
 			this.left = v1+"."+name;
-//			v.setOut(v1+"."+name);
-//			v.setValue(v2.getValue());
-//			this.out.append(left).append(" = ").append(v2.getOut());
-			this.rightValue = v2.getOut();
+			//this.rightValue = v2.getOut();
+			
+			//需要确认右边的输出
+			String obj = Tool.parseObject(ws[2].substring(p+1));
+			String right = null;
+			if (String.valueOf(v2.getValue()).equals("0")){
+				right = Var.checkIout(obj, "0") +" /* " + v2.getOut() +" */";
+			}else{
+				right = Var.checkIout(obj, v2.getOut());
+			}
+			if (obj.equals("int") && (!v2.getClassName().equals("int")) && StringUtil.isDigits(v2.getValue())) {
+				right = String.valueOf(v2.getValue());
+			}
+			this.rightValue = right;
+			
 			v = v2;
 			if (v2.getKey().equals("new-array")) {
 				//多维数组赋值 

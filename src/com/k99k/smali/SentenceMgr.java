@@ -714,6 +714,26 @@ public class SentenceMgr {
 		return null;
 	}
 	
+	/**
+	 * 查找上一个匹配 name的Sentence,且Sentence的varName与参数rName相同
+	 * @param senName
+	 * @param varName
+	 * @return
+	 */
+	public final Sentence findLastSentence(String senName,String varName){
+		int len = this.sentenceList.size();
+		if (len<1) {
+			return null;
+		}
+		for (int i = len-1; i >= 0; i--) {
+			Sentence s = this.sentenceList.get(i);
+			if (s.getName().equals(senName) && s.getVar()!=null && s.getVar().getName().equals(varName)) {
+				return s;
+			}
+		}
+		return null;
+	}
+	
 //	/**
 //	 * 查找上一个匹配 name的Sentence
 //	 * @param senName
