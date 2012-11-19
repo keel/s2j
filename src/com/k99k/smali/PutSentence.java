@@ -7,6 +7,7 @@ import java.util.ArrayList;
 
 import org.apache.log4j.Logger;
 
+import com.k99k.tools.RandomUtil;
 import com.k99k.tools.StringUtil;
 
 /**
@@ -115,6 +116,13 @@ public class PutSentence extends Sentence {
 //			this.out.append(left).append(" = ").append(v2.getOut());
 			this.rightValue = v2.getOut();
 			v = v2;
+			if (v2.getKey().equals("new-array")) {
+				//多维数组赋值 
+				NewSentence v2Sen = (NewSentence) v2.getSen();
+				if (v2Sen.getArrName() != null) {
+					this.setRightValue(v2Sen.getArrName());
+				}
+			}
 		}else if(type == 'a'){
 			Var v1 = this.mgr.getVar(ws[2]);
 			Var v2 = this.mgr.getVar(ws[3]);
@@ -135,7 +143,7 @@ public class PutSentence extends Sentence {
 					String v3Out = v3.getOut();
 					if (v3Out.startsWith("new ")) {
 						String le = v3.getValue().toString();
-						String vv = v3.getName()+v2.getName();
+						String vv = v3.getName()+v2.getName()+RandomUtil.getRandomInt(1, 99);
 						if (!v3Sen.isFilled()) {
 							v3Sen.setOut(le.trim()+" "+vv+" = "+v3Out);
 						}
@@ -143,8 +151,16 @@ public class PutSentence extends Sentence {
 						this.setRightValue(vv);
 					}
 				}else if(v1.getKey().equals("new-array")){
-					NewSentence v3Sen = (NewSentence) v1.getSen();
-					this.arrNewSen = v3Sen;
+					NewSentence v1Sen = (NewSentence) v1.getSen();
+					this.arrNewSen = v1Sen;
+					if (v1Sen.getArrName() == null) {
+						Var nv = v1Sen.getVar();
+						String vv = v1.getName()+v2.getName()+RandomUtil.getRandomInt(1, 99);
+						if (!v1Sen.isFilled()) {
+							v1Sen.setOut(nv.getValue()+" "+vv+" = "+nv.getOut());
+						}
+						v1Sen.setArrName(vv);
+					}
 				}
 //			}
 			
