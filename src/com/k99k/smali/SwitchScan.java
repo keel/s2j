@@ -33,14 +33,19 @@ public class SwitchScan {
 	private int len;
 	
 	/**
-	 * 是否有default语句
+	 * switch块结束的gotoTag
 	 */
-	private boolean hasDefault = false;
+	private String switchEnd;
+	
+//	/**
+//	 * 是否有default语句
+//	 */
+//	private boolean hasDefault = false;
 	
 	@SuppressWarnings("unchecked")
 	public void scan(){
 		for (int i = 0; i < this.len; i++) {
-			String end = null;
+//			String endTagName = null;
 			Sentence s = this.senList.get(i);
 			if (s.getName().equals("switch") && s.getState() == Sentence.STATE_DOING) {
 				SwitchSentence ss = (SwitchSentence)s;
@@ -48,7 +53,7 @@ public class SwitchScan {
 				if (key.equals("packed-switch") || key.equals("sparse-switch")) {
 					//定位到switch的起始句,结束位置
 					String tag = ss.getDataTag();
-					ArrayList<String> cases = (ArrayList<String>) this.mgr.getVar(tag).getValue();
+					HashMap<String,String> cases = (HashMap<String,String>) this.mgr.getVar(tag).getValue();
 					if (cases == null || cases.size() <= 0) {
 //						Logger.getLogger(name)
 						log.error(this.mgr.getMeth().getName()+" - switch cases not found:"+ss.getLine());
@@ -56,37 +61,51 @@ public class SwitchScan {
 					}
 					Sentence se = null;
 					//如果i+1并不是goto或gotoTag语句，则肯定有default
-					hasDefault = false;
+					boolean hasDefault = false;
 					int insertPo = i+1;
 					for (int j = insertPo; j < this.senList.size(); j++) {
 						se = this.senList.get(j);
 						if (se.getName().equals("gotoTag")) {
-							end = se.getLine();
+//							endTagName = se.getLine();
+							this.switchEnd =  se.getLine();
 							break;
 						}else if(se.getName().equals("goto")){
 							GotoSentence gt = (GotoSentence)se;
-							end = gt.getTarget();
+//							endTagName = gt.getTarget();
+							this.switchEnd =gt.getTarget();
 							break;
 						}else if(se.getName().equals("return")){
-							//log.error(this.mgr.getMeth().getName()+" - switch end not found:"+se.getLine());
+							log.error(this.mgr.getMeth().getName()+" - switch end not found:"+se.getLine());
+							this.switchEnd = se.getLine();
 							break;
-						}else if(se.getName().equals("tag")){
+						}else if(se.getType() == Sentence.TYPE_STRUCT){
 							continue;
 						}
+//						else if(se.getName().equals("switch")){
+//							//已经到达case块了
+//							continue;
+//						}
 						else{
 							hasDefault = true;
 							continue;
 						}
 					}
-					se.appendOut(StaticUtil.NEWLINE+StaticUtil.TABS[se.level]+"} //end of switch");
-					se.over();
+//					se.appendOut(StaticUtil.NEWLINE+StaticUtil.TABS[se.level]+"} //end of switch");
+//					se.over();
+					
 					//加入位置
 					int startIndex = insertPo;
 					
 					//找到对应的case集合,准备移动
-					ArrayList<Sentence> caseLs = this.findCases(cases, startIndex, end);
-					
+					ArrayList<Sentence> caseLs = this.findCases(cases, startIndex, this.switchEnd,hasDefault);
+					OtherSentence endSwitch = new OtherSentence(mgr, "//end of switch");
+					endSwitch.setOut("} //end of switch");
+					endSwitch.setLevel(se.getLevel());
+					endSwitch.setType(Sentence.TYPE_STRUCT);
+					endSwitch.over();
+					caseLs.add(endSwitch);
 					this.senList.addAll(startIndex,caseLs);
+					
 					s.over();
 				}
 				
@@ -97,28 +116,21 @@ public class SwitchScan {
 	
 	/**
 	 * 取出所有的case块的集合
-	 * @param caseData
+	 * @param cases
 	 * @param startIndex
 	 * @param endGoto
 	 * @return
 	 */
-	private ArrayList<Sentence> findCases(ArrayList<String> caseData,int startIndex,String endGoto){
-		//cases用于防止被方法内的其他switch干扰
-		HashMap<String,String> cases = new HashMap<String, String>();
-		for (int i = 0; i < caseData.size(); i++) {
-			String[] ss = caseData.get(i).split(",");
-			if (!cases.containsKey(ss[0])) {
-				cases.put(ss[0], ss[1]);
-			}
-		}
-		
-//		Collections.sort(caseData, comp); //按实际出现的次序
-		//caseLs:所有case语句块集合
-		HashMap<String,ArrayList<Sentence>> caseLs = new HashMap<String, ArrayList<Sentence>>();
+	private ArrayList<Sentence> findCases(HashMap<String,String> cases,int startIndex,String endGoto,boolean hasDefault){
 		//加入default
-		if (this.hasDefault) {
-			Sentence fs = null;
-			ArrayList<Sentence> dls = new ArrayList<Sentence>();
+		ArrayList<Sentence> dls = new ArrayList<Sentence>();
+		if (hasDefault) {
+			//添加default到第一句
+			OtherSentence sws = new OtherSentence(mgr, "default:");
+			sws.setOut("default:");
+			sws.setType(Sentence.TYPE_STRUCT);
+			sws.over();
+			//dls为default case语句集
 			for (int i = startIndex; i < this.senList.size(); i++) {
 				Sentence s = this.senList.get(i);
 				if (s.getName().equals("gotoTag") || s.getName().equals("goto")) {
@@ -129,11 +141,15 @@ public class SwitchScan {
 //					this.senList.remove(i);
 					break;
 				}else{
-					if (fs == null) {
-						fs = s;
-					}
 					if (s.getName().equals("switch") && (s.getLine().startsWith(":pswitch_") || s.getLine().startsWith(":sswitch_"))) {
 						//default块前方引用的:pswitch_0 或:sswitch_0
+						if (cases.containsKey(s.getLine())) {
+							//这里不再是default，而是case
+							s.setOut(cases.get(s.getLine()));
+//							sws.setOut(cases.get(s.getLine()));
+							//直接从cases中去掉不再处理
+							cases.remove(s.getLine());
+						}
 						s.over();
 					}
 					dls.add(s);
@@ -142,63 +158,61 @@ public class SwitchScan {
 				}
 			}
 			//添加default到第一句
-			OtherSentence sws = new OtherSentence(mgr, "default:");
-			sws.setOut("default:");
-			sws.setType(Sentence.TYPE_STRUCT);
-			sws.over();
 			dls.add(0, sws);
-			//fs.setOut("default:"+StaticUtil.NEWLINE+StaticUtil.TABS[fs.level]+fs.getOut());
-			caseLs.put("default", dls);
-			startIndex++;
+//			startIndex++;
 		}
+		ArrayList<Sentence> ls = new ArrayList<Sentence>();
+		
 		//其他cases
 		for (int i = startIndex; i < this.senList.size(); i++) {
 			Sentence s = this.senList.get(i);
 			if (s.getName().equals("switch") && cases.containsKey(s.getLine())) {
 				String caseName = cases.get(s.getLine());
 				//case块开始的case句
-				s.setOut(caseName+":");
+				s.setOut(caseName);
 				s.over();
-//				ls.add(s);
-				this.senList.remove(i);
 				//case块
+				this.senList.remove(i);
 				ArrayList<Sentence> cls = this.caseOne(endGoto, i,cases);
 				cls.add(0, s);
-				caseLs.put(caseName, cls);
-				//ls.addAll(this.caseOne(endGoto, i,cases));
+				//向上包含tag和gotoTag语句
+//				if (!hasReturnCase) {
+					for (int j = i-1; j > 0;j-- ) {
+						Sentence pres = this.senList.get(j);
+						if (pres.getName().equals("tag") || pres.getName().equals("gotoTag")) {
+							if (pres.getLine().equals(this.switchEnd)) {
+								//这是switch块之后的语句,放弃处理,原取出的块放回原位,cls变成空的
+								s.setOut("//"+s.getLine());
+								this.senList.addAll(i,cls);
+								i = i+cls.size();
+								cls = new ArrayList<Sentence>();
+								break;
+							}else{
+								cls.add(0,pres);
+								this.senList.remove(j);
+								i--;
+							}
+						}else{
+							break;
+						}
+					}
+//				}
+				
+				ls.addAll(cls);
 				//继续从原位置向后
 				i--;
 			}
 		}
-		
-		ArrayList<Sentence> ls = new ArrayList<Sentence>();
-		for (int i = 0; i < caseData.size(); i++) {
-			String[] ss = caseData.get(i).split(",");
-			if (caseLs.containsKey(ss[1])) {
-				ls.addAll(caseLs.get(ss[1]));
-			}else{
-				//未找到的case可能是其他case重复的内容,从cases中找到原来的
-				if (cases.containsKey(ss[0])) {
-					String cName = cases.get(ss[0]);
-					ArrayList<Sentence> cls = caseLs.get(cName);
-					OtherSentence sws = new OtherSentence(mgr, ss[0]);
-					sws.setOut(ss[1]+":");
-					sws.setType(Sentence.TYPE_STRUCT);
-					sws.over();
-					ls.add(sws);
-					for (int j = 1; j < cls.size(); j++) {
-						ls.add(cls.get(j));
-					}
-				}else{
-					log.error(this.mgr.getMeth().getName()+" case not found:"+ss[1]+","+ss[0]);
-				}
-			}
-		}
 		if (hasDefault) {
-			ls.addAll(caseLs.get("default"));
+			ls.addAll(dls);
 		}
 		return ls;
 	}
+	
+	/**
+	 * 
+	 */
+	private boolean hasReturnCase = false;
 	
 	/**
 	 * 取出某一个case块的语句
@@ -209,12 +223,22 @@ public class SwitchScan {
 	 */
 	private ArrayList<Sentence> caseOne(String endGoto,int startIndex,HashMap<String,String> cases){
 		ArrayList<Sentence> ls = new ArrayList<Sentence>();
+		
 		for (int i = startIndex; i < this.senList.size();) {
 			Sentence s = this.senList.get(i);
 			if (s.getName().equals("goto")) {
 				GotoSentence gt = (GotoSentence)s;
 				if (gt.getTarget().equals(endGoto)) {
-					gt.setOut("break;");
+					//FIXME 这里暂时用out中是否包含return 判断，未判明return是否是有效java语句
+					boolean hasReturn = false;
+					if (this.senList.get(i-1).getOut().indexOf("return ")>-1) {
+						hasReturn = true;
+					}
+					if (hasReturn) {
+						gt.setOut("//break;");
+					}else{
+						gt.setOut("break;");
+					}
 					//此处将goto彻底变为switch语句,不再if处理中受影响
 					gt.setSwitch();
 					gt.over();
@@ -235,6 +259,8 @@ public class SwitchScan {
 					s.setOut(s.getOut().substring(2));
 				}
 				ls.add(s);
+				this.senList.remove(i);
+				hasReturnCase = true;
 				break;
 			}else if(s.getName().equals("switch")){
 				String t = s.getLine();
@@ -242,29 +268,32 @@ public class SwitchScan {
 					break;
 				}
 			}
+			
 			ls.add(this.senList.remove(i));
 		}
+		
+				
 		return ls;
 	}
 	
 	
-	private final CompareCase comp = new CompareCase();
-	/**
-	 * case比较器
-	 * @author keel
-	 *
-	 */
-	class CompareCase implements Comparator<String>{
-
-		@Override
-		public int compare(String s1, String s2) {
-			String n1 = s1.split(",")[2];//s1.substring(s1.indexOf("_")+1,s1.indexOf(","));
-			String n2 = s2.split(",")[2];//s2.substring(s2.indexOf("_")+1,s2.indexOf(","));
-			if (StringUtil.isDigits(n1) && StringUtil.isDigits(n2)) {
-				return Integer.parseInt(n1)-Integer.parseInt(n2);
-			}
-			return 0;
-		}
-		
-	}
+//	private final CompareCase comp = new CompareCase();
+//	/**
+//	 * case比较器
+//	 * @author keel
+//	 *
+//	 */
+//	class CompareCase implements Comparator<String>{
+//
+//		@Override
+//		public int compare(String s1, String s2) {
+//			String n1 = s1.split(",")[2];//s1.substring(s1.indexOf("_")+1,s1.indexOf(","));
+//			String n2 = s2.split(",")[2];//s2.substring(s2.indexOf("_")+1,s2.indexOf(","));
+//			if (StringUtil.isDigits(n1) && StringUtil.isDigits(n2)) {
+//				return Integer.parseInt(n1)-Integer.parseInt(n2);
+//			}
+//			return 0;
+//		}
+//		
+//	}
 }

@@ -109,6 +109,11 @@ public class TagSentence extends Sentence {
 	private boolean isLastElseStart = false;
 	
 	/**
+	 * 是否为最后一个else块的结尾
+	 */
+	private boolean isLastElseEnd = false;
+	
+	/**
 	 * 设置结构的结束符,可多次设置，每次增加一个}号
 	 */
 	public final TagSentence setEndStruct(){
@@ -159,6 +164,24 @@ public class TagSentence extends Sentence {
 			return this.out.toString();
 		}
 	}
+
+
+	/**
+	 * @return the isLastElseEnd
+	 */
+	public final boolean isLastElseEnd() {
+		return isLastElseEnd;
+	}
+
+
+
+	/**
+	 * @param isLastElseEnd the isLastElseEnd to set
+	 */
+	public final void setLastElseEnd(boolean isLastElseEnd) {
+		this.isLastElseEnd = isLastElseEnd;
+	}
+
 
 
 	/**

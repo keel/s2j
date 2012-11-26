@@ -65,11 +65,18 @@ public class MoveSentence extends Sentence {
 			//使用前一个invoke语句生成的Var,改变其name后加入到Var集合
 			Var v = last.getVar();
 			String name = ws[1];
-			v.setName(name);
-//			v.setOutVar(true);
-			this.mgr.setVar(v);
+			Var leftVar = this.mgr.getVar(name);
+			if (leftVar != null && ComputeSentence.isLocalVar(leftVar, this.mgr.isStatic())) {
+				this.out.append(leftVar.getOut()).append(" = ");
+				this.type = Sentence.TYPE_LINE;
+			}else{
+				v.setName(name);
+				this.mgr.setVar(v);
+			}
+			
 			this.var = v;
-			this.setOut(v.getOut());
+			this.out.append(v.getOut());
+//			this.setOut(v.getOut());
 			//将last语句显示去掉
 			last.setType(Sentence.TYPE_NOT_LINE);
 			last.over();
@@ -111,7 +118,7 @@ public class MoveSentence extends Sentence {
 			v1.setValue(v2.getValue());
 			this.mgr.setVar(v1);
 			this.var = v1;
-			if (show) {
+			if (show && (!v2.getOut().equals("[exception]"))) {
 				this.setOut(v1.getOut()+" = "+ v2.getOut());
 				this.type = Sentence.TYPE_LINE;
 			}else{

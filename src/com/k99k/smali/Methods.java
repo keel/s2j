@@ -118,7 +118,7 @@ public class Methods extends Context {
 			}
 			return true;
 		}else{
-			this.err = "//ERR: Method,some prop missed. props:"+this.returnStr+","+this.name;
+			this.err = "ERR: Method,some prop missed. props:"+this.returnStr+","+this.name;
 			return false;
 		}
 	}

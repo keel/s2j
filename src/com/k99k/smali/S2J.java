@@ -142,17 +142,17 @@ public class S2J {
 						if (!con.parse()) {
 							String err = con.err;
 							Context errc = new ErrContext(this, null);
-							errc.err = "//parse ERR"+err+StaticUtil.NEWLINE;
+							errc.err = "parse ERR "+err+StaticUtil.NEWLINE;
 							contexts.add(errc);
 						}
 					}else{
 						con = new ErrContext(this, null);
-						con.err = "//FIXME context not found! key: "+key;
+						con.err = "FIXME context not found! key: "+key;
 					}
 					contexts.add(con);
 				}else{
 					Context con = new ErrContext(this, null);
-					con.err ="//FIXME key is empty! line: "+nextLine;
+					con.err ="FIXME key is empty! line: "+nextLine;
 					contexts.add(con);
 				}
 			}
@@ -217,7 +217,9 @@ public class S2J {
 		String to = "g:/udb";
 		to = "F:/works/workspace_keel/udb/src";
 		doFolder(from, to);
-		log.error("=========================== END =======================================================================\r\n\r\n====================================================================================");
+		log.error("==================================================================================");
+		log.error("==================================== END =========================================");
+		log.error("==================================================================================");
 		System.out.println("--------- END ----------");
 		*/
 		

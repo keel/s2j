@@ -478,6 +478,7 @@ public class SentenceMgr {
 				break;
 			}
 		}
+		
 		//处理return 的对象语句
 		String reStr = this.getMeth().getReturnStr();
 		reStr = (reStr.equals("")) ? "void" : reStr;
@@ -560,12 +561,17 @@ public class SentenceMgr {
 			log.error(this.getMeth().getName()+" goto return pre sen can't getVar.!!!!!!!!!!!!");
 			return false;
 		}
+		String vout = v.getOut();
+//		if (rs.getLine().startsWith("move ")) {
+//			//move语句的var并未移动原值,需要修改vout为原值
+//			vout = this.getVar(rs.getLine().split(" ")[2]).getOut();
+//		}
 		if (v.getName()==null || !v.getName().equals(returnKey)) {
 			//这表示goto仅起到转向的作用，并不影响return
 			log.error(this.getMeth().getName()+" goto return pre sen getVar() can't match returnKey.!!!!!!!!!!!!");
 			return true;
 		}
-		String outs = ((v.getOut().equals("0") || v.getOut().equals("1")) ? (Var.checkIout(this.meth.getReturnStr(), v.getOut()) +" /* " + v.getOut() +" */") : v.getOut());
+		String outs = ((vout.equals("0") || vout.equals("1")) ? (Var.checkIout(this.meth.getReturnStr(), vout) +" /* " + vout +" */") : vout);
 		if (rs.getName().equals("invoke") || rs.getLine().startsWith("move-result")) {
 			rs.setOut("return "+ outs);
 		}else{

@@ -4,6 +4,7 @@
 package com.k99k.smali;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.apache.log4j.Logger;
 
@@ -44,7 +45,8 @@ public class SwitchSentence extends Sentence {
 		this.line = this.line.replaceAll(",", "");
 		String[] ws = this.line.split(" ");
 		this.key = ws[0];
-		ArrayList<String> cases = new ArrayList<String>();
+//		ArrayList<String> cases = new ArrayList<String>();
+		HashMap<String,String> cases = new HashMap<String, String>();
 		if (key.equals("packed-switch") || key.equals("sparse-switch")) {
 			//switch
 			Var v = new Var(this);
@@ -89,7 +91,20 @@ public class SwitchSentence extends Sentence {
 				int start = Integer.parseInt(StringUtil.a16to10(ws[1]));
 				int slen = this.switchKey.size();
 				
-				//由第一项决定case中间是否有需要跳过的空项
+				
+				for (int i = 0; i < slen; i++) {
+					int cii = start+i;
+//					String caseval = "case " + cii;
+					String caseStr = this.switchKey.get(i);
+					if (cases.containsKey(caseStr)) {
+						cases.put(caseStr, cases.get(caseStr)+" case "+cii+": ");
+					}else{
+						cases.put(caseStr, "case "+cii+": ");
+					}
+//					cases.add(caseStr+","+caseval+","+cii);
+				}
+				
+				/*//由第一项决定case中间是否有需要跳过的空项
 				String caseStr = this.switchKey.get(0);
 				String add = StringUtil.a16to10(caseStr.substring(caseStr.indexOf("_")+1));
 				int ci = Integer.parseInt(add);
@@ -108,16 +123,23 @@ public class SwitchSentence extends Sentence {
 //					}
 					caseval = "case " + (i+start);
 					cases.add(caseStr+","+caseval+","+cii);
-				}
+				}*/
 				
 			}else{
 				//.sparse-switch ,非顺序型的case条件集
 				int slen = this.switchKey.size();
-				cases = new ArrayList<String>();
+//				cases = new ArrayList<String>();
 				for (int i = 0; i < slen; i++) {
 					String[] ss = this.switchKey.get(i).split(" -> ");
 					String caseval = "case " + StringUtil.a16to10(ss[0]);
-					cases.add(ss[1]+","+caseval+","+StringUtil.a16to10(ss[1].substring(ss[1].indexOf("_")+1)));
+//					cases.add(ss[1]+","+caseval+","+StringUtil.a16to10(ss[1].substring(ss[1].indexOf("_")+1)));
+					String caseStr = ss[1];
+//					cases.put(ss[1], caseval+":");
+					if (cases.containsKey(caseStr)) {
+						cases.put(caseStr, cases.get(caseStr)+caseval+": ");
+					}else{
+						cases.put(caseStr, caseval+": ");
+					}
 				}
 			}
 			String tag = this.mgr.getLastSentence().getLine();

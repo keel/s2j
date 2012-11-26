@@ -159,6 +159,7 @@ public class IFStructScan {
 	
 	
 	private int reCheckIfBlock(IfSentence outIf,int outStart,int outEnd,int level,boolean isDoWhile){
+		boolean isElse = false;
 		for (int i = outStart+1; i < outEnd; i++) {
 			Sentence s = this.senList.get(i);
 			s.setLevel(level);
@@ -275,16 +276,21 @@ public class IFStructScan {
 				
 			}
 			//TODO 未在else块内做level定义
-//			else if(s.getName().equals("tag") && ((TagSentence)s).isLastElseStart()){
-//				level++;
-//			}
+			else if(s.getName().equals("tag") && ((TagSentence)s).isLastElseStart()){
+				level++;
+				isElse = true;
+				level = this.reCheckIfBlock(new IfSentence(mgr, ""), i, outEnd, level, false);
+			}
 		}
 		if (this.senList.size() != outEnd) {
 			TagSentence endTag = (TagSentence)this.senList.get(outEnd);
-			if (endTag.getOut().startsWith("do")) {
+			if (endTag.getOut().startsWith("do") || endTag.isLastElseEnd()) {
 				endTag.over();
 			}else{
 				endTag.setEndStruct().over();
+				if (isElse) {
+					endTag.setLastElseEnd(true);
+				}
 			}
 			outIf.over();
 	
@@ -307,8 +313,8 @@ public class IFStructScan {
 					this.ifEndMap.remove(removeKeys[i]);
 				}
 			}
-			level--;
 		}
+		level--;
 		return level;
 	}
 
@@ -360,15 +366,11 @@ public class IFStructScan {
 		}
 	}
 
+	
+	
 	private void shiftIfBlock(){
-		//用于保存ifs之前的gotoTag
-//		GotoTagSentence preGotoTag = null;
 		for (int i = 0; i < this.senList.size(); i++) {
 			Sentence s = this.senList.get(i);
-//			if (s.getName().equals("gotoTag")) {
-//				preGotoTag = (GotoTagSentence)s;
-//				continue;
-//			}else
 			if (s.getName().equals("if") && s.getState() == Sentence.STATE_DOING) {
 				IfSentence ifs = (IfSentence)s;
 				int[] re = this.defineIfBlock(i);
@@ -417,12 +419,9 @@ public class IFStructScan {
 								break;
 							}
 						}
-//							//不可能为return
-//							else if(s1.getName().equals("return")){
-//								break;
-//							}
 					}
 					//确定插入的位置 ----------------------
+					//FIXME 其实可直接将移动块最后的goto语句对应的gotoTag做为插入点,应该更为准确
 					int po = -1;
 					//是否需要最后移动（跳过gotoTag之前的tag等）
 					boolean lastMove = true;
@@ -550,12 +549,6 @@ public class IFStructScan {
 						//if语句将移动块的第一句保存为insertPoSen
 						gotoTag.setInserPoSen(ls.get(0));
 					}
-					//插入取出的块 -----------------
-					if (po > -1) {
-						this.senList.addAll(po, ls);
-					}else{
-						log.error(this.mgr.getMeth().getName()+" - insert po can not be found: "+ifs.getOut());
-					}
 					//合并条件并处理初步结构--------------------------
 					if (ifs.isWhile()) {
 						ifs = this.mergeWhileConds(i, re);
@@ -564,20 +557,43 @@ public class IFStructScan {
 					}else{
 						ifs = this.mergeConds(i, re,this.senList.get(re[0]).getLineNum()+1F);
 						
-//						//处理直接的return,更多的由reCheck去处理
-//						if (ifs.isToReturn()) {
-//							TagSentence ifTag = ifs.getCondTag();
-//							//直接复制return句的输出
-////							if (this.mgr.getMeth().getReturnStr().equals("void")) {
-////							}else{
-////								
-////							}
-//							ifTag.setOut(new StringBuilder(this.returnSentence.getOut()).append(StaticUtil.NEWLINE).append(StaticUtil.TABS[ifTag.level]).append(ifTag.getOut()).toString());
-//						}
 						//处理最后的else块
 						if (!ls.get(1).getName().equals("if")) {
-							this.addLastElse(ls.get(0),ls.get(ls.size()-1));
+							//对于if后面只有return的情况特殊处理,不加入else块
+							Sentence onlyReturn = null;
+							for (int k = re[0]+1; k < this.senList.size(); k++) {
+								Sentence sk = this.senList.get(k);
+								String skName = sk.getName();
+								if (skName.equals("tag") || skName.equals("gotoTag") || skName.equals("switch")) {
+									continue;
+								}else if(skName.equals("return")){
+									onlyReturn = sk;
+									break;
+								}else{
+									break;
+								}
+							}
+							if (onlyReturn != null) {
+								//不加入else块，直接补一个return
+								OtherSentence returnSen = new OtherSentence(mgr, "reverseIF make return");
+								returnSen.setOut(onlyReturn.getOut());
+								returnSen.setType(Sentence.TYPE_LINE);
+								returnSen.over();
+								returnSen.setLevel(onlyReturn.level);
+								ls.add(0,returnSen);
+							}else{
+								//一般情况,设置else块的开始和结束
+								this.addLastElse(ls.get(0),ls.get(ls.size()-1));
+							}
 						}
+					}
+					//插入取出的块 -----------------
+					if (po > -1) {
+						this.senList.addAll(po, ls);
+					}else{
+						log.error(this.mgr.getMeth().getName()+" - insert po can not be found: "+ifs.getOut());
+						//插入回原位置
+						this.senList.addAll(tagIndex, ls);
 					}
 				}else{
 					//正常if
