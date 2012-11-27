@@ -226,7 +226,7 @@ public class SwitchScan {
 		
 		for (int i = startIndex; i < this.senList.size();) {
 			Sentence s = this.senList.get(i);
-			if (s.getName().equals("goto")) {
+			if (s.getName().equals("goto") || s.getName().equals("switch_goto")) {
 				GotoSentence gt = (GotoSentence)s;
 				if (gt.getTarget().equals(endGoto)) {
 					//FIXME 这里暂时用out中是否包含return 判断，未判明return是否是有效java语句

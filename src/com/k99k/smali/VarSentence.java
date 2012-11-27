@@ -82,6 +82,7 @@ public class VarSentence extends Sentence {
 			v.setValue(Long.decode(value.replace("L", "")));
 			value = String.valueOf(v.getValue());
 		}else if(type.equals("float")){
+			/* 先直接使用原16进制值
 			StringBuilder sb = new StringBuilder(value);
 			//去掉0x,不足8位补到8位,注意负数保留负号
 			if (sb.charAt(0) == '-') {
@@ -103,8 +104,11 @@ public class VarSentence extends Sentence {
 				v.setValue(fv);
 				flag = "";
 			}
-			value = String.valueOf(v.getValue())+flag+" /*"+value+"*/";
+			//value = String.valueOf(v.getValue())+flag+" /*"+value+"* /";
+			*/
+			v.setValue(value);
 		}else if(type.equals("double")){
+			/* 先直接使用原16进制值
 			StringBuilder sb = new StringBuilder(value);
 			//去掉0x,不足8位补到8位
 			if (sb.charAt(0) == '-') {
@@ -126,9 +130,10 @@ public class VarSentence extends Sentence {
 				v.setValue(fv);
 				flag = "";
 			}
-			value = String.valueOf(v.getValue())+flag+" /*"+value+"*/";
+			//value = String.valueOf(v.getValue())+flag+" /*"+value+"* /";
+			*/
+			v.setValue(value);
 		}else if(type.equals("Class")){
-			//TODO 无法确定Class值 ,暂存String
 			v.setValue(value);
 		}
 		//仅输出value

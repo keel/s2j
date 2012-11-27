@@ -559,32 +559,32 @@ public class IFStructScan {
 						
 						//处理最后的else块
 						if (!ls.get(1).getName().equals("if")) {
-							//对于if后面只有return的情况特殊处理,不加入else块
-							Sentence onlyReturn = null;
-							for (int k = re[0]+1; k < this.senList.size(); k++) {
-								Sentence sk = this.senList.get(k);
-								String skName = sk.getName();
-								if (skName.equals("tag") || skName.equals("gotoTag") || skName.equals("switch")) {
-									continue;
-								}else if(skName.equals("return")){
-									onlyReturn = sk;
-									break;
-								}else{
-									break;
-								}
-							}
-							if (onlyReturn != null) {
-								//不加入else块，直接补一个return
-								OtherSentence returnSen = new OtherSentence(mgr, "reverseIF make return");
-								returnSen.setOut(onlyReturn.getOut());
-								returnSen.setType(Sentence.TYPE_LINE);
-								returnSen.over();
-								returnSen.setLevel(onlyReturn.level);
-								ls.add(0,returnSen);
-							}else{
+//							//对于if后面只有return的情况特殊处理,不加入else块
+//							Sentence onlyReturn = null;
+//							for (int k = re[0]+1; k < this.senList.size(); k++) {
+//								Sentence sk = this.senList.get(k);
+//								String skName = sk.getName();
+//								if (skName.equals("tag") || skName.equals("gotoTag") || skName.equals("switch")) {
+//									continue;
+//								}else if(skName.equals("return")){
+//									onlyReturn = sk;
+//									break;
+//								}else{
+//									break;
+//								}
+//							}
+//							if (onlyReturn != null) {
+//								//不加入else块，直接补一个return
+//								OtherSentence returnSen = new OtherSentence(mgr, "reverseIF make return");
+//								returnSen.setOut(onlyReturn.getOut());
+//								returnSen.setType(Sentence.TYPE_STRUCT);
+//								returnSen.over();
+//								returnSen.setLevel(onlyReturn.level);
+//								ls.add(0,returnSen);
+//							}else{
 								//一般情况,设置else块的开始和结束
 								this.addLastElse(ls.get(0),ls.get(ls.size()-1));
-							}
+//							}
 						}
 					}
 					//插入取出的块 -----------------

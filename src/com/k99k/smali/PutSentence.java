@@ -171,6 +171,20 @@ public class PutSentence extends Sentence {
 					}
 				}
 //			}
+				else{
+					//需要确认右边的输出
+					String obj = v1.getClassName().replaceAll("\\[\\]", "");
+					String right = null;
+					if (String.valueOf(v3.getValue()).equals("0")){
+						right = Var.checkIout(obj, "0") +" /* " + v3.getOut() +" */";
+					}else{
+						right = Var.checkIout(obj, v3.getOut());
+					}
+					if (obj.equals("int") && (!v3.getClassName().equals("int")) && StringUtil.isDigits(v3.getValue())) {
+						right = String.valueOf(v3.getValue());
+					}
+					this.rightValue = right;
+				}
 			
 			//TODO 对于数组中的索引对象,如果是VarSentence,暂时先不removeSentence,仅标为over,可能会有其他地方用到
 			//其他情况不进行处理
