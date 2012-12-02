@@ -267,6 +267,14 @@ public class TryCatchScan {
 				this.senList.remove(j);
 				ls.add(s1);
 				j--;
+				//隐掉上一个endofCatch
+				Sentence pre = this.senList.get(addP-1);
+				if (pre != null && pre.getName().equals("goto")) {
+					GotoSentence gg = (GotoSentence)pre;
+					if (gg.isEndOfCatch()) {
+						gg.setOut("//"+gg.getOut());
+					}
+				}
 				this.senList.addAll(addP+1, ls);
 				gt.over();
 				ts.over();

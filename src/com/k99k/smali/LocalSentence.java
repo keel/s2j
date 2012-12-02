@@ -89,6 +89,17 @@ public class LocalSentence extends Sentence {
 			}else{
 				val = "true";
 			}
+		}else{
+			String right = null;
+			if (val.equals("0")){
+				right = Var.checkIout(obj, "0");
+			}else{
+				right = Var.checkIout(obj, val);
+			}
+			if (obj.equals("int") && (!ov.getClassName().equals("int")) && StringUtil.isDigits(ov.getValue())) {
+				right = String.valueOf(ov.getValue());
+			}
+			val = right;
 		}
 		
 		
