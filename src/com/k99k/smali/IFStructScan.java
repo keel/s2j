@@ -34,54 +34,14 @@ public class IFStructScan {
 	
 	private HashMap<String,TagSentence> condMap = new HashMap<String, TagSentence>();
 	
-//	private ArrayList<Sentence> ifsList = new ArrayList<Sentence>();
+	private ArrayList<IfSentence> ifsLink = new ArrayList<IfSentence>();
 	
-//	/**
-//	 * 某一内容块相关的if语句集
-//	 */
-//	private ArrayList<Sentence> ifls = new ArrayList<Sentence>();
-
-//	/**
-//	 * 是否已包含内容块
-//	 */
-//	private boolean contentIn = false;
-	
-//	/**
-//	 * 内容块反向开始的lineNum,注意是反向开始,数值>contStart
-//	 */
-//	private int contStart = -1;
-//	/**
-//	 * 内容块反向结束的lineNum,注意是反向结束,数值<contStart
-//	 */
-//	private int contEnd = -1;
-//	/**
-//	 * return开始行所在的senList中的index,保存此位置以在return后置后识别后置前if的真正endSen
-//	 */
-//	private int returnLineNum = -1;
 	
 	/**
 	 * return语句
 	 */
 	private ReturnSentence returnSentence;
 	
-//	/**
-//	 * return 所在的index
-//	 */
-//	private int returnIndex = -1;
-	
-//	/**
-//	 * 本语句中最大的lineNum
-//	 */
-//	private int maxLineNum = -1;
-//	/**
-//	 * contStart 所在Sen在senList中的index,注意是内容块下方结束位置
-//	 */
-//	private int contStartIndex = -1;
-//	
-//	/**
-//	 * contEnd所在Sen在senList中的index,注意是内容块上方结束位置
-//	 */
-//	private int contEndIndex = -1;
 	/**
 	 * 每个if内容块内结束标记map,用于判断是否为else
 	 */
@@ -119,6 +79,20 @@ public class IFStructScan {
 			this.shiftIfBlock();
 			
 			this.finishIf();
+			
+			/*
+			IfScaner ifScaner  = null;
+			for (int i = 0; i < this.senList.size(); i++) {
+				Sentence s = this.senList.get(i);
+				if (s.getName().equals("if") && s.getState() != Sentence.STATE_OVER) {
+					ifScaner = new IfScaner((IfSentence)s, this, i, this.mgr.getMeth().getName());
+					break;
+				}
+			}
+			if (ifScaner != null) {
+				ifScaner.scan();
+			}*/
+			
 			
 		} catch (Exception e) {
 			log.error(this.mgr.getMeth().getName()+" ERR:"+e.getStackTrace()[0]);
@@ -690,7 +664,7 @@ public class IFStructScan {
 	 * @param endRE defineIfBlock结果
 	 * @return 合并后的IfSentence
 	 */
-	private IfSentence mergeWhileConds(int startIndex,int[] endRE){
+	IfSentence mergeWhileConds(int startIndex,int[] endRE){
 		
 		IfSentence lastIf = (IfSentence) this.senList.get(endRE[1]);
 		//特定的同if处理情况
@@ -762,7 +736,7 @@ public class IFStructScan {
 	 * @param endRE defineIfBlock的结果
 	 * @return 合并后的IfSentence
 	 */
-	private IfSentence mergeConds(int startIndex,int[] endRE,float contentLn){
+	IfSentence mergeConds(int startIndex,int[] endRE,float contentLn){
 		IfSentence ifs = null;
 		if (startIndex == endRE[0]) {
 			ifs = (IfSentence) this.senList.get(startIndex);
@@ -1128,6 +1102,65 @@ public class IFStructScan {
 		
 		
 		return true;
+	}
+
+	/**
+	 * @return the senList
+	 */
+	final ArrayList<Sentence> getSenList() {
+		return senList;
+	}
+
+	/**
+	 * @return the ifScanerList
+	 */
+	final ArrayList<IfSentence> getIfsLink() {
+		return ifsLink;
+	}
+	
+	final void addToIfsLink(IfSentence ifs){
+		this.ifsLink.add(ifs);
+	}
+	
+	/**
+	 * 如果本句为while，此HashMap保存if之前的所有tag和gotoTag
+	 */
+	private HashMap<Integer,IfSentence> whileStartTags = new HashMap<Integer, IfSentence>();
+	
+	final boolean isInWhileStartTag(int lineNum){
+		return this.whileStartTags.containsKey(lineNum);
+	}
+	
+	final IfSentence getWhileFromWhileStartTags(int lineNum){
+		return this.whileStartTags.get(lineNum);
+	}
+	
+	final void addWhileStartTag(int tagLineNum,IfSentence ifs){
+		this.whileStartTags.put(tagLineNum, ifs);
+	}
+	
+	private IfSentence currentWhile;
+	
+	final void setCurrentWhile(IfSentence ifs){
+		this.currentWhile = ifs;
+	}
+	
+	final IfSentence getCurrentWhile(){
+		return this.currentWhile;
+	}
+	
+	private HashMap<Integer,IfSentence> whileEndTags = new HashMap<Integer, IfSentence>();
+
+	final boolean isInWhileEndTag(int lineNum){
+		return this.whileEndTags.containsKey(lineNum);
+	}
+	
+	final IfSentence getWhileFromWhileEndTags(int lineNum){
+		return this.whileEndTags.get(lineNum);
+	}
+	
+	final void addWhileEndTag(int tagLineNum,IfSentence ifs){
+		this.whileEndTags.put(tagLineNum, ifs);
 	}
 	
 }

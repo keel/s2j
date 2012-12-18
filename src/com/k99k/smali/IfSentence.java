@@ -117,6 +117,26 @@ public class IfSentence extends Sentence {
 	 */
 	private TagSentence specialTag = null;
 	
+	private IfScaner ifScaner;
+	
+
+	/**
+	 * @return the ifScaner
+	 */
+	final IfScaner getIfScaner() {
+		return ifScaner;
+	}
+
+
+
+	/**
+	 * @param ifScaner the ifScaner to set
+	 */
+	final void setIfScaner(IfScaner ifScaner) {
+		this.ifScaner = ifScaner;
+	}
+
+
 
 	/**
 	 * 有特定的tag则返回特定的tag，用于mergeWhile
@@ -466,23 +486,23 @@ public class IfSentence extends Sentence {
 		this.isClosePre = isClosePre;
 	}
 
-	/**
-	 * @param isDoWhile the isDoWhile to set
-	 */
-	public final void setDoWhile(boolean isDoWhile) {
-		if (isDoWhile) {
-			this.isClosePre = isDoWhile;
-			this.ifCond = "while";
-			this.isReversed = true;
-		}else{
-			this.isClosePre = false;
-			if (this.isWhile()) {
-				this.ifCond = "while";
-			}else{
-				this.ifCond = "if";
-			}
-		}
-	}
+//	/**
+//	 * @param isDoWhile the isDoWhile to set
+//	 */
+//	public final void setDoWhile(boolean isDoWhile) {
+//		if (isDoWhile) {
+//			this.isClosePre = isDoWhile;
+//			this.ifCond = "while";
+//			this.isReversed = true;
+//		}else{
+//			this.isClosePre = false;
+//			if (this.isWhile()) {
+//				this.ifCond = "while";
+//			}else{
+//				this.ifCond = "if";
+//			}
+//		}
+//	}
 
 	
 	/**

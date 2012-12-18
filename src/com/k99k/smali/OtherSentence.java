@@ -16,7 +16,7 @@ public class OtherSentence extends TagSentence {
 	 */
 	public OtherSentence(SentenceMgr mgr, String line) {
 		super(mgr, line);
-		this.type = Sentence.TYPE_NOT_LINE;
+		this.type = Sentence.TYPE_STRUCT;
 	}
 	private String name = "other";
 	
