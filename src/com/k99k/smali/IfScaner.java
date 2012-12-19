@@ -192,8 +192,28 @@ class IfScaner {
 				GotoSentence gt = (GotoSentence)s;
 				if (s.getState() != Sentence.STATE_OVER) {
 					GotoTagSentence gtTag = (GotoTagSentence) gt.getTargetSen();
-					
-					
+					if (!gotoTurn && this.lastGotoInCond !=null && this.lastGotoInCond.getTargetSen().getLineNum() == gt.getTargetSen().getLineNum()) {
+						//else块插入
+						int moveStart = this.senList.indexOf(this.condLink.get(0));
+						int endLineNum = this.condLink.get(this.condLink.size()-1).getLineNum();
+						ArrayList<Sentence> ls = new ArrayList<Sentence>();
+						while (moveStart < this.senList.size()) {
+							Sentence s1 = this.senList.remove(moveStart);
+							ls.add(s1);
+							if (s1.getLineNum() == endLineNum) {
+								break;
+							}
+						}
+						this.cond.setOut("} else {");
+						this.cond.over();
+						ls.add(this.makeEnd());
+						this.senList.addAll(i,ls);
+						this.ifScan.mergeConds(this.ifPo, this.ifArea, this.senList.get(this.ifArea[0]).getLineNum()+1F);
+						this.ifs.over();
+						this.lastGotoInCond.over();
+						s.over();
+						return true;
+					}
 					i = this.senList.indexOf(gtTag)-1;
 					this.lastGotoInIf = gt;
 					gotoTurn = true;
@@ -288,6 +308,7 @@ class IfScaner {
 						//判断return;
 						toReturn = true;
 						this.condLink.add(s);
+						this.lastGotoInCond = gt;
 						gt.over();
 						break;
 					}else if(this.ifScan.isInWhileStartTag(gtTagLineNum)){
