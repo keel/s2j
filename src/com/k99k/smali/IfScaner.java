@@ -65,13 +65,17 @@ class IfScaner {
 	private int ifBlockStart = -1;
 	
 	/**
+	 * if条件数组:[条件块真正结束的index,最后一个if的index]
+	 */
+	private int[] ifArea; 
+	/**
 	 * 初始化IfScaner
 	 */
 	private void init(int ifsPo){
 		this.senList = ifScan.getSenList();
 		this.cond = ifs.getCondTag();
-		int[] re = this.defineIfBlock(ifsPo);
-		for (int i = re[0]+1; i < this.senList.size(); i++) {
+		ifArea = this.defineIfBlock(ifsPo);
+		for (int i = ifArea[0]+1; i < this.senList.size(); i++) {
 			Sentence s = this.senList.get(i);
 			if (s.getName().equals("tag") || s.getName().equals("gotoTag")) {
 				continue;
@@ -83,6 +87,18 @@ class IfScaner {
 		}
 		this.ifScan.addToIfsLink(ifs);
 		ifs.setIfScaner(this);
+	}
+	
+	/**
+	 * 重新初始化,用于在发生移动之后重新定位相关的位置
+	 */
+	private void reInit(){
+		int newIfsIndex = this.senList.indexOf(this.ifs);
+		//偏移量
+		int plus = newIfsIndex - this.ifPo;
+		this.ifPo = newIfsIndex;
+		this.ifArea = this.defineIfBlock(ifPo);
+		ifBlockStart = ifBlockStart + plus;
 	}
 	
 	/**
@@ -110,16 +126,14 @@ class IfScaner {
 			ls.add(cond);
 			//插入
 			this.ifs.setWhile();
-			int[] re = this.defineIfBlock(this.ifPo);
-			this.ifScan.mergeWhileConds(this.ifPo, re);
+			this.senList.addAll(this.ifArea[0]+1, ls);
+			this.ifScan.mergeWhileConds(this.ifPo, this.ifArea);
 			this.ifs.over();
-			this.senList.addAll(this.ifPo+1, ls);//FIXME 应该插入到re[1]+1
 			return;
 		}else if(isDoWhile){
 			this.ifs.setDoWhile();
-			int[] re = this.defineIfBlock(this.ifPo);
-			this.ifScan.mergeConds(this.ifPo, re, this.senList.get(re[0]).getLineNum()+1F);
 			this.cond.setOut("do {");
+			this.ifScan.mergeConds(this.ifPo, ifArea, this.senList.get(ifArea[0]).getLineNum()+1F);
 			this.cond.over();
 			return;
 		}else {
@@ -141,7 +155,7 @@ class IfScaner {
 	 */
 	private boolean scanIfBlock(int start){
 		boolean gotoTurn = false;
-		int[] re = this.defineIfBlock(this.ifPo);
+		int lastSenIndex = start;
 		for (int i = start; i < this.senList.size(); i++) {
 			Sentence s = this.senList.get(i);
 			if(s.getName().equals("if") && s.getState() != Sentence.STATE_OVER){
@@ -150,16 +164,16 @@ class IfScaner {
 				IfScaner scaner = new IfScaner(ifsen, ifScan, i,methName);
 				scaner.scan();
 				i = this.senList.indexOf(s)-1;
+				this.reInit();
 				continue;
-			}else if (s.getLineNum() == this.cond.getLineNum() || s.getLineNum() == this.firstSenAfterCond.getLineNum()) {
+			}else if (s.getLineNum() == this.cond.getLineNum() || (firstSenAfterCond!= null && s.getLineNum() == this.firstSenAfterCond.getLineNum())) {
 				//普通if(无else)
-				this.ifScan.mergeConds(this.ifPo, re, this.senList.get(re[0]).getLineNum()+1F);
-				this.ifs.over();
+				
 				if (!gotoTurn) {
 					this.cond.setEndStruct().over();
 				}else{
-					int addPo = i;
-					for (int j = i-1; j >=0; j--) {
+					int addPo = lastSenIndex;
+					for (int j = lastSenIndex-1; j >=0; j--) {
 						Sentence s1 = this.senList.get(j);
 						if (s1.getName().equals("tag") || s1.getName().equals("gotoTag")) {
 							addPo--;
@@ -169,7 +183,10 @@ class IfScaner {
 					}
 					this.senList.add(addPo, this.makeEnd());
 					this.cond.over();
+					this.lastGotoInIf.over();
 				}
+				this.ifScan.mergeConds(this.ifPo, this.ifArea, this.senList.get(this.ifArea[0]).getLineNum()+1F);
+				this.ifs.over();
 				return true;
 			}else if(s.getName().equals("goto")){
 				GotoSentence gt = (GotoSentence)s;
@@ -180,6 +197,7 @@ class IfScaner {
 					i = this.senList.indexOf(gtTag)-1;
 					this.lastGotoInIf = gt;
 					gotoTurn = true;
+					lastSenIndex++;
 				}else{
 					
 				}
@@ -200,7 +218,7 @@ class IfScaner {
 					this.cond.over();
 					ls.add(this.makeEnd());
 					this.senList.addAll(i,ls);
-					this.ifScan.mergeConds(this.ifPo, re, this.senList.get(re[0]).getLineNum()+1F);
+					this.ifScan.mergeConds(this.ifPo, this.ifArea, this.senList.get(this.ifArea[0]).getLineNum()+1F);
 					this.ifs.over();
 					this.lastGotoInCond.over();
 					s.over();
@@ -210,13 +228,15 @@ class IfScaner {
 			}else if(s.getName().equals("return")){
 				break;
 			}
-			
+			if (!gotoTurn) {
+				lastSenIndex = i;
+			}
 			
 		}
 		
 		log.error(this.methName+"-scanIfBlock failed. can't find else insert point!");
 		//作为普通if处理
-		this.ifScan.mergeConds(this.ifPo, re, this.senList.get(re[0]).getLineNum()+1F);
+		this.ifScan.mergeConds(this.ifPo, this.ifArea, this.senList.get(ifArea[0]).getLineNum()+1F);
 		this.ifs.over();
 		this.cond.setEndStruct().over();
 		return false;
@@ -249,10 +269,14 @@ class IfScaner {
 					IfScaner scaner = new IfScaner(ifsen, ifScan, i,methName);
 					scaner.scan();
 					i = this.senList.indexOf(s)-1;
+					this.reInit();
 					continue;
 				}
 			}else if (s.getName().equals("return")) {
 				toReturn = true;
+				if (firstSenAfterCond == null) {
+					firstSenAfterCond = s;
+				}
 				break;
 			}else if(s.getName().equals("goto")){
 				GotoSentence gt = (GotoSentence)s;
@@ -325,9 +349,14 @@ class IfScaner {
 		return endCond;
 	}
 	
+	/**
+	 * 定位if条件块,去除if条件之外的if
+	 * @param beginIndex 开始if的index,包含
+	 * @return 数组:[条件块真正结束的index,最后一个if的index]
+	 */
 	private int[] defineIfBlock(int beginIndex){
 		int endIndex = beginIndex;
-		int lastCondIndex = beginIndex;
+		int lastIfIndex = beginIndex;
 		int realEndIndex = endIndex;
 		//正向查询,先将连续的if和tag扫描完
 		for (int i = beginIndex; i < this.senList.size(); i++) {
@@ -343,70 +372,39 @@ class IfScaner {
 			}
 		}
 		//beginIndex到endIndex为index区域
-		boolean hasAReverseTag = false;
-		int lastIfTagIndex = -1;
+		boolean over = false;
+		//lastCondIndex为唯一指向非if区块的tag语句位置
+		int lastCondIndex = -1;
 		for (int i = beginIndex; i <= endIndex ; i++) {
 			Sentence s = this.senList.get(i);
 			if (s.getName().equals("if")) {
 				IfSentence ifs = (IfSentence)s;
 				int condIndex = this.senList.indexOf(ifs.getCondTag());
-				if (condIndex>=beginIndex && condIndex <= endIndex) {
-					//cond在index区块内
-					lastCondIndex = i;
+				if (condIndex >= beginIndex && condIndex <= endIndex) {
 					realEndIndex = i;
+					lastIfIndex = i;
 					continue;
-				}else if(condIndex < i){
-					//倒置tag
-					if (!hasAReverseTag) {
-						//有一个if对应的倒置tag可以不在这个index区域内
-						hasAReverseTag = true;
-						lastCondIndex = i;
+				}else if(over && condIndex == lastCondIndex){
+					realEndIndex = i;
+					lastIfIndex = i;
+					continue;
+				}else{
+					if (!over) {
+						lastIfIndex = i;
 						realEndIndex = i;
-						continue;
-					}else if(lastIfTagIndex == -1){
-						//最末一个if对应的tag以及以tag对应的其他if可以不在这个index区域内
-						lastIfTagIndex = condIndex;
-						lastCondIndex = i;
-						realEndIndex = i;
-						continue;
-					}else if(lastIfTagIndex == condIndex){
-						lastCondIndex = i;
-						realEndIndex = i;
+						over = true;
+						lastCondIndex = condIndex;
 						continue;
 					}else{
 						break;
 					}
-				}else if(lastIfTagIndex == -1){
-					//最末一个if对应的tag以及以tag对应的其他if可以不在这个index区域内
-					lastIfTagIndex = condIndex;
-					lastCondIndex = i;
-					realEndIndex = i;
-					continue;
-				}else if(lastIfTagIndex == condIndex){
-					lastCondIndex = i;
-					realEndIndex = i;
-					continue;
-				}else{
-					break;
 				}
 			}else if(s.getName().equals("tag")){
-				TagSentence tag = (TagSentence)s;
-				//注意只对应最上方的if的index
-				int ifIndex = this.senList.indexOf(tag.getIfSen());
-				if (ifIndex >= beginIndex && ifIndex <= endIndex) {
-					realEndIndex = i;
-					continue;
-				}else{
-					break;
-				}
-			}else{
-				break;
+				realEndIndex = i;
+				continue;
 			}
 		}
-		if (realEndIndex < beginIndex) {
-			realEndIndex = beginIndex;
-		}
-		return new int[]{realEndIndex,lastCondIndex};
+		return new int[]{realEndIndex,lastIfIndex};
 	}
 
 	/**

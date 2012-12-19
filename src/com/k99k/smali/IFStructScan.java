@@ -74,13 +74,14 @@ public class IFStructScan {
 		}
 		
 		try {
+			/*
 			this.setIfContendEnd();
 			
 			this.shiftIfBlock();
 			
 			this.finishIf();
+			*/
 			
-			/*
 			IfScaner ifScaner  = null;
 			for (int i = 0; i < this.senList.size(); i++) {
 				Sentence s = this.senList.get(i);
@@ -91,7 +92,7 @@ public class IFStructScan {
 			}
 			if (ifScaner != null) {
 				ifScaner.scan();
-			}*/
+			}
 			
 			
 		} catch (Exception e) {
