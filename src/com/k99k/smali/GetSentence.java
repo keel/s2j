@@ -58,7 +58,7 @@ public class GetSentence extends Sentence {
 			//对于v1引用的语句，如果不成行则可去除
 			Sentence s = v1.getSen();
 			if (s != null) {
-				if (s.getState()>=Sentence.STATE_DONE && s.getType() == Sentence.TYPE_NOT_LINE) {
+				if (s.getType() == Sentence.TYPE_NOT_LINE) {
 					//暂时先使用removeSentence
 					this.mgr.removeSentence(s);
 					s.type = Sentence.TYPE_NOT_LINE;
@@ -107,7 +107,7 @@ public class GetSentence extends Sentence {
 		//v.setValue(value);
 //		v.setOutVar(true);
 		this.mgr.setVar(v);
-		this.done();
+//		this.done();
 		return true;
 	}
 	

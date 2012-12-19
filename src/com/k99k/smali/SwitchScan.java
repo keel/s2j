@@ -4,13 +4,9 @@
 package com.k99k.smali;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
-
 import org.apache.log4j.Logger;
 
-import com.k99k.tools.StringUtil;
 
 /**
  * @author keel
@@ -212,7 +208,7 @@ public class SwitchScan {
 	/**
 	 * 
 	 */
-	private boolean hasReturnCase = false;
+//	private boolean hasReturnCase = false;
 	
 	/**
 	 * 取出某一个case块的语句
@@ -226,8 +222,9 @@ public class SwitchScan {
 		
 		for (int i = startIndex; i < this.senList.size();) {
 			Sentence s = this.senList.get(i);
-			if (s.getName().equals("goto") || s.getName().equals("switch_goto")) {
-				GotoSentence gt = (GotoSentence)s;
+			//if (s.getName().equals("goto") || s.getName().equals("switch_goto")) {
+			if (s.getName().equals("goto")) {
+						GotoSentence gt = (GotoSentence)s;
 				if (gt.getTarget().equals(endGoto)) {
 					//FIXME 这里暂时用out中是否包含return 判断，未判明return是否是有效java语句
 					boolean hasReturn = false;
@@ -240,7 +237,7 @@ public class SwitchScan {
 						gt.setOut("break;");
 					}
 					//此处将goto彻底变为switch语句,不再if处理中受影响
-					gt.setSwitch();
+//					gt.setSwitch();
 					gt.over();
 					ls.add(gt);
 					this.senList.remove(i);
@@ -260,7 +257,7 @@ public class SwitchScan {
 				}
 				ls.add(s);
 				this.senList.remove(i);
-				hasReturnCase = true;
+//				hasReturnCase = true;
 				break;
 			}else if(s.getName().equals("switch")){
 				String t = s.getLine();

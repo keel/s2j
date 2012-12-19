@@ -178,9 +178,9 @@ public class GotoSentence extends Sentence {
 		return this.name;
 	}
 	
-	public void setSwitch(){
-		this.name = "switch_goto";
-	}
+//	public void setSwitch(){
+//		this.name = "switch_goto";
+//	}
 	
 	
 	/**

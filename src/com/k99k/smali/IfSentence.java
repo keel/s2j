@@ -242,7 +242,8 @@ public class IfSentence extends Sentence {
 	private void render(){
 		if(isClosePre){
 			this.out.append("} ");
-		}else if (isElse) {
+		}
+		if (isElse) {
 			this.out.append("else ");
 		}else if(this.isDoWhile){
 			this.out.append("} ");
@@ -251,7 +252,7 @@ public class IfSentence extends Sentence {
 		this.out.append(" (");
 		this.out.append(getCondOut());
 		this.out.append(")");
-		if (this.isClosePre || this.isDoWhile) {
+		if (this.isDoWhile) {
 			this.out.append(";");
 		}else{
 			this.out.append(" {");
@@ -369,7 +370,7 @@ public class IfSentence extends Sentence {
 		this.ifCond = "while";
 		
 	}
-	
+
 	public void setDoWhile(){
 		this.ifCond = "while";
 		this.isDoWhile = true;
