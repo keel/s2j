@@ -87,11 +87,10 @@ public class IFStructScan {
 				Sentence s = this.senList.get(i);
 				if (s.getName().equals("if") && s.getState() != Sentence.STATE_OVER) {
 					ifScaner = new IfScaner((IfSentence)s, this, i, this.mgr.getMeth().getName());
-					break;
+					ifScaner.scan();
+					i = this.senList.indexOf(s)+1;
+//					break;
 				}
-			}
-			if (ifScaner != null) {
-				ifScaner.scan();
 			}
 			
 			

@@ -136,6 +136,7 @@ class IfScaner {
 			this.cond.setOut("do {");
 			this.ifScan.mergeConds(this.ifPo, ifArea, this.senList.get(ifArea[0]).getLineNum()+1F);
 			this.cond.over();
+			this.ifs.over();
 			return;
 		}else {
 			//扫描if区
