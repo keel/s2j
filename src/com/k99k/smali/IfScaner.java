@@ -69,6 +69,21 @@ class IfScaner {
 	 * if条件数组:[条件块真正结束的index,最后一个if的index]
 	 */
 	private int[] ifArea; 
+	
+	/**
+	 * 是否执行了if块扫描
+	 */
+	private boolean scanIfBlock = false;
+	
+	/**
+	 * 被外部If的tag打断cond扫描
+	 */
+	private boolean stopByOutIf = false;
+	
+	/**
+	 * 内部的if块到达了cond位置, 需要作为普通if处理
+	 */
+	private boolean innerIfReachCondTag = false;
 	/**
 	 * 初始化IfScaner
 	 */
@@ -130,6 +145,9 @@ class IfScaner {
 			this.senList.addAll(this.ifArea[0]+1, ls);
 			this.ifScan.mergeWhileConds(this.ifPo, this.ifArea);
 			this.ifs.over();
+			if (this.lastGotoInCond != null) {
+				this.lastGotoInCond.over();
+			}
 			return;
 		}else if(isDoWhile){
 			this.ifs.setDoWhile();
@@ -145,8 +163,8 @@ class IfScaner {
 			
 		}
 		
-		if (condToReturn) {
-			
+		if (this.scanIfBlock) {
+			this.ifScan.removeIfScanTag(this.cond.getLineNum());
 		}
 	}
 	
@@ -158,6 +176,9 @@ class IfScaner {
 	private boolean scanIfBlock(int start){
 		boolean gotoTurn = false;
 		int lastSenIndex = start;
+		//将if的cond作为scan结束的停止句
+		this.ifScan.addIfScanTag(this.cond.getLineNum(), ifs);
+		this.scanIfBlock = true;
 		//gtMap用于防止同一goto反复循环
 		HashMap<Integer,Sentence> gtMap = new HashMap<Integer, Sentence>();
 		for (int i = start; i < this.senList.size(); i++) {
@@ -200,6 +221,10 @@ class IfScaner {
 						//else块插入
 						elseInsert(i,s);
 						return true;
+					}else if(this.stopByOutIf){
+						//else块插入
+						elseInsert(i,s);
+						return true;
 					}
 					if (gtMap.containsKey(gt.getLineNum())) {
 						break;
@@ -215,8 +240,29 @@ class IfScaner {
 				}
 			}else if(s.getName().equals("gotoTag")){
 				if (this.lastGotoInCond != null && this.lastGotoInCond.getTargetSen().getLineNum() == s.getLineNum()) {
-					//else块插入
-					elseInsert(i,s);
+					if (this.innerIfReachCondTag) {
+						//内部if碰到了condTag，应判断为普通if,但需要移动
+						int moveStart = this.senList.indexOf(this.condLink.get(0));
+						int endLineNum = this.condLink.get(this.condLink.size()-1).getLineNum();
+						ArrayList<Sentence> ls = new ArrayList<Sentence>();
+						while (moveStart < this.senList.size()) {
+							Sentence s1 = this.senList.remove(moveStart);
+							ls.add(s1);
+							if (s1.getLineNum() == endLineNum) {
+								break;
+							}
+						}
+						this.cond.setEndStruct().over();
+						this.senList.addAll(i,ls);
+						this.ifScan.mergeConds(this.ifPo, this.ifArea, this.senList.get(this.ifArea[0]).getLineNum()+1F);
+						this.ifs.over();
+						if (lastGotoInCond != null) {
+							this.lastGotoInCond.over();
+						}
+					}else{
+						//else块插入
+						elseInsert(i,s);
+					}
 					return true;
 				}
 				
@@ -263,9 +309,9 @@ class IfScaner {
 						ifsen.getIfScaner().setDoWhile(true);
 					}
 					toReturn = false;
-					if (this.lastGotoInCond != null) {
-						this.lastGotoInCond.over();
-					}
+//					if (this.lastGotoInCond != null) {
+//						this.lastGotoInCond.over();
+//					}
 					break;
 				}else{
 					//创建新ifScaner进行处理
@@ -291,8 +337,10 @@ class IfScaner {
 						//判断return;
 						toReturn = true;
 						this.condLink.add(s);
-						this.lastGotoInCond = gt;
-						gt.over();
+						if (!gotoTurn) {
+							this.lastGotoInCond = gt;
+						}
+//						gt.over();
 						break;
 					}else if(this.ifScan.isInWhileStartTag(gtTagLineNum)){
 						//判断continue
@@ -305,7 +353,9 @@ class IfScaner {
 							gt.setContinue("someWhile", whileSen.getOut());
 						}
 						gt.over();
-						this.condLink.add(s);
+						if (!gotoTurn) {
+							this.condLink.add(s);
+						}
 						break;
 					}else if(this.ifScan.isInWhileEndTag(gtTagLineNum)){
 						//判断break
@@ -318,7 +368,9 @@ class IfScaner {
 							gt.setBreak("someWhile", whileSen.getOut());
 						}
 						gt.over();
-						this.condLink.add(s);
+						if (!gotoTurn) {
+							this.condLink.add(s);
+						}
 						break;
 					}
 					//防止反复循环
@@ -328,7 +380,9 @@ class IfScaner {
 						gtMap.put(gt.getLineNum(), gt);
 					}
 					i = this.senList.indexOf(gtTag);
-					this.lastGotoInCond = gt;
+					if (!gotoTurn) {
+						this.lastGotoInCond = gt;
+					}
 					gotoTurn = true;
 					this.condLink.add(s);
 					continue;
@@ -338,6 +392,11 @@ class IfScaner {
 						this.lastGotoInCond = gt;
 					}
 				}
+			}else if(this.ifScan.isInIfScanTag(s.getLineNum())){
+				//处理到了外部if块的cond，需要结束
+				this.stopByOutIf = true;
+				this.ifScan.getIfScanTag(s.getLineNum()).getIfScaner().setInnerIfReachCondTag(true);
+				break;
 			}
 			//其他语句直接加入cond链,除了turn之后的
 			if (!gotoTurn) {
@@ -387,7 +446,9 @@ class IfScaner {
 		this.senList.addAll(i,ls);
 		this.ifScan.mergeConds(this.ifPo, this.ifArea, this.senList.get(this.ifArea[0]).getLineNum()+1F);
 		this.ifs.over();
-		this.lastGotoInCond.over();
+		if (lastGotoInCond != null) {
+			this.lastGotoInCond.over();
+		}
 		s.over();
 	}
 	
@@ -490,6 +551,20 @@ class IfScaner {
 			}
 		}
 		//FIXME do while也有break
+	}
+
+	/**
+	 * @return the innerIfReachCondTag
+	 */
+	final boolean isInnerIfReachCondTag() {
+		return innerIfReachCondTag;
+	}
+
+	/**
+	 * @param innerIfReachCondTag the innerIfReachCondTag to set
+	 */
+	final void setInnerIfReachCondTag(boolean innerIfReachCondTag) {
+		this.innerIfReachCondTag = innerIfReachCondTag;
 	}
 
 	/**

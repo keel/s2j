@@ -1163,4 +1163,23 @@ public class IFStructScan {
 		this.whileEndTags.put(tagLineNum, ifs);
 	}
 	
+	/**
+	 * 用于ifScaner在扫描If块时，将Tag作为结束句
+	 */
+	private HashMap<Integer,IfSentence> ifScanTags = new HashMap<Integer, IfSentence>();
+
+	final boolean isInIfScanTag(int lineNum){
+		return this.ifScanTags.containsKey(lineNum);
+	}
+	
+	final void addIfScanTag(int tagLineNum,IfSentence ifs){
+		this.ifScanTags.put(tagLineNum, ifs);
+	}
+	final IfSentence getIfScanTag(int lineNum){
+		return this.ifScanTags.get(lineNum);
+	}
+	
+	final void removeIfScanTag(int tagLineNum){
+		this.ifScanTags.remove(tagLineNum);
+	}
 }

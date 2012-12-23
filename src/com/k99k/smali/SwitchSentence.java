@@ -35,6 +35,13 @@ public class SwitchSentence extends Sentence {
 //	private ArrayList<String> cases;
 	
 	private String key;
+	
+	@Override
+	public boolean debug() {
+		this.exec();
+		this.over();
+		return true;
+	}
 
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Sentence#exec()
