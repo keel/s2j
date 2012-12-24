@@ -1138,7 +1138,9 @@ public class IFStructScan {
 	final void addWhileStartTag(int tagLineNum,IfSentence ifs){
 		this.whileStartTags.put(tagLineNum, ifs);
 	}
-	
+	final void removeWhileStartTag(int tagLineNum){
+		this.whileStartTags.remove(tagLineNum);
+	}
 	private IfSentence currentWhile;
 	
 	final void setCurrentWhile(IfSentence ifs){
@@ -1161,6 +1163,9 @@ public class IFStructScan {
 	
 	final void addWhileEndTag(int tagLineNum,IfSentence ifs){
 		this.whileEndTags.put(tagLineNum, ifs);
+	}
+	final void removeWhileEndTag(int tagLineNum){
+		this.whileEndTags.remove(tagLineNum);
 	}
 	
 	/**

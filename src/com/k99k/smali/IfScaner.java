@@ -89,8 +89,8 @@ class IfScaner {
 	 */
 	private void init(int ifsPo){
 		this.senList = ifScan.getSenList();
-		this.cond = ifs.getCondTag();
 		ifArea = this.defineIfBlock(ifsPo);
+		this.cond = (TagSentence)this.senList.get(this.ifArea[2]);
 		for (int i = ifArea[0]+1; i < this.senList.size(); i++) {
 			Sentence s = this.senList.get(i);
 			if (s.getName().equals("tag") || s.getName().equals("gotoTag")) {
@@ -148,6 +148,7 @@ class IfScaner {
 			if (this.lastGotoInCond != null) {
 				this.lastGotoInCond.over();
 			}
+			clearWhileTags();
 			return;
 		}else if(isDoWhile){
 			this.ifs.setDoWhile();
@@ -155,6 +156,7 @@ class IfScaner {
 			this.ifScan.mergeConds(this.ifPo, ifArea, this.senList.get(ifArea[0]).getLineNum()+1F);
 			this.cond.over();
 			this.ifs.over();
+//			clearWhileTags();
 			return;
 		}else {
 			//扫描if区
@@ -306,7 +308,8 @@ class IfScaner {
 					if (gotoTurn) {
 						ifsen.getIfScaner().setWhile(true);
 					}else{
-						ifsen.getIfScaner().setDoWhile(true);
+//						ifsen.getIfScaner().setDoWhile(true);
+						this.setDoWhile(true);
 					}
 					toReturn = false;
 //					if (this.lastGotoInCond != null) {
@@ -417,6 +420,17 @@ class IfScaner {
 	 * @param s
 	 */
 	private void elseInsert(int i,Sentence s){
+		if (this.condLink.size() == 0) {
+			//因为到达外部if的cond可能导致condLink为空,此时按普通if处理
+			this.senList.add(i,this.makeEnd());
+			this.ifScan.mergeConds(this.ifPo, this.ifArea, this.senList.get(this.ifArea[0]).getLineNum()+1F);
+			this.ifs.over();
+			if (lastGotoInCond != null) {
+				this.lastGotoInCond.over();
+			}
+			s.over();
+			return;
+		}
 		int moveStart = this.senList.indexOf(this.condLink.get(0));
 		int endLineNum = this.condLink.get(this.condLink.size()-1).getLineNum();
 		ArrayList<Sentence> ls = new ArrayList<Sentence>();
@@ -463,7 +477,7 @@ class IfScaner {
 	/**
 	 * 定位if条件块,去除if条件之外的if
 	 * @param beginIndex 开始if的index,包含
-	 * @return 数组:[条件块真正结束的index,最后一个if的index]
+	 * @return 数组:[条件块真正结束的index,最后一个if的index,最后一个if对应的tag的Index(即整个if块的cond)]
 	 */
 	private int[] defineIfBlock(int beginIndex){
 		int endIndex = beginIndex;
@@ -515,7 +529,7 @@ class IfScaner {
 				continue;
 			}
 		}
-		return new int[]{realEndIndex,lastIfIndex};
+		return new int[]{realEndIndex,lastIfIndex,lastCondIndex};
 	}
 
 	/**
@@ -526,16 +540,39 @@ class IfScaner {
 	}
 
 	/**
+	 * 记录本类的whileStartTags
+	 */
+	private ArrayList<Integer> whileTags;
+	/**
+	 * 记录本类的whileEndTags
+	 */
+	private ArrayList<Integer> whileTags2;
+	
+	private void clearWhileTags(){
+		int len = this.whileTags.size();
+		for (int i = 0; i < len; i++) {
+			this.ifScan.removeWhileStartTag(this.whileTags.get(i));
+		}
+		len = this.whileTags2.size();
+		for (int i = 0; i < len; i++) {
+			this.ifScan.removeWhileEndTag(this.whileTags2.get(i));
+		}
+	}
+	
+	/**
 	 * 设置while并处理whileStartTags,whileEndTags,currentWhile
 	 * @param isWhile the isWhile to set
 	 */
 	final void setWhile(boolean isWhile) {
 		this.isWhile = isWhile;
 		if (this.isWhile) {
+			whileTags = new ArrayList<Integer>();
+			whileTags2 = new ArrayList<Integer>();
 			for (int i = this.ifPo-1; i < 0; i--) {
 				Sentence s = this.senList.get(i);
 				if (s.getName().equals("tag") || s.getName().equals("gotoTag")) {
 					this.ifScan.addWhileStartTag(s.getLineNum(),this.ifs);
+					whileTags.add(s.getLineNum());
 				}else{
 					break;
 				}
@@ -545,6 +582,7 @@ class IfScaner {
 				Sentence s = this.senList.get(i);
 				if (s.getName().equals("tag") || s.getName().equals("gotoTag")) {
 					this.ifScan.addWhileEndTag(s.getLineNum(),this.ifs);
+					whileTags2.add(s.getLineNum());
 				}else{
 					break;
 				}
