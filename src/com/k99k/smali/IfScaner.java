@@ -66,7 +66,7 @@ class IfScaner {
 	private int ifBlockStart = -1;
 	
 	/**
-	 * if条件数组:[条件块真正结束的index,最后一个if的index]
+	 * if条件数组:[条件块真正结束的index,最后一个if的index,整个if块对应的cond的index]
 	 */
 	private int[] ifArea; 
 	
@@ -118,23 +118,27 @@ class IfScaner {
 	}
 	
 	/**
+	 * cond块到达return
+	 */
+	private boolean condToReturn = false;
+	/**
 	 * 扫描
 	 */
 	public void scan(){
 		
 		int condPo = this.senList.indexOf(cond);
 		//扫描cond区
-		boolean condToReturn  = this.scanCondBlock(condPo);
+		this.condToReturn  = this.scanCondBlock(condPo);
 		if (isWhile) {
 			//移动块
 			int moveStart = this.senList.indexOf(this.condLink.get(0));
-			int endLineNum = this.condLink.get(this.condLink.size()-1).getLineNum();
+			Sentence endLink = this.condLink.get(this.condLink.size()-1);
 			ArrayList<Sentence> ls = new ArrayList<Sentence>();
 			TagSentence cond = (TagSentence) this.senList.remove(moveStart);
 			while (moveStart < this.senList.size()) {
 				Sentence s = this.senList.remove(moveStart);
 				ls.add(s);
-				if (s.getLineNum() == endLineNum) {
+				if (s == endLink) {
 					break;
 				}
 			}
@@ -143,6 +147,7 @@ class IfScaner {
 			//插入
 			this.ifs.setWhile();
 			this.senList.addAll(this.ifArea[0]+1, ls);
+			this.reInit();
 			this.ifScan.mergeWhileConds(this.ifPo, this.ifArea);
 			this.ifs.over();
 			if (this.lastGotoInCond != null) {
@@ -183,6 +188,8 @@ class IfScaner {
 		this.scanIfBlock = true;
 		//gtMap用于防止同一goto反复循环
 		HashMap<Integer,Sentence> gtMap = new HashMap<Integer, Sentence>();
+		//stopByOutIf时,if块的goto句的index
+		int ifGotoIndex = -1;
 		for (int i = start; i < this.senList.size(); i++) {
 			Sentence s = this.senList.get(i);
 			if(s.getName().equals("if") && s.getState() != Sentence.STATE_OVER){
@@ -209,6 +216,7 @@ class IfScaner {
 						}
 					}
 					this.senList.add(addPo, this.makeEnd());
+					this.reInit();
 					this.cond.over();
 					this.lastGotoInIf.over();
 				}
@@ -224,10 +232,15 @@ class IfScaner {
 						elseInsert(i,s);
 						return true;
 					}else if(this.stopByOutIf){
-						//else块插入
-						elseInsert(i,s);
-						return true;
+						ifGotoIndex = i;
 					}
+//					else if(this.stopByOutIf){
+//						//FIXME 需要判断是否是else，即判断goto的目标句是否是cond
+//						
+//						//else块插入
+//						elseInsert(i,s);
+//						return true;
+//					}
 					if (gtMap.containsKey(gt.getLineNum())) {
 						break;
 					}else{
@@ -245,17 +258,18 @@ class IfScaner {
 					if (this.innerIfReachCondTag) {
 						//内部if碰到了condTag，应判断为普通if,但需要移动
 						int moveStart = this.senList.indexOf(this.condLink.get(0));
-						int endLineNum = this.condLink.get(this.condLink.size()-1).getLineNum();
+						Sentence endLink = this.condLink.get(this.condLink.size()-1);
 						ArrayList<Sentence> ls = new ArrayList<Sentence>();
 						while (moveStart < this.senList.size()) {
 							Sentence s1 = this.senList.remove(moveStart);
 							ls.add(s1);
-							if (s1.getLineNum() == endLineNum) {
+							if (s1 == endLink) {
 								break;
 							}
 						}
 						this.cond.setEndStruct().over();
 						this.senList.addAll(i,ls);
+						this.reInit();
 						this.ifScan.mergeConds(this.ifPo, this.ifArea, this.senList.get(this.ifArea[0]).getLineNum()+1F);
 						this.ifs.over();
 						if (lastGotoInCond != null) {
@@ -276,12 +290,35 @@ class IfScaner {
 			}
 			
 		}
+		//stopByOutIf后无法在if块内处理,作为else块插入
+		if(this.stopByOutIf && ifGotoIndex > -1){
+			//else块插入
+			elseInsert(ifGotoIndex,this.senList.get(ifGotoIndex));
+			return true;
+		}
 		
+		//cond块到达return,if块无接应的情况
+		if (this.condToReturn) {
+			this.ifScan.mergeConds(this.ifPo, this.ifArea, this.senList.get(ifArea[0]).getLineNum()+1F);
+			this.ifs.over();
+			for (int j = this.senList.size()-1; j >= 0 ; j--) {
+				Sentence s = this.senList.get(j);
+				if (s.getName().equals("goto")) {
+					continue;
+				}else{
+					this.senList.add(j+1,this.makeEnd());
+					break;
+				}
+			}
+			this.cond.over();
+			return true;
+		}
 		log.error(this.methName+"-scanIfBlock failed. can't find else insert point!");
 		//作为普通if处理
 		this.ifScan.mergeConds(this.ifPo, this.ifArea, this.senList.get(ifArea[0]).getLineNum()+1F);
 		this.ifs.over();
-		this.cond.setEndStruct().over();
+		this.senList.add(this.makeEnd());
+		this.cond.over();
 		return false;
 	}
 	
@@ -423,6 +460,7 @@ class IfScaner {
 		if (this.condLink.size() == 0) {
 			//因为到达外部if的cond可能导致condLink为空,此时按普通if处理
 			this.senList.add(i,this.makeEnd());
+			this.reInit();
 			this.ifScan.mergeConds(this.ifPo, this.ifArea, this.senList.get(this.ifArea[0]).getLineNum()+1F);
 			this.ifs.over();
 			if (lastGotoInCond != null) {
@@ -432,12 +470,12 @@ class IfScaner {
 			return;
 		}
 		int moveStart = this.senList.indexOf(this.condLink.get(0));
-		int endLineNum = this.condLink.get(this.condLink.size()-1).getLineNum();
+		Sentence endLink = this.condLink.get(this.condLink.size()-1);
 		ArrayList<Sentence> ls = new ArrayList<Sentence>();
 		while (moveStart < this.senList.size()) {
 			Sentence s1 = this.senList.remove(moveStart);
 			ls.add(s1);
-			if (s1.getLineNum() == endLineNum) {
+			if (s1 == endLink) {
 				break;
 			}
 		}
@@ -458,6 +496,7 @@ class IfScaner {
 		}
 		this.cond.over();
 		this.senList.addAll(i,ls);
+		this.reInit();
 		this.ifScan.mergeConds(this.ifPo, this.ifArea, this.senList.get(this.ifArea[0]).getLineNum()+1F);
 		this.ifs.over();
 		if (lastGotoInCond != null) {
