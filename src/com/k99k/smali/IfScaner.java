@@ -84,6 +84,8 @@ class IfScaner {
 	 * 内部的if块到达了cond位置, 需要作为普通if处理
 	 */
 	private boolean innerIfReachCondTag = false;
+
+	
 	/**
 	 * 初始化IfScaner
 	 */
@@ -215,7 +217,7 @@ class IfScaner {
 							break;
 						}
 					}
-					this.senList.add(addPo, this.makeEnd());
+					this.makeEnd(addPo);
 					this.reInit();
 					this.cond.over();
 					this.lastGotoInIf.over();
@@ -230,12 +232,13 @@ class IfScaner {
 					if (!gotoTurn && this.lastGotoInCond !=null && this.lastGotoInCond.getTargetSen().getLineNum() == gt.getTargetSen().getLineNum()) {
 						//else块插入
 						elseInsert(i,s);
+						this.checkWhileContinue(gt);
 						return true;
 					}else if(this.stopByOutIf){
 						ifGotoIndex = i;
 					}
 //					else if(this.stopByOutIf){
-//						//FIXME 需要判断是否是else，即判断goto的目标句是否是cond
+//						//需要判断是否是else，即判断goto的目标句是否是cond
 //						
 //						//else块插入
 //						elseInsert(i,s);
@@ -250,9 +253,8 @@ class IfScaner {
 					this.lastGotoInIf = gt;
 					gotoTurn = true;
 					lastSenIndex++;
-				}else{
-					
 				}
+				this.checkWhileContinue(gt);
 			}else if(s.getName().equals("gotoTag")){
 				if (this.lastGotoInCond != null && this.lastGotoInCond.getTargetSen().getLineNum() == s.getLineNum()) {
 					if (this.innerIfReachCondTag) {
@@ -301,15 +303,7 @@ class IfScaner {
 		if (this.condToReturn) {
 			this.ifScan.mergeConds(this.ifPo, this.ifArea, this.senList.get(ifArea[0]).getLineNum()+1F);
 			this.ifs.over();
-			for (int j = this.senList.size()-1; j >= 0 ; j--) {
-				Sentence s = this.senList.get(j);
-				if (s.getName().equals("goto")) {
-					continue;
-				}else{
-					this.senList.add(j+1,this.makeEnd());
-					break;
-				}
-			}
+			this.makeEnd(this.senList.size()-1);
 			this.cond.over();
 			return true;
 		}
@@ -317,13 +311,27 @@ class IfScaner {
 		//作为普通if处理
 		this.ifScan.mergeConds(this.ifPo, this.ifArea, this.senList.get(ifArea[0]).getLineNum()+1F);
 		this.ifs.over();
-		this.senList.add(this.makeEnd());
+		this.makeEnd(this.senList.size()-1);
 		this.cond.over();
 		return false;
 	}
 	
 	
-	
+	private void checkWhileContinue(GotoSentence gt){
+		GotoTagSentence gtTag = (GotoTagSentence) gt.getTargetSen();
+		int gtTagLineNum = gtTag.getLineNum();
+		if(this.ifScan.isInWhileStartTag(gtTagLineNum)){
+			IfSentence whileSen = this.ifScan.getWhileFromWhileStartTags(gtTagLineNum);
+			IfSentence currentWhile = this.ifScan.getCurrentWhile();
+			if (currentWhile != null && whileSen.getLineNum() == currentWhile.getLineNum()) {
+//				gt.setContinue(null, "");
+				whileSen.getIfScaner().putTopTag(gt);
+			}else{
+				//其他层次的continue
+				gt.setContinue("someWhile", whileSen.getOut());
+			}
+		}
+	}
 	
 	/**
 	 * 扫描cond区
@@ -344,14 +352,14 @@ class IfScaner {
 					//在if链中找到,处理成while或doWhile
 					if (gotoTurn) {
 						ifsen.getIfScaner().setWhile(true);
+						if (this.lastGotoInCond != null) {
+							ifsen.getIfScaner().putTopTag(this.lastGotoInCond);
+						}
 					}else{
 //						ifsen.getIfScaner().setDoWhile(true);
 						this.setDoWhile(true);
 					}
 					toReturn = false;
-//					if (this.lastGotoInCond != null) {
-//						this.lastGotoInCond.over();
-//					}
 					break;
 				}else{
 					//创建新ifScaner进行处理
@@ -361,6 +369,7 @@ class IfScaner {
 					this.reInit();
 					continue;
 				}
+				
 			}else if (s.getName().equals("return")) {
 				toReturn = true;
 				if (firstSenAfterCond == null) {
@@ -369,33 +378,25 @@ class IfScaner {
 				break;
 			}else if(s.getName().equals("goto")){
 				GotoSentence gt = (GotoSentence)s;
+				GotoTagSentence gtTag = (GotoTagSentence) gt.getTargetSen();
+				int gtTagLineNum = gtTag.getLineNum();
 				if (s.getState() != Sentence.STATE_OVER) {
-					GotoTagSentence gtTag = (GotoTagSentence) gt.getTargetSen();
-					int gtTagLineNum = gtTag.getLineNum();
-					
 					if (gtTag.isReturn()) {
 						//判断return;
 						toReturn = true;
 						this.condLink.add(s);
 						if (!gotoTurn) {
 							this.lastGotoInCond = gt;
+							gotoTurn = true;
 						}
 //						gt.over();
 						break;
 					}else if(this.ifScan.isInWhileStartTag(gtTagLineNum)){
 						//判断continue
-						IfSentence whileSen = this.ifScan.getWhileFromWhileStartTags(gtTagLineNum);
-						IfSentence currentWhile = this.ifScan.getCurrentWhile();
-						if (currentWhile != null && whileSen.getLineNum() == currentWhile.getLineNum()) {
-							gt.setContinue(null, "");
-						}else{
-							//其他层次的continue
-							gt.setContinue("someWhile", whileSen.getOut());
-						}
+						this.checkWhileContinue(gt);
 						gt.over();
-						if (!gotoTurn) {
-							this.condLink.add(s);
-						}
+						gotoTurn = true;
+						this.condLink.add(s);
 						break;
 					}else if(this.ifScan.isInWhileEndTag(gtTagLineNum)){
 						//判断break
@@ -408,9 +409,8 @@ class IfScaner {
 							gt.setBreak("someWhile", whileSen.getOut());
 						}
 						gt.over();
-						if (!gotoTurn) {
-							this.condLink.add(s);
-						}
+						gotoTurn = true;
+						this.condLink.add(s);
 						break;
 					}
 					//防止反复循环
@@ -430,6 +430,18 @@ class IfScaner {
 					//已经处理过的goto加入lastGotoInCond
 					if (!gotoTurn) {
 						this.lastGotoInCond = gt;
+					}
+					//判断while中的continue或end
+					if(this.isWhile && (this.removeTopTag(s.getLineNum())!=null)){
+						if (this.isTopTagEmpty()) {
+							//end
+							gotoTurn = true;
+							this.condLink.add(s);
+							break;
+						}else{
+							//continue
+							gt.setContinue(null, "");
+						}
 					}
 				}
 			}else if(this.ifScan.isInIfScanTag(s.getLineNum())){
@@ -459,7 +471,7 @@ class IfScaner {
 	private void elseInsert(int i,Sentence s){
 		if (this.condLink.size() == 0) {
 			//因为到达外部if的cond可能导致condLink为空,此时按普通if处理
-			this.senList.add(i,this.makeEnd());
+			this.makeEnd(i);
 			this.reInit();
 			this.ifScan.mergeConds(this.ifPo, this.ifArea, this.senList.get(this.ifArea[0]).getLineNum()+1F);
 			this.ifs.over();
@@ -492,10 +504,14 @@ class IfScaner {
 		}
 		if (isLastElse) {
 			this.cond.setOut("} else {");
-			ls.add(this.makeEnd());
+			this.makeEnd(ls.size()-1, ls);
 		}
 		this.cond.over();
-		this.senList.addAll(i,ls);
+		if (s.getName().equals("goto")) {
+			this.senList.addAll(i+1,ls);
+		}else{
+			this.senList.addAll(i,ls);
+		}
 		this.reInit();
 		this.ifScan.mergeConds(this.ifPo, this.ifArea, this.senList.get(this.ifArea[0]).getLineNum()+1F);
 		this.ifs.over();
@@ -505,7 +521,62 @@ class IfScaner {
 		s.over();
 	}
 	
-	private final Sentence makeEnd(){
+	
+	/**
+	 * 有可能是while的continue或end
+	 */
+	private HashMap<Integer,Sentence> whileTopTags;
+	
+	void putTopTag(Sentence s){
+		if (this.whileTopTags == null) {
+			this.whileTopTags = new HashMap<Integer, Sentence>();
+		}
+		this.whileTopTags.put(s.getLineNum(), s);
+	}
+	
+	boolean isTopTagEmpty(){
+		if (this.whileTopTags == null) {
+			return true;
+		}
+		return this.whileTopTags.isEmpty();
+	}
+	
+	Sentence removeTopTag(int lineNum){
+		if (this.whileTopTags == null) {
+			return null;
+		}
+		return this.whileTopTags.remove(lineNum);
+	}
+	
+	Sentence getTopTag(int lineNum){
+		if (this.whileTopTags == null) {
+			return null;
+		}
+		return this.whileTopTags.get(lineNum);
+	}
+	
+	/**
+	 * 创建一个OtherSentence作为结束句,并插入到指定位置向上的非goto句位置
+	 */
+	private final void makeEnd(int po){
+		makeEnd(po,this.senList);
+	}
+	
+	private final void makeEnd(int po,ArrayList<Sentence> ls){
+		Sentence endCond = makeAnEnd();
+		for (int i = po; i >= 0; i--) {
+			Sentence s = ls.get(i);
+			if (s.getName().equals("goto")) {
+				continue;
+			}else{
+				ls.add(i+1, endCond);
+				break;
+			}
+		}
+		
+	}
+	
+	private final Sentence makeAnEnd(){
 		OtherSentence endCond = new OtherSentence(this.ifs.mgr, "} //end of if");
 		endCond.setOut(StaticUtil.TABS[this.ifs.getLevel()]+"}");
 		endCond.setType(Sentence.TYPE_STRUCT);
@@ -607,7 +678,7 @@ class IfScaner {
 		if (this.isWhile) {
 			whileTags = new ArrayList<Integer>();
 			whileTags2 = new ArrayList<Integer>();
-			for (int i = this.ifPo-1; i < 0; i--) {
+			for (int i = this.ifPo-1; i >= 0; i--) {
 				Sentence s = this.senList.get(i);
 				if (s.getName().equals("tag") || s.getName().equals("gotoTag")) {
 					this.ifScan.addWhileStartTag(s.getLineNum(),this.ifs);
@@ -617,7 +688,7 @@ class IfScaner {
 				}
 			}
 			this.ifScan.setCurrentWhile(this.ifs);
-			for (int i = this.ifArea[0]; i < this.senList.size(); i++) {
+			for (int i = this.ifArea[0]+1; i < this.senList.size(); i++) {
 				Sentence s = this.senList.get(i);
 				if (s.getName().equals("tag") || s.getName().equals("gotoTag")) {
 					this.ifScan.addWhileEndTag(s.getLineNum(),this.ifs);
