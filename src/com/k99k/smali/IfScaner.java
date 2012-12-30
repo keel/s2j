@@ -45,6 +45,14 @@ class IfScaner {
 	private boolean isWhile = false;
 	
 	private boolean isDoWhile = false;
+	/**
+	 * 可能是do while,用于标记第一次do while
+	 */
+	private boolean maybeDoWhile = false;
+	/**
+	 * 可能是while,用于do while处理
+	 */
+	private boolean maybeWhile = false;
 	
 	private GotoSentence lastGotoInCond;
 	private GotoSentence lastGotoInIf;
@@ -158,23 +166,31 @@ class IfScaner {
 			clearWhileTags();
 			return;
 		}else if(isDoWhile){
-			this.ifs.setDoWhile();
-			this.cond.setOut("do {");
-			this.ifScan.mergeConds(this.ifPo, ifArea, this.senList.get(ifArea[0]).getLineNum()+1F);
-			this.cond.over();
-			this.ifs.over();
+			doWhile();
 //			clearWhileTags();
 			return;
 		}else {
 			//扫描if区
 			this.scanIfBlock(this.ifArea[0]+1);
 			
-			
 		}
 		
 		if (this.scanIfBlock) {
 			this.ifScan.removeIfScanTag(this.cond.getLineNum());
 		}
+	}
+	
+	private boolean doWhile(){
+		if (this.isDoWhile || (!this.isWhile && this.maybeDoWhile)) {
+			this.isDoWhile = true;
+			this.ifs.setDoWhile();
+			this.cond.setOut("do {");
+			this.ifScan.mergeConds(this.ifPo, ifArea, this.senList.get(ifArea[0]).getLineNum()+1F);
+			this.cond.over();
+			this.ifs.over();
+			return true;
+		}
+		return false;
 	}
 	
 	/**
@@ -194,17 +210,9 @@ class IfScaner {
 		int ifGotoIndex = -1;
 		for (int i = start; i < this.senList.size(); i++) {
 			Sentence s = this.senList.get(i);
-			if(s.getName().equals("if") && s.getState() != Sentence.STATE_OVER){
-				IfSentence ifsen = (IfSentence)s;
-				//创建新ifScaner进行处理
-				IfScaner scaner = new IfScaner(ifsen, ifScan, i,methName);
-				scaner.scan();
-				i = this.senList.indexOf(s)-1;
-				this.reInit();
-				continue;
-			}else if (s.getLineNum() == this.cond.getLineNum() || (firstSenAfterCond!= null && s.getLineNum() == this.firstSenAfterCond.getLineNum())) {
+			if (s.getLineNum() == this.cond.getLineNum() || (firstSenAfterCond!= null && s.getLineNum() == this.firstSenAfterCond.getLineNum())) {
 				//普通if(无else)
-				
+				this.maybeDoWhile = false;
 				if (!gotoTurn) {
 					this.cond.setEndStruct().over();
 				}else{
@@ -225,6 +233,14 @@ class IfScaner {
 				this.ifScan.mergeConds(this.ifPo, this.ifArea, this.senList.get(this.ifArea[0]).getLineNum()+1F);
 				this.ifs.over();
 				return true;
+			}else if(s.getName().equals("if") && s.getState() != Sentence.STATE_OVER){
+				IfSentence ifsen = (IfSentence)s;
+				//创建新ifScaner进行处理
+				IfScaner scaner = new IfScaner(ifsen, ifScan, i,methName);
+				scaner.scan();
+				i = this.senList.indexOf(s)-1;
+				this.reInit();
+				continue;
 			}else if(s.getName().equals("goto")){
 				GotoSentence gt = (GotoSentence)s;
 				if (s.getState() != Sentence.STATE_OVER) {
@@ -237,13 +253,6 @@ class IfScaner {
 					}else if(this.stopByOutIf){
 						ifGotoIndex = i;
 					}
-//					else if(this.stopByOutIf){
-//						//需要判断是否是else，即判断goto的目标句是否是cond
-//						
-//						//else块插入
-//						elseInsert(i,s);
-//						return true;
-//					}
 					if (gtMap.containsKey(gt.getLineNum())) {
 						break;
 					}else{
@@ -285,6 +294,9 @@ class IfScaner {
 				}
 				
 			}else if(s.getName().equals("return")){
+				if(this.doWhile()){
+					return true;
+				}
 				break;
 			}
 			if (!gotoTurn) {
@@ -292,6 +304,13 @@ class IfScaner {
 			}
 			
 		}
+		
+
+		//maybeDoWhile为true时，如果在if块中未再次处理到，则确认为do while
+		if(this.doWhile()){
+			return true;
+		}
+		
 		//stopByOutIf后无法在if块内处理,作为else块插入
 		if(this.stopByOutIf && ifGotoIndex > -1){
 			//else块插入
@@ -307,6 +326,14 @@ class IfScaner {
 			this.cond.over();
 			return true;
 		}
+		if (gotoTurn && this.lastGotoInIf !=null) {
+			//else块插入
+			int po = this.senList.indexOf(this.lastGotoInIf);
+			elseInsert(po,lastGotoInIf);
+			this.checkWhileContinue(lastGotoInIf);
+			return true;
+		}
+		
 		log.error(this.methName+"-scanIfBlock failed. can't find else insert point!");
 		//作为普通if处理
 		this.ifScan.mergeConds(this.ifPo, this.ifArea, this.senList.get(ifArea[0]).getLineNum()+1F);
@@ -317,22 +344,6 @@ class IfScaner {
 	}
 	
 	
-	private void checkWhileContinue(GotoSentence gt){
-		GotoTagSentence gtTag = (GotoTagSentence) gt.getTargetSen();
-		int gtTagLineNum = gtTag.getLineNum();
-		if(this.ifScan.isInWhileStartTag(gtTagLineNum)){
-			IfSentence whileSen = this.ifScan.getWhileFromWhileStartTags(gtTagLineNum);
-			IfSentence currentWhile = this.ifScan.getCurrentWhile();
-			if (currentWhile != null && whileSen.getLineNum() == currentWhile.getLineNum()) {
-//				gt.setContinue(null, "");
-				whileSen.getIfScaner().putTopTag(gt);
-			}else{
-				//其他层次的continue
-				gt.setContinue("someWhile", whileSen.getOut());
-			}
-		}
-	}
-	
 	/**
 	 * 扫描cond区
 	 * @param start
@@ -340,13 +351,19 @@ class IfScaner {
 	 */
 	private boolean scanCondBlock(int start){
 		//是否跳转，用于判断别do-while和while
-		boolean gotoTurn = false;
+		boolean gotoTurn = false;//
+		boolean ifTurn = (this.senList.indexOf(this.cond) < this.ifPo);
 		boolean toReturn = true;
 		//gtMap用于防止同一goto反复循环
 		HashMap<Integer,Sentence> gtMap = new HashMap<Integer, Sentence>();
 		for (int i = start; i < this.senList.size(); i++) {
 			Sentence s = this.senList.get(i);
-			if(s.getName().equals("if") && s.getState() != Sentence.STATE_OVER){
+			if(this.ifScan.isInIfScanTag(s.getLineNum())){
+				//处理到了外部if块的cond，需要结束
+				this.stopByOutIf = true;
+				this.ifScan.getIfScanTag(s.getLineNum()).getIfScaner().setInnerIfReachCondTag(true);
+				break;
+			}else if(s.getName().equals("if") && s.getState() != Sentence.STATE_OVER){
 				IfSentence ifsen = (IfSentence)s;
 				if (this.ifScan.getIfsLink().contains(ifsen)) {
 					//在if链中找到,处理成while或doWhile
@@ -355,9 +372,15 @@ class IfScaner {
 						if (this.lastGotoInCond != null) {
 							ifsen.getIfScaner().putTopTag(this.lastGotoInCond);
 						}
+					}else if(ifTurn){
+//						this.setDoWhile(true);
+						ifsen.getIfScaner().setMaybeWhile(true);
+						this.maybeDoWhile = true;
 					}else{
-//						ifsen.getIfScaner().setDoWhile(true);
-						this.setDoWhile(true);
+						log.error(this.methName+ " maybe it's a while");
+					}
+					if (firstSenAfterCond == null) {
+						firstSenAfterCond = s;
 					}
 					toReturn = false;
 					break;
@@ -442,14 +465,42 @@ class IfScaner {
 							//continue
 							gt.setContinue(null, "");
 						}
+					} else if (this.maybeWhile) {
+						int gotoTagIndex = this.senList.indexOf(gtTag);
+						boolean sureWhile = false;
+						for (int j = gotoTagIndex+1; j < this.senList.size(); j++) {
+							Sentence ss1 = this.senList.get(j);
+							if (ss1.getName().equals("tag") || ss1.getName().equals("gotoTag")) {
+								continue;
+							}else{
+								if (ss1 == this.ifs) {
+									sureWhile = true;
+								}
+								break;
+							}
+						}
+						if (sureWhile) {
+							this.setWhile(true);
+							if (this.lastGotoInCond != null) {
+								this.putTopTag(this.lastGotoInCond);
+							}
+							this.condLink.add(s);
+							break;
+						}
+								
+					}else if(this.ifScan.isInWhileEndTag(gtTagLineNum)){
+						//判断break
+						IfSentence whileSen = this.ifScan.getWhileFromWhileEndTags(gtTagLineNum);
+						IfSentence currentWhile = this.ifScan.getCurrentWhile();
+						if (currentWhile != null && whileSen.getLineNum() == currentWhile.getLineNum()) {
+							gt.setBreak(null, "");
+						}else{
+							//其他层次的continue
+							gt.setBreak("someWhile", whileSen.getOut());
+						}
 					}
 				}
-			}else if(this.ifScan.isInIfScanTag(s.getLineNum())){
-				//处理到了外部if块的cond，需要结束
-				this.stopByOutIf = true;
-				this.ifScan.getIfScanTag(s.getLineNum()).getIfScaner().setInnerIfReachCondTag(true);
-				break;
-			}
+			} 
 			//其他语句直接加入cond链,除了turn之后的
 			if (!gotoTurn) {
 				this.condLink.add(s);
@@ -465,10 +516,11 @@ class IfScaner {
 	
 	/**
 	 * else块插入
-	 * @param i
+	 * @param i 插入位置,如果此位置语句为goto，则将插入位置向后跳过goto句
 	 * @param s
 	 */
 	private void elseInsert(int i,Sentence s){
+		this.maybeDoWhile = false;
 		if (this.condLink.size() == 0) {
 			//因为到达外部if的cond可能导致condLink为空,此时按普通if处理
 			this.makeEnd(i);
@@ -522,6 +574,26 @@ class IfScaner {
 	}
 	
 	
+	/**
+	 * 确认goto是否continue或while的end
+	 * @param gt
+	 */
+	private void checkWhileContinue(GotoSentence gt){
+		GotoTagSentence gtTag = (GotoTagSentence) gt.getTargetSen();
+		int gtTagLineNum = gtTag.getLineNum();
+		if(this.ifScan.isInWhileStartTag(gtTagLineNum)){
+			IfSentence whileSen = this.ifScan.getWhileFromWhileStartTags(gtTagLineNum);
+			IfSentence currentWhile = this.ifScan.getCurrentWhile();
+			if (currentWhile != null && whileSen.getLineNum() == currentWhile.getLineNum()) {
+//				gt.setContinue(null, "");
+				whileSen.getIfScaner().putTopTag(gt);
+			}else{
+				//其他层次的continue
+				gt.setContinue("someWhile", whileSen.getOut());
+			}
+		}
+	}
+
 	/**
 	 * 有可能是while的continue或end
 	 */
@@ -610,11 +682,14 @@ class IfScaner {
 		boolean over = false;
 		//lastCondIndex为唯一指向非if区块的tag语句位置
 		int lastCondIndex = -1;
+		HashMap<Integer,Sentence> condMap = new HashMap<Integer, Sentence>();
 		for (int i = beginIndex; i <= endIndex ; i++) {
 			Sentence s = this.senList.get(i);
 			if (s.getName().equals("if")) {
 				IfSentence ifs = (IfSentence)s;
-				int condIndex = this.senList.indexOf(ifs.getCondTag());
+				TagSentence cond = ifs.getCondTag();
+				int condIndex = this.senList.indexOf(cond);
+				condMap.put(cond.getLineNum(), cond);
 				if (condIndex >= beginIndex && condIndex <= endIndex) {
 					realEndIndex = i;
 					lastIfIndex = i;
@@ -635,8 +710,12 @@ class IfScaner {
 					}
 				}
 			}else if(s.getName().equals("tag")){
-				realEndIndex = i;
-				continue;
+				if (condMap.containsKey(s.getLineNum()) && s == condMap.get(s.getLineNum())) {
+					realEndIndex = i;
+					continue;
+				}else{
+					break;
+				}
 			}
 		}
 		return new int[]{realEndIndex,lastIfIndex,lastCondIndex};
@@ -676,6 +755,7 @@ class IfScaner {
 	final void setWhile(boolean isWhile) {
 		this.isWhile = isWhile;
 		if (this.isWhile) {
+			this.maybeDoWhile = false;
 			whileTags = new ArrayList<Integer>();
 			whileTags2 = new ArrayList<Integer>();
 			for (int i = this.ifPo-1; i >= 0; i--) {
@@ -699,6 +779,22 @@ class IfScaner {
 			}
 		}
 		//FIXME do while也有break
+	}
+	
+	
+
+	/**
+	 * @return the maybeWhile
+	 */
+	final boolean isMaybeWhile() {
+		return maybeWhile;
+	}
+
+	/**
+	 * @param maybeWhile the maybeWhile to set
+	 */
+	final void setMaybeWhile(boolean maybeWhile) {
+		this.maybeWhile = maybeWhile;
 	}
 
 	/**
