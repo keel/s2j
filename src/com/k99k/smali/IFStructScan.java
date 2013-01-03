@@ -1171,20 +1171,66 @@ public class IFStructScan {
 	/**
 	 * 用于ifScaner在扫描If块时，将Tag作为结束句
 	 */
-	private HashMap<Integer,IfSentence> ifScanTags = new HashMap<Integer, IfSentence>();
+	private HashMap<Integer,ArrayList<IfSentence>> ifScanTags = new HashMap<Integer, ArrayList<IfSentence>>();
+//	/**
+//	 * ifScanTags指向的非tag语句集合
+//	 */
+//	private HashMap<Integer,Sentence> ifScanTagSens = new HashMap<Integer, Sentence>();
 
 	final boolean isInIfScanTag(int lineNum){
-		return this.ifScanTags.containsKey(lineNum);
+		ArrayList<IfSentence> ls = this.ifScanTags.get(lineNum);
+		if (ls == null) {
+			return false;
+		}
+		return !ls.isEmpty();
 	}
-	
-	final void addIfScanTag(int tagLineNum,IfSentence ifs){
-		this.ifScanTags.put(tagLineNum, ifs);
+	final void addIfScanTag(int tagLineNum,int po,IfSentence ifs){
+		ArrayList<IfSentence> ls  = null;
+		if (ifScanTags.containsKey(tagLineNum)) {
+			ls = this.ifScanTags.get(tagLineNum);
+		}else{
+			ls = new ArrayList<IfSentence>();
+		}
+		ls.add(ifs);
+		this.ifScanTags.put(tagLineNum, ls);
+//		for (int i = po; i < this.senList.size(); i++) {
+//			Sentence s = this.senList.get(i);
+//			if (s.getName().equals("tag") || s.getName().equals("gotoTag")) {
+//				this.ifScanTags.put(s.getLineNum(), ifs);
+//				continue;
+//			}else{
+//				break;
+//			}
+//		}
 	}
 	final IfSentence getIfScanTag(int lineNum){
-		return this.ifScanTags.get(lineNum);
+		ArrayList<IfSentence> ls = this.ifScanTags.get(lineNum);
+		if (ls == null) {
+			return null;
+		}
+		return ls.get(ls.size()-1);
 	}
 	
 	final void removeIfScanTag(int tagLineNum){
-		this.ifScanTags.remove(tagLineNum);
+		ArrayList<IfSentence> ls = this.ifScanTags.get(tagLineNum);
+		if (ls == null) {
+			return;
+		}
+		ls.remove(ls.size()-1);
+		if (ls.isEmpty()) {
+			this.ifScanTags.remove(tagLineNum);
+		}
+//		if (ifs == null) {
+//			return;
+//		}
+//		for (int i = this.senList.indexOf(ifs.getCondTag()); i < this.senList.size(); i++) {
+//			Sentence s = this.senList.get(i);
+//			if (s.getName().equals("tag") || s.getName().equals("gotoTag")) {
+//				this.ifScanTags.remove(s.getLineNum());
+//				continue;
+//			}else{
+//				break;
+//			}
+//		}
 	}
 }

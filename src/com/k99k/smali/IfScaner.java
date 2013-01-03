@@ -202,13 +202,14 @@ class IfScaner {
 		boolean gotoTurn = false;
 		int lastSenIndex = start;
 		//将if的cond作为scan结束的停止句
-		this.ifScan.addIfScanTag(this.cond.getLineNum(), ifs);
+		this.ifScan.addIfScanTag(this.cond.getLineNum(),this.senList.indexOf(this.cond), ifs);
 		this.scanIfBlock = true;
 		//gtMap用于防止同一goto反复循环
 		HashMap<Integer,Sentence> gtMap = new HashMap<Integer, Sentence>();
 		//stopByOutIf时,if块的goto句的index
 		int ifGotoIndex = -1;
-		for (int i = start; i < this.senList.size(); i++) {
+		int i = start;
+		for (; i < this.senList.size(); i++) {
 			Sentence s = this.senList.get(i);
 			if (s.getLineNum() == this.cond.getLineNum() || (firstSenAfterCond!= null && s.getLineNum() == this.firstSenAfterCond.getLineNum())) {
 				//普通if(无else)
@@ -245,6 +246,30 @@ class IfScaner {
 				GotoSentence gt = (GotoSentence)s;
 				if (s.getState() != Sentence.STATE_OVER) {
 					GotoTagSentence gtTag = (GotoTagSentence) gt.getTargetSen();
+					int gtTagIndex = this.senList.indexOf(gtTag);
+					//先查找上方tag,判断是否是普通if块
+					for (int j = gtTagIndex-1; j >=0; j--) {
+						Sentence ss2 = this.senList.get(j);
+						if (ss2.getName().equals("tag")) {
+							if (ss2 == this.cond) {
+								//普通if块
+								this.maybeDoWhile = false;
+								int addPo = i-1;
+								this.makeEnd(addPo);
+								this.reInit();
+								this.cond.over();
+								this.ifScan.mergeConds(this.ifPo, this.ifArea, this.senList.get(this.ifArea[0]).getLineNum()+1F);
+								this.ifs.over();
+								s.over();
+								return true;
+							}
+						}else if (ss2.getName().equals("gotoTag")) {
+							continue;
+						}else{
+							break;
+						}
+					}
+					//else处理
 					if (!gotoTurn && this.lastGotoInCond !=null && this.lastGotoInCond.getTargetSen().getLineNum() == gt.getTargetSen().getLineNum()) {
 						//else块插入
 						elseInsert(i,s);
@@ -312,10 +337,24 @@ class IfScaner {
 		}
 		
 		//stopByOutIf后无法在if块内处理,作为else块插入
-		if(this.stopByOutIf && ifGotoIndex > -1){
-			//else块插入
-			elseInsert(ifGotoIndex,this.senList.get(ifGotoIndex));
-			return true;
+		if(this.stopByOutIf){
+			if (ifGotoIndex > -1) {
+				//else块插入
+				elseInsert(ifGotoIndex,this.senList.get(ifGotoIndex));
+				return true;
+			}else if(this.condToReturn){
+				//else块插入
+				for (int j = i; j>= 0; j--) {
+					Sentence sj = this.senList.get(j);
+					if (sj.getName().equals("return") || sj.getName().equals("gotoTag")) {
+						continue;
+					}else{
+						elseInsert(j+1,this.senList.get(j+1));
+						return true;
+					}
+				}
+				
+			}
 		}
 		
 		//cond块到达return,if块无接应的情况
@@ -562,7 +601,21 @@ class IfScaner {
 		if (s.getName().equals("goto")) {
 			this.senList.addAll(i+1,ls);
 		}else{
-			this.senList.addAll(i,ls);
+			//判断上方是否有外部cond结束
+			int addPo = i;
+			for (int j = i-1; j >= 0; j--) {
+				Sentence s2 = this.senList.get(j);
+				if (s2.getName().equals("tag")) {
+					if (this.ifScan.isInIfScanTag(s2.getLineNum())) {
+						addPo = j;
+					}
+				}else if(s2.getName().equals("gotoTag")){
+					continue;
+				}else{
+					break;
+				}
+			}
+			this.senList.addAll(addPo,ls);
 		}
 		this.reInit();
 		this.ifScan.mergeConds(this.ifPo, this.ifArea, this.senList.get(this.ifArea[0]).getLineNum()+1F);

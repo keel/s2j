@@ -153,7 +153,7 @@ public class Methods extends Context {
 			e.printStackTrace();
 			return false;
 		}
-//		log.debug(this.name+" - finished.");
+		log.error(this.name+" - finished.");
 		return true;
 	}
 	
