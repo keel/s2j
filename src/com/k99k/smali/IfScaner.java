@@ -169,6 +169,33 @@ class IfScaner {
 			doWhile();
 //			clearWhileTags();
 			return;
+		}else if(this.maybeWhile && this.mayBeWhileLinkIfScaner != null && !this.mayBeWhileLinkIfScaner.isDoWhile){
+			//倒置成的while，参见ttt9()
+			//移动块
+			int moveStart = this.senList.indexOf(this.condLink.get(0));
+			Sentence endLink = this.condLink.get(this.condLink.size()-1);
+			ArrayList<Sentence> ls = new ArrayList<Sentence>();
+			TagSentence cond = (TagSentence) this.senList.remove(moveStart);
+			while (moveStart < this.senList.size()) {
+				Sentence s = this.senList.remove(moveStart);
+				ls.add(s);
+				if (s == endLink) {
+					break;
+				}
+			}
+			cond.setEndStruct().over();
+			ls.add(cond);
+			//插入
+			this.ifs.setWhile();
+			this.senList.addAll(this.ifArea[0]+1, ls);
+			this.reInit();
+			this.ifScan.mergeWhileConds(this.ifPo, this.ifArea);
+			this.ifs.over();
+			if (this.lastGotoInCond != null) {
+				this.lastGotoInCond.over();
+			}
+			clearWhileTags();
+			return;
 		}else {
 			//扫描if区
 			this.scanIfBlock(this.ifArea[0]+1);
@@ -235,9 +262,25 @@ class IfScaner {
 				this.ifs.over();
 				return true;
 			}else if(s.getName().equals("if") && s.getState() != Sentence.STATE_OVER){
+				if (this.ifs.getLineNum()==s.getLineNum()) {
+					//while
+					this.setWhile(true);
+					//插入
+					this.ifs.setWhile();
+					this.ifScan.mergeWhileConds(this.ifPo, this.ifArea);
+					this.ifs.over();
+					if (this.lastGotoInIf != null) {
+						this.lastGotoInIf.over();
+					}
+					clearWhileTags();
+					i=this.ifArea[1];
+					this.makeEnd(this.senList.indexOf(this.lastGotoInIf));
+					return true;
+				}
 				IfSentence ifsen = (IfSentence)s;
 				//创建新ifScaner进行处理
 				IfScaner scaner = new IfScaner(ifsen, ifScan, i,methName);
+				
 				scaner.scan();
 				i = this.senList.indexOf(s)-1;
 				this.reInit();
@@ -268,6 +311,12 @@ class IfScaner {
 						}else{
 							break;
 						}
+					}
+					//是否return
+					if (gtTag.isReturn()) {
+						elseInsert(i,s);
+						this.checkWhileContinue(gt);
+						return true;
 					}
 					//else处理
 					if (!gotoTurn && this.lastGotoInCond !=null && this.lastGotoInCond.getTargetSen().getLineNum() == gt.getTargetSen().getLineNum()) {
@@ -413,7 +462,7 @@ class IfScaner {
 						}
 					}else if(ifTurn){
 //						this.setDoWhile(true);
-						ifsen.getIfScaner().setMaybeWhile(true);
+						ifsen.getIfScaner().setMaybeWhile(true,this);
 						this.maybeDoWhile = true;
 					}else{
 						log.error(this.methName+ " maybe it's a while");
@@ -791,6 +840,9 @@ class IfScaner {
 	private ArrayList<Integer> whileTags2;
 	
 	private void clearWhileTags(){
+		if (whileTags == null || whileTags2 == null) {
+			return;
+		}
 		int len = this.whileTags.size();
 		for (int i = 0; i < len; i++) {
 			this.ifScan.removeWhileStartTag(this.whileTags.get(i));
@@ -846,9 +898,15 @@ class IfScaner {
 	/**
 	 * @param maybeWhile the maybeWhile to set
 	 */
-	final void setMaybeWhile(boolean maybeWhile) {
+	final void setMaybeWhile(boolean maybeWhile,IfScaner mayBeWhileLinkIfScaner) {
 		this.maybeWhile = maybeWhile;
+		if (mayBeWhileLinkIfScaner==this) {
+			return;
+		}
+		this.mayBeWhileLinkIfScaner = mayBeWhileLinkIfScaner;
 	}
+	
+	private IfScaner mayBeWhileLinkIfScaner;
 
 	/**
 	 * @return the innerIfReachCondTag
