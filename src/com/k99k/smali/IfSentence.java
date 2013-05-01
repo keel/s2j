@@ -206,12 +206,24 @@ public class IfSentence extends Sentence {
 			Sentence s1 = v1.getSen();
 			Sentence s2 = v2.getSen();
 			//FIXME 注意这些语句不能直接去掉
+			/*
 			if (s1 != null && !s1.getName().equals("local") && s1.getType() == Sentence.TYPE_NOT_LINE) {
 				//this.mgr.removeSentence(s1);
 			}
 			if (s2 != null && !s2.getName().equals("local") && s2.getType() == Sentence.TYPE_NOT_LINE) {
 				//this.mgr.removeSentence(s2);
 			}
+			*/
+			
+			
+			if (s1 != null && s1.getType() == Sentence.TYPE_LINE && s1.getName().equals("get")) {
+				s1.setType(Sentence.TYPE_NOT_LINE);
+			}
+			if (s2 != null && s2.getType() == Sentence.TYPE_LINE && s2.getName().equals("get")) {
+				s2.setType(Sentence.TYPE_NOT_LINE);
+			}
+			
+			
 		}
 		
 		

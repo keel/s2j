@@ -227,6 +227,7 @@ class IfScaner {
 	 */
 	private boolean scanIfBlock(int start){
 		boolean gotoTurn = false;
+		Sentence returnInIf = null;
 		int lastSenIndex = start;
 		//将if的cond作为scan结束的停止句
 		this.ifScan.addIfScanTag(this.cond.getLineNum(),this.senList.indexOf(this.cond), ifs);
@@ -278,6 +279,13 @@ class IfScaner {
 					return true;
 				}
 				IfSentence ifsen = (IfSentence)s;
+				if (this.ifScan.getIfsLink().contains(s)) {
+					ifsen.getIfScaner().setWhile(true);
+					if (this.lastGotoInIf != null) {
+						this.lastGotoInIf.over();
+					}
+					break;
+				}
 				//创建新ifScaner进行处理
 				IfScaner scaner = new IfScaner(ifsen, ifScan, i,methName);
 				
@@ -371,6 +379,7 @@ class IfScaner {
 				if(this.doWhile()){
 					return true;
 				}
+				returnInIf = s;
 				break;
 			}
 			if (!gotoTurn) {
@@ -379,6 +388,20 @@ class IfScaner {
 			
 		}
 		
+		if (i >= this.senList.size()) {
+			i = this.senList.size()-1;
+		}
+		
+		//后期生成的while,
+		if (this.isWhile) {
+			this.ifs.setWhile();
+			this.ifScan.mergeWhileConds(this.ifPo, this.ifArea);
+			this.ifs.over();
+			clearWhileTags();
+			this.makeEnd(i);
+			log.error(this.methName+" - IF BLOCK SCAN TO WHILE,NEED FIX*******************");
+			return true;
+		}
 
 		//maybeDoWhile为true时，如果在if块中未再次处理到，则确认为do while
 		if(this.doWhile()){
@@ -398,7 +421,8 @@ class IfScaner {
 					if (sj.getName().equals("return") || sj.getName().equals("gotoTag")) {
 						continue;
 					}else{
-						elseInsert(j+1,this.senList.get(j+1));
+						int po = ((j+1) < this.senList.size()) ? j+1 : j;
+						elseInsert(po,this.senList.get(po));
 						return true;
 					}
 				}
@@ -421,7 +445,11 @@ class IfScaner {
 			this.checkWhileContinue(lastGotoInIf);
 			return true;
 		}
-		
+		if(returnInIf != null){
+			int po = this.senList.indexOf(returnInIf);
+			elseInsert(po,returnInIf);
+			return true;			
+		}
 		log.error(this.methName+"-scanIfBlock failed. can't find else insert point!");
 		//作为普通if处理
 		this.ifScan.mergeConds(this.ifPo, this.ifArea, this.senList.get(ifArea[0]).getLineNum()+1F);
@@ -450,6 +478,7 @@ class IfScaner {
 				//处理到了外部if块的cond，需要结束
 				this.stopByOutIf = true;
 				this.ifScan.getIfScanTag(s.getLineNum()).getIfScaner().setInnerIfReachCondTag(true);
+				toReturn = false;
 				break;
 			}else if(s.getName().equals("if") && s.getState() != Sentence.STATE_OVER){
 				IfSentence ifsen = (IfSentence)s;
@@ -508,6 +537,7 @@ class IfScaner {
 						gt.over();
 						gotoTurn = true;
 						this.condLink.add(s);
+						toReturn = false;
 						break;
 					}else if(this.ifScan.isInWhileEndTag(gtTagLineNum)){
 						//判断break
@@ -522,6 +552,7 @@ class IfScaner {
 						gt.over();
 						gotoTurn = true;
 						this.condLink.add(s);
+						toReturn = false;
 						break;
 					}
 					//防止反复循环
@@ -536,6 +567,7 @@ class IfScaner {
 					}
 					gotoTurn = true;
 					this.condLink.add(s);
+					toReturn = false;
 					continue;
 				}else{
 					//已经处理过的goto加入lastGotoInCond
@@ -589,6 +621,8 @@ class IfScaner {
 					}
 				}
 			} 
+			//到达return的情况都跳出了，这里需要重置到达return为false
+			toReturn = false;
 			//其他语句直接加入cond链,除了turn之后的
 			if (!gotoTurn) {
 				this.condLink.add(s);
@@ -647,7 +681,7 @@ class IfScaner {
 			this.makeEnd(ls.size()-1, ls);
 		}
 		this.cond.over();
-		if (s.getName().equals("goto")) {
+		if (s.getName().equals("goto") || s.getName().equals("return")) {
 			this.senList.addAll(i+1,ls);
 		}else{
 			//判断上方是否有外部cond结束
@@ -775,6 +809,8 @@ class IfScaner {
 				continue;
 			}else if(s.getName().equals("tag") && s.getState() == Sentence.STATE_DOING){
 				endIndex = i;
+				continue;
+			}else if(s.getType() == Sentence.TYPE_NOT_LINE){
 				continue;
 			}else{
 				break;

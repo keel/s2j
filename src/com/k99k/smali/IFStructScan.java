@@ -696,6 +696,10 @@ public class IFStructScan {
 		//改变lastIf的指向，并进行反向
 		lastIf.reverseCompare();
 		lastIf.setReversed(false);
+//		//注意isWhileTagReversed为true时这里不预先反向 -- 需要重新验证所有struct条件的结果
+//		if (!isWhileTagReversed) {
+//			lastIf.setReversed(false);
+//		}
 		lastIf.setSpecialTag(afterIfTag);
 		/*
 		//判断是否倒置cond形式的while
