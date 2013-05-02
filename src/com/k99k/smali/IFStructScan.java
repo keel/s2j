@@ -658,13 +658,25 @@ public class IFStructScan {
 		}
 	}
 	
+	
 	/**
-	 * 合并多条件,合并结束后进行over处理
+	 * 合并多条件,合并结束后进行over处理,默认将lastIf先倒置一次
 	 * @param startIndex 条件正向开始语句(包含)
 	 * @param endRE defineIfBlock结果
 	 * @return 合并后的IfSentence
 	 */
 	IfSentence mergeWhileConds(int startIndex,int[] endRE){
+		return this.mergeWhileConds(startIndex, endRE, true);
+	}
+	
+	/**
+	 * 合并多条件,合并结束后进行over处理
+	 * @param startIndex 条件正向开始语句(包含)
+	 * @param endRE defineIfBlock结果
+	 * @param preReverse 是否需要将lastIf先倒置一次
+	 * @return 合并后的IfSentence
+	 */
+	IfSentence mergeWhileConds(int startIndex,int[] endRE,boolean preReverse){
 		
 		IfSentence lastIf = (IfSentence) this.senList.get(endRE[1]);
 		//特定的同if处理情况
@@ -694,12 +706,10 @@ public class IFStructScan {
 		lastIfTag.setLineNum(afterIfTagLn);
 		
 		//改变lastIf的指向，并进行反向
-		lastIf.reverseCompare();
-		lastIf.setReversed(false);
-//		//注意isWhileTagReversed为true时这里不预先反向 -- 需要重新验证所有struct条件的结果
-//		if (!isWhileTagReversed) {
-//			lastIf.setReversed(false);
-//		}
+		if (preReverse) {
+			lastIf.reverseCompare();
+			lastIf.setReversed(false);
+		}
 		lastIf.setSpecialTag(afterIfTag);
 		/*
 		//判断是否倒置cond形式的while

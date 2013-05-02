@@ -395,7 +395,8 @@ class IfScaner {
 		//后期生成的while,
 		if (this.isWhile) {
 			this.ifs.setWhile();
-			this.ifScan.mergeWhileConds(this.ifPo, this.ifArea);
+			//因为是if块生成的while,所以不需要再将lastIf倒置
+			this.ifScan.mergeWhileConds(this.ifPo, this.ifArea,false);
 			this.ifs.over();
 			clearWhileTags();
 			this.makeEnd(i);
@@ -811,6 +812,9 @@ class IfScaner {
 				endIndex = i;
 				continue;
 			}else if(s.getType() == Sentence.TYPE_NOT_LINE){
+				if (s.getName().equals("return")) {
+					break;
+				}
 				continue;
 			}else{
 				break;
