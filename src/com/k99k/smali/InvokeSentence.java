@@ -142,9 +142,19 @@ public class InvokeSentence extends Sentence {
 					continue;
 				}
 				sb2.append(",");
+				String p = propObjects.get(i-start);
+				if (p.equals("Z")) {
+					if (v2.getOut().equals("0")) {
+						sb2.append("false");
+						continue;
+					}else if(v2.getOut().equals("1")){
+						sb2.append("true");
+						continue;
+					}
+				}
 				sb2.append(v2.getOut());
 				//long和double占据两个参数位置,跳过后一个
-				if (propObjects.get(i-start).equals("J") || propObjects.get(i-start).equals("D") ) {
+				if (p.equals("J") || p.equals("D") ) {
 					i++;
 					start++;
 				}
