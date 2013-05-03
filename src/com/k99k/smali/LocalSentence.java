@@ -59,6 +59,10 @@ public class LocalSentence extends Sentence {
 				this.mgr.setVar(v);
 				this.over();
 				return true;
+			}else if(obj.toLowerCase().equals("throwable")){
+				this.mgr.setVar(v);
+				this.over();
+				return true;
 			}else{
 				//判断是否是参数p0之类的因为end local从vars中去掉了,此时可以找回来
 				if (ws[1].startsWith("p")) {

@@ -54,6 +54,9 @@ public class Field extends Context {
 			this.out.append(this.objType).append(" ").append(this.name);
 			if (!this.defaultValue.equals("")) {
 				this.out.append(" = ").append(this.defaultValue);
+			}else if(this.isFinal){
+				//final但没有defaultValue的成员变量，默认为0
+				this.out.append(" = ").append("0");
 			}
 			this.out.append(";").append(StaticUtil.NEWLINE);
 			if (this.annotations != null) {
