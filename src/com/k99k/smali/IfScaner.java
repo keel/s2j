@@ -54,8 +54,15 @@ class IfScaner {
 	 */
 	private boolean maybeWhile = false;
 	
-	private GotoSentence lastGotoInCond;
+	/**
+	 * 在cond块中第一次转向的goto
+	 */
+	private GotoSentence firstTurnGotoInCond;
 	private GotoSentence lastGotoInIf;
+	/**
+	 * 在Cond块中的最后一个goto
+	 */
+	private GotoSentence lastGotoInCond;
 	
 //	private ArrayList<Sentence> ifLink;
 	
@@ -160,8 +167,8 @@ class IfScaner {
 			this.reInit();
 			this.ifScan.mergeWhileConds(this.ifPo, this.ifArea);
 			this.ifs.over();
-			if (this.lastGotoInCond != null) {
-				this.lastGotoInCond.over();
+			if (this.firstTurnGotoInCond != null) {
+				this.firstTurnGotoInCond.over();
 			}
 			clearWhileTags();
 			return;
@@ -191,8 +198,8 @@ class IfScaner {
 			this.reInit();
 			this.ifScan.mergeWhileConds(this.ifPo, this.ifArea);
 			this.ifs.over();
-			if (this.lastGotoInCond != null) {
-				this.lastGotoInCond.over();
+			if (this.firstTurnGotoInCond != null) {
+				this.firstTurnGotoInCond.over();
 			}
 			clearWhileTags();
 			return;
@@ -327,7 +334,7 @@ class IfScaner {
 						return true;
 					}
 					//else处理
-					if (!gotoTurn && this.lastGotoInCond !=null && this.lastGotoInCond.getTargetSen().getLineNum() == gt.getTargetSen().getLineNum()) {
+					if (!gotoTurn && this.firstTurnGotoInCond !=null && this.firstTurnGotoInCond.getTargetSen().getLineNum() == gt.getTargetSen().getLineNum()) {
 						//else块插入
 						elseInsert(i,s);
 						this.checkWhileContinue(gt);
@@ -347,7 +354,7 @@ class IfScaner {
 				}
 				this.checkWhileContinue(gt);
 			}else if(s.getName().equals("gotoTag")){
-				if (this.lastGotoInCond != null && this.lastGotoInCond.getTargetSen().getLineNum() == s.getLineNum()) {
+				if (this.firstTurnGotoInCond != null && this.firstTurnGotoInCond.getTargetSen().getLineNum() == s.getLineNum()) {
 					if (this.innerIfReachCondTag) {
 						//内部if碰到了condTag，应判断为普通if,但需要移动
 						int moveStart = this.senList.indexOf(this.condLink.get(0));
@@ -365,8 +372,8 @@ class IfScaner {
 						this.reInit();
 						this.ifScan.mergeConds(this.ifPo, this.ifArea, this.senList.get(this.ifArea[0]).getLineNum()+1F);
 						this.ifs.over();
-						if (lastGotoInCond != null) {
-							this.lastGotoInCond.over();
+						if (firstTurnGotoInCond != null) {
+							this.firstTurnGotoInCond.over();
 						}
 					}else{
 						//else块插入
@@ -487,8 +494,8 @@ class IfScaner {
 					//在if链中找到,处理成while或doWhile
 					if (gotoTurn) {
 						ifsen.getIfScaner().setWhile(true);
-						if (this.lastGotoInCond != null) {
-							ifsen.getIfScaner().putTopTag(this.lastGotoInCond);
+						if (this.firstTurnGotoInCond != null) {
+							ifsen.getIfScaner().putTopTag(i,this.firstTurnGotoInCond,this.lastGotoInCond);
 						}
 					}else if(ifTurn){
 //						this.setDoWhile(true);
@@ -527,9 +534,10 @@ class IfScaner {
 						toReturn = true;
 						this.condLink.add(s);
 						if (!gotoTurn) {
-							this.lastGotoInCond = gt;
+							this.firstTurnGotoInCond = gt;
 							gotoTurn = true;
 						}
+						this.lastGotoInCond = gt;
 //						gt.over();
 						break;
 					}else if(this.ifScan.isInWhileStartTag(gtTagLineNum)){
@@ -564,17 +572,19 @@ class IfScaner {
 					}
 					i = this.senList.indexOf(gtTag);
 					if (!gotoTurn) {
-						this.lastGotoInCond = gt;
+						this.firstTurnGotoInCond = gt;
 					}
+					this.lastGotoInCond = gt;
 					gotoTurn = true;
 					this.condLink.add(s);
 					toReturn = false;
 					continue;
 				}else{
-					//已经处理过的goto加入lastGotoInCond
+					//已经处理过的goto加入firstTrunGotoInCond
 					if (!gotoTurn) {
-						this.lastGotoInCond = gt;
+						this.firstTurnGotoInCond = gt;
 					}
+					this.lastGotoInCond = gt;
 					//判断while中的continue或end
 					if(this.isWhile && (this.removeTopTag(s.getLineNum())!=null)){
 						if (this.isTopTagEmpty()) {
@@ -602,8 +612,8 @@ class IfScaner {
 						}
 						if (sureWhile) {
 							this.setWhile(true);
-							if (this.lastGotoInCond != null) {
-								this.putTopTag(this.lastGotoInCond);
+							if (this.firstTurnGotoInCond != null) {
+								this.putTopTag(this.ifPo,this.firstTurnGotoInCond,this.lastGotoInCond);
 							}
 							this.condLink.add(s);
 							break;
@@ -650,8 +660,8 @@ class IfScaner {
 			this.reInit();
 			this.ifScan.mergeConds(this.ifPo, this.ifArea, this.senList.get(this.ifArea[0]).getLineNum()+1F);
 			this.ifs.over();
-			if (lastGotoInCond != null) {
-				this.lastGotoInCond.over();
+			if (firstTurnGotoInCond != null) {
+				this.firstTurnGotoInCond.over();
 			}
 			s.over();
 			return;
@@ -704,8 +714,8 @@ class IfScaner {
 		this.reInit();
 		this.ifScan.mergeConds(this.ifPo, this.ifArea, this.senList.get(this.ifArea[0]).getLineNum()+1F);
 		this.ifs.over();
-		if (lastGotoInCond != null) {
-			this.lastGotoInCond.over();
+		if (firstTurnGotoInCond != null) {
+			this.firstTurnGotoInCond.over();
 		}
 		s.over();
 	}
@@ -723,7 +733,7 @@ class IfScaner {
 			IfSentence currentWhile = this.ifScan.getCurrentWhile();
 			if (currentWhile != null && whileSen.getLineNum() == currentWhile.getLineNum()) {
 //				gt.setContinue(null, "");
-				whileSen.getIfScaner().putTopTag(gt);
+				whileSen.getIfScaner().putTopTag(this.senList.indexOf(whileSen),gt,gt);
 			}else{
 				//其他层次的continue
 				gt.setContinue("someWhile", whileSen.getOut());
@@ -736,11 +746,38 @@ class IfScaner {
 	 */
 	private HashMap<Integer,Sentence> whileTopTags;
 	
-	void putTopTag(Sentence s){
+	/**
+	 * 标记while上方的gotoTag
+	 * @param i while所在的开始index
+	 * @param s1 lastGotoInCond
+	 * @param s2 firstTurnGotoInCond
+	 */
+	void putTopTag(int i,GotoSentence s1,GotoSentence s2){
 		if (this.whileTopTags == null) {
 			this.whileTopTags = new HashMap<Integer, Sentence>();
 		}
-		this.whileTopTags.put(s.getLineNum(), s);
+		//判断lastGotoInCond和firstTurnGotoInCond哪个是在while上方
+		Sentence s = null;
+		for (int j = i-1; j >= 0; j--) {
+			s = this.senList.get(j);
+			if (s.getName().equals("tag") || s.getName().equals("gotoTag")) {
+				if (s == s2.getTargetSen()) {
+					break;
+				}
+				if (s == s1.getTargetSen()) {
+					break;
+				}
+			}else if(s.getType() != Sentence.TYPE_LINE){
+				//s=null;
+			}else{
+				s = null;
+				break;
+			}
+			s = null;
+		}
+		if (s != null) {
+			this.whileTopTags.put(s.getLineNum(), s);
+		}
 	}
 	
 	boolean isTopTagEmpty(){
