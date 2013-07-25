@@ -3,8 +3,6 @@
  */
 package com.k99k.smali;
 
-import java.util.HashMap;
-
 import org.apache.log4j.Logger;
 
 import com.k99k.tools.StringUtil;
@@ -27,21 +25,21 @@ public class VarSentence extends Sentence {
 	}
 	static final Logger log = Logger.getLogger(VarSentence.class);
 	
-	private static HashMap<String,String> varMap  = new HashMap<String, String>();
-	
-	static{
-		varMap.put("const", "int");
-		varMap.put("const/4", "int");
-		varMap.put("const/16", "int");
-		varMap.put("const/high16", "float");
-		varMap.put("const-wide/16", "long");
-		varMap.put("const-wide/32", "long");
-		varMap.put("const-wide", "long");
-		varMap.put("const-wide/high16", "double");
-		varMap.put("const-string", "String");
-		varMap.put("const-string-jumbo", "String");
-		varMap.put("const-class", "Class");
-	}
+//	private static HashMap<String,String> varMap  = new HashMap<String, String>();
+//	
+//	static{
+//		varMap.put("const", "int");
+//		varMap.put("const/4", "int");
+//		varMap.put("const/16", "int");
+//		varMap.put("const/high16", "float");
+//		varMap.put("const-wide/16", "long");
+//		varMap.put("const-wide/32", "long");
+//		varMap.put("const-wide", "long");
+//		varMap.put("const-wide/high16", "double");
+//		varMap.put("const-string", "String");
+//		varMap.put("const-string-jumbo", "String");
+//		varMap.put("const-class", "Class");
+//	}
 	private Var v = new Var(this);
 	/** 
 	 * 处理变量声明
@@ -66,76 +64,23 @@ public class VarSentence extends Sentence {
 		ws[2] = this.line.substring(p2+2).trim();
 		
 		//生成Var
-//		Var v = new Var(this);
 		v.setKey(ws[0]);
-		String type = varMap.get(ws[0]);
+		boolean isString = ws[0].contains("string");
+		boolean isClass = ws[0].contains("class");
+		String type = (isString ? "String" : (isClass ? "Class" : "number"));
 		v.setClassName(type);
 		String vName = ws[1];
 		v.setName(vName);
 		String value = ws[2].trim();
-		if (type.equals("String")) {
+		if (isString) {
 			v.setValue(value.replaceAll("\"", ""));
-		}else if(type.equals("int")){
-			v.setValue(Integer.decode(value));
-			value = String.valueOf(v.getValue());
-		}else if(type.equals("long")){
-			v.setValue(Long.decode(value.replace("L", "")));
-			value = String.valueOf(v.getValue());
-		}else if(type.equals("float")){
-			/* 先直接使用原16进制值
-			StringBuilder sb = new StringBuilder(value);
-			//去掉0x,不足8位补到8位,注意负数保留负号
-			if (sb.charAt(0) == '-') {
-				sb.delete(1, 3);
-			}else{
-				sb.delete(0, 2);
-			}
-			for (int i = sb.length(); i < 8; i++) {
-				sb.append("0");
-			}
-			String flag = "F";
-			try {
-				float fv = Float.intBitsToFloat(Integer.parseInt(sb.toString(),16));
-				v.setValue(fv);
-			} catch (NumberFormatException e) {
-				log.error(this.mgr.getMeth().getName()+" float16to10 ERR,change to int:"+e.getCause()+" line:"+this.line);
-//				e.printStackTrace();
-				int fv = Integer.parseInt(StringUtil.a16to10(value));
-				v.setValue(fv);
-				flag = "";
-			}
-			//value = String.valueOf(v.getValue())+flag+" /*"+value+"* /";
-			*/
+		}else if(isClass){
 			v.setValue(value);
-		}else if(type.equals("double")){
-			/* 先直接使用原16进制值
-			StringBuilder sb = new StringBuilder(value);
-			//去掉0x,不足8位补到8位
-			if (sb.charAt(0) == '-') {
-				sb.delete(1, 3);
-			}else{
-				sb.delete(0, 2);
-			}
-			for (int i = sb.length(); i < 16; i++) {
-				sb.append("0");
-			}
-			String flag = "D";
-			try {
-				double lv = Double.longBitsToDouble(Long.parseLong(sb.toString(),16));
-				v.setValue(lv);
-			} catch (NumberFormatException e) {
-				log.error(this.mgr.getMeth().getName()+" double16to10 ERR,change to int:"+e.getCause()+" line:"+this.line);
-//				e.printStackTrace();
-				int fv = Integer.parseInt(StringUtil.a16to10(value));
-				v.setValue(fv);
-				flag = "";
-			}
-			//value = String.valueOf(v.getValue())+flag+" /*"+value+"* /";
-			*/
-			v.setValue(value);
-		}else if(type.equals("Class")){
-			v.setValue(value);
+		}else{
+			//直接用修正后16进制数,因为无法实际区分float,double
+			v.setValue(fixNum(ws[0], value));
 		}
+		
 		//仅输出value
 		v.setOut(value);
 		
@@ -146,6 +91,8 @@ public class VarSentence extends Sentence {
 		}else{
 			//此时很可能是赋值,变为可输出状态
 			Var v1 = this.mgr.getVar(v.getName());
+			
+			
 			//是否输出的判断
 			boolean isSet = !ComputeSentence.isLocalVar(v1, this.mgr.isStatic());
 
@@ -172,6 +119,39 @@ public class VarSentence extends Sentence {
 		this.over();
 		return true;
 	}
+	
+	/**
+	 * 修正后的16进制数,注意float和double值有不能直接用本16进制数赋值,需要float16to10,double16to10进行转换
+	 * @param key
+	 * @param numVal
+	 * @return
+	 */
+	static final String fixNum(String key,String numVal){
+		if (numVal.endsWith("L")) {
+			return numVal;
+		}
+		if (key.equals("const/high16")) {
+			return fixHight16(numVal);
+		}
+		if (key.equals("const-wide/high16")) {
+			return fixWideHight16(numVal);
+		}
+		return numVal;
+	}
+	
+	static final String fixHight16(String numVal){
+		return numVal+"0000";
+	}
+	static final String fixWideHight16(String numVal){
+		StringBuilder sb = new StringBuilder();
+		sb.append(numVal);
+		//要算上0x两位
+		for (int i = numVal.length()+2; i < 16; i++) {
+			sb.append("0");
+		}
+		return sb.toString();
+	}
+	
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Sentence#getVar()
 	 */

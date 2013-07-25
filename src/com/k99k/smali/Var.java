@@ -45,10 +45,10 @@ public class Var {
 	private String out = "";
 	
 	
-	/**
-	 * 是否在用过状态，随时会被新Var替换
-	 */
-	private boolean isUsed = false;
+//	/**
+//	 * 是否在用过状态，随时会被新Var替换
+//	 */
+//	private boolean isUsed = false;
 	
 	/**
 	 * 创建本Var的Sentence
@@ -152,20 +152,6 @@ public class Var {
 	 */
 	public final String getName() {
 		return name;
-	}
-
-	/**
-	 * @return the isUsed
-	 */
-	public final boolean isUsed() {
-		return isUsed;
-	}
-
-	/**
-	 * @param isUsed the isUsed to set
-	 */
-	public final void setUsed(boolean isUsed) {
-		this.isUsed = isUsed;
 	}
 
 	/**

@@ -80,12 +80,12 @@ public class LocalSentence extends Sentence {
 		if (obj.equals("float")) {
 //			val = StringUtil.float16to10(val)+"F";
 			if (val.matches("(0x)?[\\d|a-f]+[F]?")) {
-				val = String.valueOf(Float.intBitsToFloat(Integer.valueOf(val)))+"F";
+				val = String.valueOf(StringUtil.float16to10(val))+"F";
 			}
 		}else if(obj.equals("double")){
 //			val = StringUtil.double16to10(val)+"D";
 			if (val.matches("(0x)?[\\d|a-f]+[D]?")) {
-				val = String.valueOf(Double.longBitsToDouble(Long.valueOf(val)))+"D";
+				val = String.valueOf(StringUtil.double16to10(val))+"D";
 			}
 		}else if(obj.equals("boolean")){
 			if (val.equals("0")) {
