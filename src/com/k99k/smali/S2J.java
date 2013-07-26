@@ -204,7 +204,10 @@ public class S2J {
 		
 		String tar = "f:/android/apk_manager/projects/SmaliTest.apk/smali/com/smlon/tools/Structs.smali";
 		//String tar = "F:/android/apk_manager/projects/ud.apk/smali/net/gatools/SpriteManager.smali";
+		tar = "F:/android/apk_manager/projects/com.game.UnicornDash.apk/smali/com/game/UnicornDash/UnicornDash.smali";
 		tar = "F:/android/apk_manager/projects/com.game.UnicornDash.apk/smali/com/game/UnicornDash/C_EVTEffect.smali";
+		
+		//tar = "f:/android/apk_manager/projects/Ta.apk/smali/com/ta/Main.smali";
 		//tar = "F:/android/apk_manager/projects/com.game.UnicornDash.apk/smali/oms/GameEngine/SpriteManager.smali";
 		String re = s.exec(tar, "utf-8");
 		//String re = s.debug(tar, "utf-8");

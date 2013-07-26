@@ -76,44 +76,35 @@ public class LocalSentence extends Sentence {
 				return false;
 			}
 		}
-		String val = ov.getOut();
-		if (obj.equals("float")) {
-//			val = StringUtil.float16to10(val)+"F";
-			if (val.matches("(0x)?[\\d|a-f]+[F]?")) {
-				val = String.valueOf(StringUtil.float16to10(val))+"F";
-			}
-		}else if(obj.equals("double")){
-//			val = StringUtil.double16to10(val)+"D";
-			if (val.matches("(0x)?[\\d|a-f]+[D]?")) {
-				val = String.valueOf(StringUtil.double16to10(val))+"D";
-			}
-		}else if(obj.equals("boolean")){
-			if (val.equals("0")) {
-				val = "false";
-			}else{
-				val = "true";
-			}
-		}else{
-			String right = null;
-			if (val.equals("0")){
-				right = Var.checkIout(obj, "0");
-			}else{
-				right = Var.checkIout(obj, val);
-			}
-			if (obj.equals("int") && (!ov.getClassName().equals("int")) && StringUtil.isDigits(ov.getValue())) {
-				right = String.valueOf(ov.getValue());
-			}
-			val = right;
-		}
-		
-		
-//		Sentence s1 = this.mgr.getLastSentence();
-//		if (s1 != null && s1.getOut().length()>0) {
-//			s1.over();
-//			this.mgr.removeSentence(s1);
-//			val = s1.getOut();
+		String val = Var.varOut(obj, ov.getOut());
+//		String val = ov.getOut();
+//		if (obj.equals("float")) {
+////			val = StringUtil.float16to10(val)+"F";
+//			//if (val.matches("(0x)?[\\d|a-f]+[F]?")) {
+//				val = String.valueOf(StringUtil.float16to10(val))+"F";
+//			//}
+//		}else if(obj.equals("double")){
+////			val = StringUtil.double16to10(val)+"D";
+//			//if (val.matches("(0x)?[\\d|a-f]+[D]?")) {
+//				val = String.valueOf(StringUtil.double16to10(val))+"D";
+//			//}
+//		}else if(obj.equals("boolean")){
+//			if (val.equals("0")) {
+//				val = "false";
+//			}else{
+//				val = "true";
+//			}
 //		}else{
-//			val = this.mgr.getVar(ws[1]).getOut();
+//			String right = null;
+//			if (val.equals("0")){
+//				right = Var.checkIout(obj, "0");
+//			}else{
+//				right = Var.checkIout(obj, val);
+//			}
+//			if (obj.equals("int") && (!ov.getClassName().equals("int")) && StringUtil.isDigits(ov.getValue())) {
+//				right = String.valueOf(ov.getValue());
+//			}
+//			val = right;
 //		}
 		
 		

@@ -73,12 +73,13 @@ public class VarSentence extends Sentence {
 		v.setName(vName);
 		String value = ws[2].trim();
 		if (isString) {
-			v.setValue(value.replaceAll("\"", ""));
+			v.setValue(value);
 		}else if(isClass){
 			v.setValue(value);
 		}else{
 			//直接用修正后16进制数,因为无法实际区分float,double
-			v.setValue(fixNum(ws[0], value));
+			value = fixNum(ws[0], value);
+			v.setValue(value);
 		}
 		
 		//仅输出value
@@ -99,18 +100,19 @@ public class VarSentence extends Sentence {
 			if(isSet){
 				this.mgr.setVar(v);
 			}else{
-				if (type.equals("int")) {
-					String right = null;
-					if (String.valueOf(value).equals("0")){
-						right = Var.checkIout(v1.getClassName(), "0") +" /* " + value +" */";
-					}else{
-						right = Var.checkIout(v1.getClassName(), value);
-					}
-					if (v1.getClassName().equals("int") && (!v1.getClassName().equals("int")) && StringUtil.isDigits(v1.getValue())) {
-						right = String.valueOf(value);
-					}
-					v.setOut(right);
-				}
+//				if (type.equals("int")) {
+//					String right = null;
+//					if (String.valueOf(value).equals("0")){
+//						right = Var.checkIout(v1.getClassName(), "0") +" /* " + value +" */";
+//					}else{
+//						right = Var.checkIout(v1.getClassName(), value);
+//					}
+//					if (v1.getClassName().equals("int") && (!v1.getClassName().equals("int")) && StringUtil.isDigits(v1.getValue())) {
+//						right = String.valueOf(value);
+//					}
+//					v.setOut(right);
+//				}
+				v.setOut(Var.varOut(v1.getClassName(), value));
 				this.out.append(v1.getOut()).append(" = ").append(v.getOut());
 				this.type = Sentence.TYPE_LINE;
 				v1.setValue(v.getValue());
@@ -145,8 +147,8 @@ public class VarSentence extends Sentence {
 	static final String fixWideHight16(String numVal){
 		StringBuilder sb = new StringBuilder();
 		sb.append(numVal);
-		//要算上0x两位
-		for (int i = numVal.length()+2; i < 16; i++) {
+		//要算上0x两位,16+2=18位
+		for (int i = numVal.length(); i < 18; i++) {
 			sb.append("0");
 		}
 		return sb.toString();

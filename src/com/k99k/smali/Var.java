@@ -129,8 +129,51 @@ public class Var {
 		}
 	}
 	
+	/**
+	 * 输出v的值
+	 * @param className
+	 * @param vOut Var.getout()
+	 * @return
+	 */
+	public static final String varOut(String className,String vOut){
+		if (vOut.equals("0")) {
+			vOut = "0x0";
+		}
+		if (!is16Digit(vOut)) {
+			//非16进制数值直接返回
+			return vOut;
+		}
+		if (className.equals("String") || className.equals("number")) {
+			return vOut;
+		}else if(className.equals("boolean")){
+			return (vOut.equals("0x0"))?"false":"true";
+		}else if(className.equals("int")){
+			return StringUtil.int16to10(vOut);
+		}else if(className.equals("long")){
+			return StringUtil.long16to10(vOut);
+		}else if(className.equals("float")){
+			return String.valueOf(StringUtil.float16to10(vOut))+"F";
+		}else if(className.equals("double")){
+			return String.valueOf(StringUtil.double16to10(vOut))+"D";
+		}else if(className.equals("byte")){
+			return vOut;
+		}else if(className.equals("short")){
+			return StringUtil.int16to10(vOut);
+		}else if(className.equals("char")){
+			return vOut;//String.valueOf((Character.forDigit(Integer.valueOf(vOut,16),16)));
+		}else{
+			if (vOut.equals("0x0")) {
+				return "null";
+			}else{
+				return vOut;
+			}
+		}
+		//return vOut;
+	}
 	
-	
+	public static final boolean is16Digit(String vOut){
+		return vOut.matches("^[-]?(0x)+[\\d|a-f]+[FDL]?$");
+	}
 //	/**
 //	 * @return the isOutVar
 //	 */

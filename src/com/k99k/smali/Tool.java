@@ -81,6 +81,8 @@ public class Tool {
 			return "double";
 		}else if (smaliObj.equals("B")) {
 			return "byte";
+		}else if (smaliObj.equals("C")) {
+			return "char";
 		}else if (smaliObj.startsWith("[")) {
 			int arrLen = smaliObj.lastIndexOf("[")+1;
 			StringBuilder sb = new StringBuilder(parseObject(smaliObj.substring(arrLen)));

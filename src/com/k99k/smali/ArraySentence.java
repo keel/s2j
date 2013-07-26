@@ -99,7 +99,8 @@ public class ArraySentence extends Sentence {
 			Sentence sen = this.mgr.findSentenceByIndex(ii);
 			if (sen.getName().equals("put")) {
 				PutSentence sarr = (PutSentence)sen;
-				sarr.setRightValue(asb.toString());
+				String right = fixArrayOut(asb,getArrayClassName(sarr.getLine()));
+				sarr.setRightValue(right);
 			}else{
 				String s = sen.getOut();
 				sen.setOut(s.split("=")[0]+" = "+asb.toString());
@@ -120,6 +121,31 @@ public class ArraySentence extends Sentence {
 		
 		this.over();
 		return true;
+	}
+	
+	static final String getArrayClassName(String putSenLine){
+		int po = putSenLine.lastIndexOf("[");
+		if (po < 0) {
+			return null;
+		}
+		String obj = putSenLine.substring(po+1);
+		return Tool.parseObject(obj);
+	}
+	
+	static final String fixArrayOut(StringBuilder arrOut,String arrClassName){
+		if (arrOut.charAt(0) == '{' && arrOut.charAt(arrOut.length()-1)=='}') {
+			String[] arrs = arrOut.substring(1,arrOut.length()-1).split(",");
+			StringBuilder sb = new StringBuilder();
+			for (int i = 0; i < arrs.length; i++) {
+				sb.append(",");
+				sb.append(Var.varOut(arrClassName, arrs[i]));
+			}
+			sb.deleteCharAt(0);
+			sb.insert(0, "{");
+			sb.append("}");
+			return sb.toString();
+		}
+		return arrOut.toString();
 	}
 	
 	public void addToArrMatrix(String line){

@@ -190,7 +190,7 @@ public class IfSentence extends Sentence {
 					this.boolVal = "!";
 				}
 			}
-			this.right = Var.checkIout(v.getClassName(), "0");
+			this.right = Var.varOut(v.getClassName(), "0x0");
 			this.cond = ws[2];
 			Sentence s1 = v.getSen();
 			if (s1 != null && !s1.getName().equals("local")) {
@@ -201,7 +201,7 @@ public class IfSentence extends Sentence {
 			Var v1 = this.mgr.getVar(ws[1]);
 			Var v2 = this.mgr.getVar(ws[2]);
 			this.left = v1.getOut();
-			this.right = Var.checkIout(v1.getClassName(), v2.getOut());
+			this.right = Var.varOut(v1.getClassName(), v2.getOut());
 			this.cond = ws[3];
 			Sentence s1 = v1.getSen();
 			Sentence s2 = v2.getSen();

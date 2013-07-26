@@ -78,15 +78,15 @@ public class PutSentence extends Sentence {
 //			v.setOut(v1.getOut()+"."+name);
 			this.left = v1.getOut()+"."+name;
 			//需要确认右边的输出
-			String right = null;
-			if (String.valueOf(v2.getValue()).equals("0")){
-				right = Var.checkIout(obj, "0") +" /* " + v2.getOut() +" */";
-			}else{
-				right = Var.checkIout(obj, v2.getOut());
-			}
-			if (obj.equals("int") && (!v2.getClassName().equals("int")) && StringUtil.isDigits(v2.getValue())) {
-				right = String.valueOf(v2.getValue());
-			}
+			String right = Var.varOut(obj, v2.getOut());
+//			if (String.valueOf(v2.getValue()).equals("0")){
+//				right = Var.checkIout(obj, "0") +" /* " + v2.getOut() +" */";
+//			}else{
+//				right = Var.checkIout(obj, v2.getOut());
+//			}
+//			if (obj.equals("int") && (!v2.getClassName().equals("int")) && StringUtil.isDigits(v2.getValue())) {
+//				right = String.valueOf(v2.getValue());
+//			}
 			if (left.equals(right)) {
 				this.out.append("//");
 			}
@@ -112,16 +112,16 @@ public class PutSentence extends Sentence {
 			
 			//需要确认右边的输出
 			String obj = Tool.parseObject(ws[2].substring(p+1));
-			String right = null;
-			if (String.valueOf(v2.getValue()).equals("0")){
-				right = Var.checkIout(obj, "0") +" /* " + v2.getOut() +" */";
-			}else{
-				right = Var.checkIout(obj, v2.getOut());
-			}
-			if (obj.equals("int") && (!v2.getClassName().equals("int")) && StringUtil.isDigits(v2.getValue())) {
-				right = String.valueOf(v2.getValue());
-			}
-			this.rightValue = right;
+//			String right = null;
+//			if (String.valueOf(v2.getValue()).equals("0")){
+//				right = Var.checkIout(obj, "0") +" /* " + v2.getOut() +" */";
+//			}else{
+//				right = Var.checkIout(obj, v2.getOut());
+//			}
+//			if (obj.equals("int") && (!v2.getClassName().equals("int")) && StringUtil.isDigits(v2.getValue())) {
+//				right = String.valueOf(v2.getValue());
+//			}
+			this.rightValue = Var.varOut(obj, v2.getOut());
 			
 			v = v2;
 			if (v2.getKey().equals("new-array")) {
@@ -174,16 +174,16 @@ public class PutSentence extends Sentence {
 				else{
 					//需要确认右边的输出
 					String obj = v1.getClassName().replaceAll("\\[\\]", "");
-					String right = null;
-					if (String.valueOf(v3.getValue()).equals("0")){
-						right = Var.checkIout(obj, "0") +" /* " + v3.getOut() +" */";
-					}else{
-						right = Var.checkIout(obj, v3.getOut());
-					}
-					if (obj.equals("int") && (!v3.getClassName().equals("int")) && StringUtil.isDigits(v3.getValue())) {
-						right = String.valueOf(v3.getValue());
-					}
-					this.rightValue = right;
+//					String right = null;
+//					if (String.valueOf(v3.getValue()).equals("0")){
+//						right = Var.checkIout(obj, "0") +" /* " + v3.getOut() +" */";
+//					}else{
+//						right = Var.checkIout(obj, v3.getOut());
+//					}
+//					if (obj.equals("int") && (!v3.getClassName().equals("int")) && StringUtil.isDigits(v3.getValue())) {
+//						right = String.valueOf(v3.getValue());
+//					}
+					this.rightValue = Var.varOut(obj, v3.getOut());
 				}
 			
 			//TODO 对于数组中的索引对象,如果是VarSentence,暂时先不removeSentence,仅标为over,可能会有其他地方用到

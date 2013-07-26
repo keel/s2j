@@ -95,7 +95,7 @@ public class SwitchSentence extends Sentence {
 			//计算caseNum
 			if (key.startsWith(".packed-switch")) {
 				//顺序型的case条件集
-				int start = Integer.parseInt(StringUtil.a16to10(ws[1]));
+				int start = Integer.parseInt(StringUtil.int16to10(ws[1]));
 				int slen = this.switchKey.size();
 				
 				
@@ -138,7 +138,7 @@ public class SwitchSentence extends Sentence {
 //				cases = new ArrayList<String>();
 				for (int i = 0; i < slen; i++) {
 					String[] ss = this.switchKey.get(i).split(" -> ");
-					String caseval = "case " + StringUtil.a16to10(ss[0]);
+					String caseval = "case " + StringUtil.int16to10(ss[0]);
 //					cases.add(ss[1]+","+caseval+","+StringUtil.a16to10(ss[1].substring(ss[1].indexOf("_")+1)));
 					String caseStr = ss[1];
 //					cases.put(ss[1], caseval+":");

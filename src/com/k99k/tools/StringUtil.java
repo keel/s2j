@@ -323,11 +323,19 @@ public final class StringUtil {
 	 * @param sixten
 	 * @return
 	 */
-	public static final String a16to10(String sixten){
+	public static final String int16to10(String sixten){
 		sixten = clear16Data(sixten);
 		return Integer.valueOf(sixten,16).toString() ;
 	}
-	
+	/**
+	 * 16进制转10进制,会自动去掉0x
+	 * @param sixten
+	 * @return
+	 */
+	public static final String long16to10(String sixten){
+		sixten = clear16Data(sixten);
+		return Long.valueOf(sixten,16).toString() ;
+	}
 	/**
 	 * float的16进制转10进制,会自动去掉0x
 	 * @param f16
