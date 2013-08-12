@@ -65,22 +65,15 @@ public class NewSentence extends Sentence {
 			StringBuilder sb = new StringBuilder(obj);
 			int po = sb.indexOf("[");
 			String size = this.mgr.getVar(ws[2]).getOut();
+			size = Var.varOut("int", size);
 			sb.insert(po+1, size);
-			String a = ws[3];
-//			String aa = a.substring(a.indexOf("["),a.lastIndexOf("[")+1);
-			String aa = a.substring(0,a.lastIndexOf("[")+1);
-			int w = aa.length();
+//			String a = ws[3];
 			v.setValue(obj);
 			obj = sb.toString();
 			v.setClassName(obj);
 			v.setName(ws[1]);
 			v.setKey("new-array");
 			v.setOut("new "+obj);
-//			//arrValue准备保存数组值
-//			if (StringUtil.isDigits(size)) {
-//				Object[] arrValue = new Object[Integer.parseInt(size)];
-//				v.setValue(arrValue);
-//			}
 		}else if(ws[0].equals("filled-new-array")){
 			int rangStart = this.line.indexOf("{")+1;
 			int rangEnd = this.line.indexOf("}");

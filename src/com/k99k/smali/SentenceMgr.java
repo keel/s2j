@@ -404,15 +404,63 @@ public class SentenceMgr {
 		int javaLine = -1;
 		//包含所有语句的allSenList
 		ArrayList<Sentence> allSenList = new ArrayList<Sentence>();
+		
+		
+		while (cNum < maxNum) {
+			String l = this.srcLines.get(cNum);
+			String key = Tool.getKey(l);
+			//对数组赋值行特殊处理
+			if (key.startsWith(":array_")) {
+				String aTag = key;
+				this.srcLines.remove(cNum);
+				maxNum--;
+				l = this.srcLines.get(cNum);
+				key = Tool.getKey(l);
+				Sentence s = this.createSentence(key, l);
+				ArraySentence as = (ArraySentence)s;
+				as.setArrDataTag(aTag);
+				this.srcLines.remove(cNum);
+				maxNum--;
+				l = this.srcLines.get(cNum);
+				while(!l.startsWith(".end")){
+					as.addToArrMatrix(l);
+					this.srcLines.remove(cNum);
+					maxNum--;
+					l = this.srcLines.get(cNum);
+				}
+				s.exec();
+				this.srcLines.remove(cNum);
+				maxNum--;
+			}
+			cNum++;
+		}
+		cNum =0;
+		
 		while (cNum < maxNum) {
 			String l = this.srcLines.get(cNum);
 			int jaLine = this.javaLineNum(l);
 			if (jaLine >=0 && jaLine != javaLine) {
 				javaLine = jaLine;
 				cNum++;
+				if(cNum == maxNum){
+					break;
+				}
 				l = this.srcLines.get(cNum);
 			}
 			String key = Tool.getKey(l);
+			//对数组赋值行特殊处理
+//			if (key.equals(".array-data")) {
+//				cNum++;
+//				l = this.srcLines.get(cNum);
+//				while(!l.startsWith(".end")){
+////					ArraySentence as = (ArraySentence)s;
+////					as.addToArrMatrix(l);
+//					cNum++;
+//					l = this.srcLines.get(cNum);
+//				}
+////				s.exec();
+//				continue;
+//			}
 			Sentence s = this.createSentence(key, l);
 			if (s == null) {
 				//未知key的处理
@@ -428,20 +476,9 @@ public class SentenceMgr {
 			if (javaLine > -1) {
 				s.setJavaLineNum(javaLine);
 			}
-			//对数组赋值行特殊处理
-			if (key.equals(".array-data")) {
-				cNum++;
-				l = this.srcLines.get(cNum);
-				while(!l.startsWith(".end")){
-					ArraySentence as = (ArraySentence)s;
-					as.addToArrMatrix(l);
-					cNum++;
-					l = this.srcLines.get(cNum);
-				}
-				s.exec();
-			}
 			//对switch行特殊处理
-			else if (key.equals(".packed-switch") || key.equals(".sparse-switch")) {
+//			else 
+				if (key.equals(".packed-switch") || key.equals(".sparse-switch")) {
 				cNum++;
 				hasSwitch = true;
 				l = this.srcLines.get(cNum);

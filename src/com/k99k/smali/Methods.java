@@ -277,26 +277,48 @@ public class Methods extends Context {
 		String ss = "";
 		int prCount = 0;
 		this.isAbstract = (this.mLines.isEmpty() && sb.indexOf("abstract")>0);
-		while ((!isAbstract) && (ss = this.mLines.remove(0)).indexOf(StaticUtil.TYPE_PROLOGUE) < 0 && ss.indexOf(StaticUtil.TYPE_END_METHOD)==-1) {
-			ss = this.doComm(ss);
-			String key = Tool.getKey(ss);
-			if (key.equals(StaticUtil.TYPE_PARAMETER)) {
-				words = ss.split(" ");
-				if (words.length == 2) {
-					String pr = words[1].replaceAll("\"", "");
-					String s = this.props.get(prCount);
-					this.props.set(prCount, s.substring(0,s.indexOf(" "))+" "+pr);
-					prCount++;
+		
+		if (!isAbstract) {
+			//locals
+			ss = this.mLines.get(0);
+			if (ss.startsWith(StaticUtil.TYPE_LOCALS)) {
+				this.mLines.remove(0);
+			}
+			//parameter
+			ss = this.mLines.get(0);
+			if (!ss.startsWith(StaticUtil.TYPE_PROLOGUE)) {
+				while (ss.startsWith(StaticUtil.TYPE_PARAMETER)) {
+					ss = this.doComm(ss);
+					words = ss.split(" ");
+					if (words.length == 2) {
+						String pr = words[1].replaceAll("\"", "");
+						String s = this.props.get(prCount);
+						this.props.set(prCount, s.substring(0,s.indexOf(" "))+" "+pr);
+						prCount++;
+					}
+					this.mLines.remove(0);
+					ss = this.mLines.get(0);
 				}
-			} 
-			//无需处理.locals
-//			else if (key.equals(StaticUtil.TYPE_LOCALS)) {
-//				words = ss.split(" ");
-//				if (words.length >= 2 && StringUtil.isDigits(words[1])) {
-//					this.locals = new HashMap<String, Object>(Integer.parseInt(words[1])+5);
-//				}
-//			}
+			}
+			//prologue
+			else{
+				this.mLines.remove(0);
+			}
 		}
+		
+//		while ((!isAbstract) && (ss = this.mLines.remove(0)).indexOf(StaticUtil.TYPE_PROLOGUE) < 0 && ss.indexOf(StaticUtil.TYPE_END_METHOD)==-1) {
+//			ss = this.doComm(ss);
+//			String key = Tool.getKey(ss);
+//			if (key.equals(StaticUtil.TYPE_PARAMETER)) {
+//				words = ss.split(" ");
+//				if (words.length == 2) {
+//					String pr = words[1].replaceAll("\"", "");
+//					String s = this.props.get(prCount);
+//					this.props.set(prCount, s.substring(0,s.indexOf(" "))+" "+pr);
+//					prCount++;
+//				}
+//			} 
+//		}
 			
 		//输出参数
 		StringBuilder sb2 = new StringBuilder("");

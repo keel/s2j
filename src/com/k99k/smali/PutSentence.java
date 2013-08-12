@@ -112,15 +112,7 @@ public class PutSentence extends Sentence {
 			
 			//需要确认右边的输出
 			String obj = Tool.parseObject(ws[2].substring(p+1));
-//			String right = null;
-//			if (String.valueOf(v2.getValue()).equals("0")){
-//				right = Var.checkIout(obj, "0") +" /* " + v2.getOut() +" */";
-//			}else{
-//				right = Var.checkIout(obj, v2.getOut());
-//			}
-//			if (obj.equals("int") && (!v2.getClassName().equals("int")) && StringUtil.isDigits(v2.getValue())) {
-//				right = String.valueOf(v2.getValue());
-//			}
+			
 			this.rightValue = Var.varOut(obj, v2.getOut());
 			
 			v = v2;
@@ -141,9 +133,12 @@ public class PutSentence extends Sentence {
 //			v.setClassName(v1.getClassName());
 //			v.setOut(v1.getOut()+"["+v2.getValue()+"]");
 			String index = (v2.getValue() == null) ? v2.getOut() :v2.getValue().toString();
+			index = Var.varOut("int", index);
 			this.left = "["+index+"]";
 			this.arrLeft = v1.getOut();
 			this.rightValue = v3.getOut();
+			String arrObj = ArraySentence.getArrayClassName(v1.getSen().getLine());
+			this.rightValue = Var.varOut(arrObj, this.rightValue);
 //			if (this.mgr.getMeth().isConstructor() || this.mgr.getMeth().isStaticConstructor()) {
 				if (v3.getKey().equals("new-array")) {
 					//多维数组赋值 
@@ -163,7 +158,7 @@ public class PutSentence extends Sentence {
 					this.arrNewSen = v1Sen;
 					if (v1Sen.getArrName() == null) {
 						Var nv = v1Sen.getVar();
-						String vv = v1.getName()+v2.getName()+RandomUtil.getRandomInt(1, 99);
+						String vv = v1.getName()+v2.getName()+RandomUtil.getRandomInt(1, 9999);
 						if (!v1Sen.isFilled()) {
 							v1Sen.setOut(nv.getValue()+" "+vv+" = "+nv.getOut());
 						}

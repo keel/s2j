@@ -143,7 +143,7 @@ public class Var {
 			//非16进制数值直接返回
 			return vOut;
 		}
-		if (className.equals("String") || className.equals("number")) {
+		if (className.equals("String")) {
 			return vOut;
 		}else if(className.equals("boolean")){
 			return (vOut.equals("0x0"))?"false":"true";

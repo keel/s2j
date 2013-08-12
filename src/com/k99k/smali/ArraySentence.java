@@ -22,13 +22,15 @@ public class ArraySentence extends Sentence {
 	 */
 	public ArraySentence(SentenceMgr mgr, String line) {
 		super(mgr, line);
-		this.type = Sentence.TYPE_LINE;
+		this.type = Sentence.TYPE_NOT_LINE;
 	}
 	static final Logger log = Logger.getLogger(ArraySentence.class);
 	
 	private ArrayList<String> arrMatrix;
 	
 	private String[] arrData;
+	
+	private String arrDataTag = "";
 
 	/* (non-Javadoc)
 	 * @see com.k99k.smali.Sentence#exec()
@@ -42,20 +44,28 @@ public class ArraySentence extends Sentence {
 		if (key.equals("fill-array-data")) {
 			//向var集合中保存
 			//Var的sen定位于fill-array-data的前一句,即:new-array
-			Var v = new Var(this);
+			
+			Var v = this.mgr.getVar(ws[2]);
+//			Var v = new Var(this);
+//			v.setClassName("array");
+//			v.setName(ws[2]);//以ws[2]为key
+//			this.mgr.setVar(v);
+			
 			v.setKey(key);
-			v.setClassName("array");
-			v.setName(ws[2]);//以ws[2]为key
-			v.setValue(ws[1]);//value为变量，如：v0
-			this.mgr.setVar(v);
+			v.setName(ws[1]);
+			v.setSen(this);
+			
 			Var v1 = this.mgr.getVar(ws[1]);
 			if (v1 != null) {
 				Sentence newArrSen = v1.getSen();
 				if (newArrSen != null && newArrSen.getLine().startsWith("new-array")) {
 					newArrSen.setOut("");
 					((NewSentence)newArrSen).setFilled(true);
+					//根据数组类型处理out
+					v.setOut(fixArrayOut(v.getOut(),getArrayClassName(newArrSen.getLine())));
 				}
 			}
+			this.mgr.setVar(v);
 		}else if(key.equals(".array-data")){
 			if (this.arrMatrix == null) {
 				this.out.append("arrMatrix is null. line:").append(this.line);
@@ -85,36 +95,57 @@ public class ArraySentence extends Sentence {
 				asb.append(",").append(arrVals[i]);
 			}
 			this.arrData = arrVals;
+			
+			
 			//查找标识,在上一句中
-			String vkey = this.mgr.getLastSentence().getLine();
-			//补充到fill-array-data中
-			Var v = this.mgr.getVar(vkey);
-			//Var arrDef = v.getSen().getVar();
+			//String vkey = this.mgr.getLastSentence().getLine();
+			
+			Var v = new Var(this);
+			v.setKey(key);
+			v.setClassName("array");
+			v.setName(this.arrDataTag);//以":array_0"为key
+			v.setValue(this.arrData);
 			asb.delete(0, 1);
 			asb.insert(0, "{");
-			//asb.insert(0, this.mgr.getVar(v.getValue().toString()).getOut());
 			asb.append("}");
-			v.getSen().setType(Sentence.TYPE_NOT_LINE);
-			int ii = this.mgr.findSentenceIndexByLineNum(v.getSen().getLineNum())+1;
-			Sentence sen = this.mgr.findSentenceByIndex(ii);
-			if (sen.getName().equals("put")) {
-				PutSentence sarr = (PutSentence)sen;
-				String right = fixArrayOut(asb,getArrayClassName(sarr.getLine()));
-				sarr.setRightValue(right);
-			}else{
-				String s = sen.getOut();
-				sen.setOut(s.split("=")[0]+" = "+asb.toString());
-			}
-			if (sen.getType() == Sentence.TYPE_NOT_LINE) {
-				sen.setType(TYPE_LINE);
-			}
-//			StringBuilder sb = new StringBuilder(sarr.getOut());
-//			sb.delete(sb.indexOf("=")+1, sb.length());
-//			sb.append(asb);
-//			sarr.setOut(sb.toString());
-			//this.type = Sentence.TYPE_NOT_LINE;
+			v.setOut(asb.toString());
+			this.mgr.setVar(v);
+			
+			
+			
+			
+//			
+//			//补充到fill-array-data中
+//			Var v = this.mgr.getVar(vkey);
+//			//Var arrDef = v.getSen().getVar();
+//			
+//			v.getSen().setType(Sentence.TYPE_NOT_LINE);
+//			int ii = this.mgr.findSentenceIndexByLineNum(v.getSen().getLineNum())+1;
+//			Sentence sen = this.mgr.findSentenceByIndex(ii);
+//			if (sen.getName().equals("put")) {
+//				PutSentence sarr = (PutSentence)sen;
+//				//String right = fixArrayOut(asb,getArrayClassName(sarr.getLine()));
+//				sarr.setRightValue(right);
+//			}else{
+//				String s = sen.getOut();
+//				sen.setOut(s.split("=")[0]+" = "+asb.toString());
+//			}
+//			if (sen.getType() == Sentence.TYPE_NOT_LINE) {
+//				sen.setType(TYPE_LINE);
+//			}
+//			
+			
 		}else if(key.equals("array-length")){
-			log.debug(this.mgr.getMeth().getName()+" - array-length:"+this.line);
+			
+			Var v = this.mgr.getVar(ws[2]);
+			Var v1 = new Var(this);
+			v1.setClassName(key);
+			v1.setKey(key);
+			v1.setName(ws[1]);
+			v1.setOut(v.getOut()+".length");
+			v1.setValue(v1.getOut());
+			this.mgr.setVar(v1);
+			//log.error(this.mgr.getMeth().getName()+" - array-length:"+this.line);
 		}else{
 			//this.type = Sentence.TYPE_NOT_LINE;
 		}
@@ -132,7 +163,7 @@ public class ArraySentence extends Sentence {
 		return Tool.parseObject(obj);
 	}
 	
-	static final String fixArrayOut(StringBuilder arrOut,String arrClassName){
+	static final String fixArrayOut(String arrOut,String arrClassName){
 		if (arrOut.charAt(0) == '{' && arrOut.charAt(arrOut.length()-1)=='}') {
 			String[] arrs = arrOut.substring(1,arrOut.length()-1).split(",");
 			StringBuilder sb = new StringBuilder();
@@ -145,7 +176,7 @@ public class ArraySentence extends Sentence {
 			sb.append("}");
 			return sb.toString();
 		}
-		return arrOut.toString();
+		return arrOut;
 	}
 	
 	public void addToArrMatrix(String line){
@@ -173,6 +204,14 @@ public class ArraySentence extends Sentence {
 	}
 
 	
+	final String getArrDataTag() {
+		return arrDataTag;
+	}
+
+	final void setArrDataTag(String arrDataTag) {
+		this.arrDataTag = arrDataTag;
+	}
+
 	/**
 	 * @return the arrData
 	 */

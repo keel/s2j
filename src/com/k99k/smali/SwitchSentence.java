@@ -52,7 +52,6 @@ public class SwitchSentence extends Sentence {
 		this.line = this.line.replaceAll(",", "");
 		String[] ws = this.line.split(" ");
 		this.key = ws[0];
-//		ArrayList<String> cases = new ArrayList<String>();
 		HashMap<String,String> cases = new HashMap<String, String>();
 		if (key.equals("packed-switch") || key.equals("sparse-switch")) {
 			//switch
@@ -101,47 +100,22 @@ public class SwitchSentence extends Sentence {
 				
 				for (int i = 0; i < slen; i++) {
 					int cii = start+i;
-//					String caseval = "case " + cii;
 					String caseStr = this.switchKey.get(i);
 					if (cases.containsKey(caseStr)) {
 						cases.put(caseStr, cases.get(caseStr)+" case "+cii+": ");
 					}else{
 						cases.put(caseStr, "case "+cii+": ");
 					}
-//					cases.add(caseStr+","+caseval+","+cii);
 				}
 				
-				/*//由第一项决定case中间是否有需要跳过的空项
-				String caseStr = this.switchKey.get(0);
-				String add = StringUtil.a16to10(caseStr.substring(caseStr.indexOf("_")+1));
-				int ci = Integer.parseInt(add);
-				String caseval = "case " + (0+start);
-				cases.add(caseStr+","+caseval+","+ci);
-				for (int i = 1; i < slen; i++) {
-					caseStr = this.switchKey.get(i);
-					add = StringUtil.a16to10(caseStr.substring(caseStr.indexOf("_")+1));
-					int cii = Integer.parseInt(add);
-					if (cii < ci) {
-						//case中间的空项，跳过
-						continue;
-					}
-//					else if(cii == ci){
-//						//相同case,仍然加入
-//					}
-					caseval = "case " + (i+start);
-					cases.add(caseStr+","+caseval+","+cii);
-				}*/
 				
 			}else{
 				//.sparse-switch ,非顺序型的case条件集
 				int slen = this.switchKey.size();
-//				cases = new ArrayList<String>();
 				for (int i = 0; i < slen; i++) {
 					String[] ss = this.switchKey.get(i).split(" -> ");
 					String caseval = "case " + StringUtil.int16to10(ss[0]);
-//					cases.add(ss[1]+","+caseval+","+StringUtil.a16to10(ss[1].substring(ss[1].indexOf("_")+1)));
 					String caseStr = ss[1];
-//					cases.put(ss[1], caseval+":");
 					if (cases.containsKey(caseStr)) {
 						cases.put(caseStr, cases.get(caseStr)+caseval+": ");
 					}else{

@@ -206,7 +206,11 @@ public class S2J {
 		//String tar = "F:/android/apk_manager/projects/ud.apk/smali/net/gatools/SpriteManager.smali";
 		tar = "F:/android/apk_manager/projects/com.game.UnicornDash.apk/smali/com/game/UnicornDash/UnicornDash.smali";
 		tar = "F:/android/apk_manager/projects/com.game.UnicornDash.apk/smali/com/game/UnicornDash/C_EVTEffect.smali";
-		
+        tar = "/Users/keel/Downloads/dev/apkmanager/projects/com.game.UnicornDash.apk/smali/com/game/UnicornDash/C_EVTEffect.smali";
+        //tar = "/Users/keel/Downloads/dev/apkmanager/projects/com.game.UnicornDash.apk/smali/com/game/UnicornDash/UnicornDash.smali";
+
+        tar = "/Users/keel/Downloads/dev/apkmanager/projects/uzz.apk/smali/net/gatools/JSON.smali";
+
 		//tar = "f:/android/apk_manager/projects/Ta.apk/smali/com/ta/Main.smali";
 		//tar = "F:/android/apk_manager/projects/com.game.UnicornDash.apk/smali/oms/GameEngine/SpriteManager.smali";
 		String re = s.exec(tar, "utf-8");

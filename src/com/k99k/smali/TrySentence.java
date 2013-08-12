@@ -79,6 +79,7 @@ public class TrySentence extends Sentence {
 			String s = this.line.substring(p,p+1);
 			this.tryStartNum = Integer.parseInt(s);
 		}else if(this.key.equals("throw")){
+			this.out.append("throw ").append(ws[1]);
 		}
 		this.state = Sentence.STATE_DOING;
 		return true;
