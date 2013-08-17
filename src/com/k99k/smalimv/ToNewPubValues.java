@@ -67,6 +67,7 @@ public class ToNewPubValues {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		/*
 		String ec = "utf-8";
 		String conf = "g:/cc3.txt";
 		File from  = new File("F:/android/apk_manager/projects/EgameSocialSdk1.apk");
@@ -75,6 +76,21 @@ public class ToNewPubValues {
 		try {
 			
 			IO.copyFullDirWithFn(from, to, r, ec);
+			
+			System.out.println("--------- END ----------");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		*/
+		
+		String enc = "utf-8";
+		String file = "/Users/keel/Downloads/dev/public.txt";
+		File fFrom  = new File("/Users/keel/git/udb/Udb/src");
+		File fTo  = new File("/Users/keel/Downloads/dev/newjava");
+		PicIdToName p = new PicIdToName(file, enc);
+		try {
+			
+			IO.copyFullDirWithFn(fFrom, fTo, p, enc);
 			
 			System.out.println("--------- END ----------");
 		} catch (IOException e) {
